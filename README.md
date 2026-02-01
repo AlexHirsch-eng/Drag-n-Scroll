@@ -13,6 +13,7 @@ A modern Chinese language learning application with a TikTok-style interface and
 
 ## 🏗️ Architecture
 
+
 ### Backend (Django REST Framework)
 - Python 3.9+
 - Django 4.2
