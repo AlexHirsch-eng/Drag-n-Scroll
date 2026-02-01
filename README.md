@@ -11,6 +11,7 @@ A modern Chinese language learning application with a TikTok-style interface and
 - **HSK-aligned Content**: Structured courses for HSK 1-6 levels
 - **Gamification**: Earn XP, maintain streaks, and track your learning journey
 
+
 ## 🏗️ Architecture
 
 
