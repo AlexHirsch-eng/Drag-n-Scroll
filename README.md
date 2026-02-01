@@ -92,6 +92,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+
 Backend API will be available at `http://localhost:8000`
 
 ### Frontend Setup
