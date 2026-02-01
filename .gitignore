@@ -1,0 +1,15 @@
+# IDE
+.idea/
+.vscode/
+.claude/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# Python / backend (если есть)
+venv/
+.env
+__pycache__/
+*.pyc
