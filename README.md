@@ -11,7 +11,9 @@ A modern Chinese language learning application with a TikTok-style interface and
 - **HSK-aligned Content**: Structured courses for HSK 1-6 levels
 - **Gamification**: Earn XP, maintain streaks, and track your learning journey
 
+
 ## 🏗️ Architecture
+
 
 ### Backend (Django REST Framework)
 - Python 3.9+
@@ -89,6 +91,7 @@ python manage.py createsuperuser
 # Start server
 python manage.py runserver
 ```
+
 
 Backend API will be available at `http://localhost:8000`
 
