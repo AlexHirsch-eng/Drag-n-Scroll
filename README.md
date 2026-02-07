@@ -1,5 +1,4 @@
 # Drag'n'Scroll - Chinese Learning App
-
 A modern Chinese language learning application with a TikTok-style interface and Spaced Repetition System (SRS).
 
 ## 🎯 Features
