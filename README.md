@@ -26,7 +26,7 @@ A modern Chinese language learning application with a TikTok-style interface and
 - Vite build system
 - Pinia state management
 - Vue Router
-- Axios for API communication
+- Axios for API  communication
 
 ## 📁 Project Structure
 
