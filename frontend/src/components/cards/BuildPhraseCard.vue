@@ -12,8 +12,8 @@
       </div>
 
       <div class="target-phrase">
-        <div class="hanzi">{{ stepContent.target_hanzi }}</div>
-        <div class="pinyin">{{ stepContent.target_pinyin }}</div>
+        <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ stepContent.target_hanzi }}</div>
+        <div class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ stepContent.target_pinyin }}</div>
       </div>
 
       <div class="word-bank">
@@ -43,7 +43,7 @@
 
       <div v-if="showResult" class="result">
         <div class="result-icon">{{ isCorrect ? '✓' : '✗' }}</div>
-        <div class="result-text">{{ isCorrect ? 'CORRECT!' : 'TRY AGAIN' }}</div>
+        <div class="result-text">{{ isCorrect ? 'ПРАВИЛЬНО!' : 'ПОПРОБУЙТЕ СНОВА' }}</div>
       </div>
 
       <button v-if="!showResult" @click="checkAnswer" class="check-btn" :disabled="userAnswer.length === 0">
@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { LessonStep } from '@/types/api'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   step: LessonStep
@@ -107,6 +108,12 @@ function checkAnswer() {
   setTimeout(() => {
     emit('continue')
   }, 1500)
+}
+
+function speakHanzi() {
+  if (stepContent.value.target_hanzi) {
+    speakChinese(stepContent.value.target_hanzi)
+  }
 }
 </script>
 
@@ -228,6 +235,19 @@ function checkAnswer() {
   font-size: 1.3rem;
   color: var(--color-text-secondary);
   letter-spacing: 2px;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-gold);
 }
 
 .word-bank {

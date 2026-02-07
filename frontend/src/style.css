@@ -32,6 +32,7 @@
   --color-neon-pink: #ff00ff;
   --color-neon-purple: #8800ff;
   --color-neon-white: #ffffff;
+  --color-neon-gold: #FFD700;
 
   /* Semantic Colors */
   --color-success: #00ff88;
@@ -54,7 +55,7 @@
   --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0066ff 50%, #0033ff 100%);
   --gradient-secondary: linear-gradient(135deg, #00ffff 0%, #00ccff 50%, #0088ff 100%);
   --gradient-tertiary: linear-gradient(135deg, #0066ff 0%, #0044ff 50%, #0022ff 100%);
-  --gradient-gold: linear-gradient(135deg, #00d4ff 0%, #00ffff 50%, #0066ff 100%);
+  --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
   --gradient-purple: linear-gradient(135deg, #8800ff 0%, #0044ff 50%, #00d4ff 100%);
 
   /* INTENSE MULTI-COLOR GRADIENTS */
@@ -81,6 +82,7 @@
   --shadow-glow-tertiary: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(0, 255, 255, 0.6), 0 0 60px rgba(0, 255, 255, 0.4);
   --shadow-glow-purple: 0 0 20px rgba(136, 0, 255, 0.8), 0 0 40px rgba(136, 0, 255, 0.6), 0 0 60px rgba(136, 0, 255, 0.4);
   --shadow-glow-pink: 0 0 20px rgba(255, 0, 255, 0.8), 0 0 40px rgba(255, 0, 255, 0.6), 0 0 60px rgba(255, 0, 255, 0.4);
+  --shadow-gold: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
 
   /* COMBINED ELECTRIC EFFECTS */
   --shadow-neon: 0 0 40px rgba(0, 212, 255, 0.8), 0 0 80px rgba(0, 212, 255, 0.6), 0 0 120px rgba(0, 212, 255, 0.4);

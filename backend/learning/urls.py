@@ -4,6 +4,8 @@ URL configuration for Session A/B Learning System
 from django.urls import path
 from . import views
 
+app_name = 'learning'
+
 urlpatterns = [
     # Main Screen
     path('main-screen/', views.main_screen, name='main-screen'),
@@ -19,4 +21,9 @@ urlpatterns = [
     path('submit/step-3/', views.submit_step_3, name='submit-step-3'),
     path('submit/step-4/', views.submit_step_4, name='submit-step-4'),
     path('submit/step-5/', views.submit_step_5, name='submit-step-5'),
+
+    # SRS Review
+    path('srs/review-batch/', views.srs_review_batch, name='srs-review-batch'),
+    path('srs/mistakes-batch/', views.srs_mistakes_batch, name='srs-mistakes-batch'),
+    path('srs/submit-review/', views.srs_submit_review, name='srs-submit-review'),
 ]

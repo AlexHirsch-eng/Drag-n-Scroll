@@ -5,8 +5,8 @@
     <div class="summary-card">
       <div class="summary-header">
         <div class="icon">🎉</div>
-        <h2>SESSION COMPLETE!</h2>
-        <p class="session-type">SESSION {{ summary?.session.session_type }}</p>
+        <h2>СЕССИЯ ЗАВЕРШЕНА!</h2>
+        <p class="session-type">СЕССИЯ {{ summary?.session.session_type }}</p>
       </div>
 
       <div class="summary-stats">
@@ -30,7 +30,7 @@
           <div class="stat-icon">⚡</div>
           <div class="stat-content">
             <div class="stat-value">{{ summaryData?.xp_earned }}</div>
-            <div class="stat-label">XP Earned</div>
+            <div class="stat-label">SCROLLS Earned</div>
           </div>
         </div>
 

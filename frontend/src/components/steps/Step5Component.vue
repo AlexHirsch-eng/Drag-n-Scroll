@@ -21,8 +21,8 @@
       <div class="target-card">
         <div class="target-info">
           <span class="label">LISTEN AND BUILD:</span>
-          <span class="target-hanzi">{{ stepData.target_hanzi }}</span>
-          <span class="target-pinyin">{{ stepData.target_pinyin }}</span>
+          <span class="target-hanzi clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_hanzi }}</span>
+          <span class="target-pinyin clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_pinyin }}</span>
           <span class="target-translation">{{ getTranslation(stepData) }}</span>
         </div>
 
@@ -48,8 +48,8 @@
             @click="addToArrangement(word)"
             class="word-chip"
           >
-            <span class="word-hanzi">{{ word.hanzi }}</span>
-            <span class="word-pinyin">{{ word.pinyin }}</span>
+            <span class="word-hanzi clickable-word" @click.stop="speakHanzi(word.hanzi)" title="Нажмите для озвучки">{{ word.hanzi }}</span>
+            <span class="word-pinyin clickable-word" @click.stop="speakHanzi(word.hanzi)" title="Нажмите для озвучки">{{ word.pinyin }}</span>
           </div>
         </div>
       </div>
@@ -68,7 +68,7 @@
             class="arrangement-slot"
             :class="{ filled: slot.word }"
           >
-            <span v-if="slot.word" class="word-hanzi">{{ slot.word.hanzi }}</span>
+            <span v-if="slot.word" class="word-hanzi clickable-word" @click.stop="speakHanzi(slot.word.hanzi)" title="Нажмите для озвучки">{{ slot.word.hanzi }}</span>
             <span v-else class="empty-slot">
               <span class="slot-number">{{ index + 1 }}</span>
               <span class="slot-label">empty</span>
@@ -106,14 +106,6 @@
             </div>
           </div>
         </div>
-
-        <button
-          v-if="showResult && isCorrect"
-          @click="completeStep"
-          class="next-btn"
-        >
-          COMPLETE SESSION →
-        </button>
       </div>
     </div>
   </div>
@@ -122,6 +114,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   stepData: any
@@ -202,6 +195,11 @@ function checkArrangement() {
   // Check correctness
   isCorrect.value = sentence === correctSentence
   showResult.value = true
+
+  // Auto-submit and complete session after showing feedback
+  setTimeout(() => {
+    completeStep()
+  }, 2000)
 }
 
 function completeStep() {
@@ -215,11 +213,14 @@ function completeStep() {
 }
 
 function playAudio() {
-  if (props.stepData?.audio_url) {
-    const audio = new Audio(props.stepData.audio_url)
-    audio.play().catch(err => {
-      console.error('Audio play failed:', err)
-    })
+  if (props.stepData?.target_hanzi) {
+    speakChinese(props.stepData.target_hanzi)
+  }
+}
+
+function speakHanzi(text: string) {
+  if (text) {
+    speakChinese(text)
   }
 }
 
@@ -488,6 +489,19 @@ if (props.stepData?.scrambled_words) {
   font-size: 1.6rem;
   font-weight: 900;
   color: var(--color-text-primary);
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .empty-slot {

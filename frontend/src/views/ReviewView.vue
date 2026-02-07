@@ -7,19 +7,27 @@
       <div class="glow-orb orb-2"></div>
     </div>
 
+    <!-- Top Back Button -->
+    <div class="top-back-section">
+      <button @click="goBack" class="top-back-btn">
+        <span class="icon">←</span>
+        <span>ГЛАВНОЕ МЕНЮ</span>
+      </button>
+    </div>
+
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
       <div class="cyber-loader"></div>
-      <div class="loading-text">LOADING REVIEWS...</div>
+      <div class="loading-text">ЗАГРУЗКА ОШИБОК...</div>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!currentBatch || currentBatch.words.length === 0" class="empty-state">
-      <div class="empty-icon">✅</div>
-      <h2 class="empty-title">ALL CAUGHT UP!</h2>
-      <p class="empty-text">No words due for review right now</p>
+      <div class="empty-icon">📚</div>
+      <h2 class="empty-title">ПОКА НЕТ ОШИБОК!</h2>
+      <p class="empty-text">Отличная работа! Продолжайте учиться, чтобы накапливать ошибки</p>
       <router-link to="/learn" class="cyber-btn cyber-btn-primary">
-        <span class="btn-text">BACK TO LEARNING</span>
+        <span class="btn-text">НАЗАД К ОБУЧЕНИЮ</span>
         <span class="btn-glitch"></span>
       </router-link>
     </div>
@@ -29,7 +37,7 @@
       v-else
       :current-index="reviewIndex"
       :total="currentBatch.words.length"
-      hint="SWIPE UP FOR NEXT CARD"
+      hint="СВАЙП ВВЕРХ ДЛЯ СЛЕДУЮЩЕЙ КАРТОЧКИ"
       @next="nextCard"
       @previous="previousCard"
     >
@@ -42,7 +50,7 @@
               <span class="divider">/</span>
               <span class="total">{{ currentBatch.words.length }}</span>
             </div>
-            <div class="batch-badge">BATCH {{ currentBatch.batch_number }}</div>
+            <div class="batch-badge">ПАРТИЯ {{ currentBatch.batch_number }}</div>
           </div>
 
           <!-- Word Card -->
@@ -51,8 +59,12 @@
 
             <!-- Chinese Character -->
             <div class="hanzi-section">
-              <div class="hanzi">{{ currentCard?.hanzi }}</div>
-              <div v-if="isRevealed" class="pinyin">{{ currentCard?.pinyin }}</div>
+              <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+                {{ currentCard?.hanzi }}
+              </div>
+              <div v-if="isRevealed" class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+                {{ currentCard?.pinyin }}
+              </div>
             </div>
 
             <!-- Translation (revealed) -->
@@ -67,7 +79,7 @@
               @click="reveal"
               class="cyber-btn cyber-btn-large reveal-btn"
             >
-              <span class="btn-text">TAP TO REVEAL</span>
+              <span class="btn-text">НАЖМИТЕ ЧТОБЫ УВИДЕТЬ</span>
               <span class="btn-glitch"></span>
             </button>
 
@@ -75,22 +87,22 @@
             <div v-else class="rating-section">
               <button @click="rate(0)" class="rate-btn rate-again">
                 <span class="rate-icon">❌</span>
-                <span class="rate-label">AGAIN</span>
+                <span class="rate-label">СНОВА</span>
                 <span class="rate-value">0</span>
               </button>
               <button @click="rate(3)" class="rate-btn rate-hard">
                 <span class="rate-icon">💪</span>
-                <span class="rate-label">HARD</span>
+                <span class="rate-label">СЛОЖНО</span>
                 <span class="rate-value">3</span>
               </button>
               <button @click="rate(4)" class="rate-btn rate-good">
                 <span class="rate-icon">👍</span>
-                <span class="rate-label">GOOD</span>
+                <span class="rate-label">ХОРОШО</span>
                 <span class="rate-value">4</span>
               </button>
               <button @click="rate(5)" class="rate-btn rate-easy">
                 <span class="rate-icon">⚡</span>
-                <span class="rate-label">EASY</span>
+                <span class="rate-label">ЛЕГКО</span>
                 <span class="rate-value">5</span>
               </button>
             </div>
@@ -98,9 +110,9 @@
             <!-- Card Footer -->
             <div class="card-footer">
               <button
-                v-if="currentCard?.audio_url"
                 @click="playAudio"
                 class="audio-btn"
+                title="Прослушать произношение"
               >
                 🔊
               </button>
@@ -108,20 +120,35 @@
                 <span class="stat">Level {{ currentCard?.srs_level }}</span>
                 <span class="divider">•</span>
                 <span class="stat">{{ currentCard?.total_reviews }} reviews</span>
+                <span v-if="currentCard?.accuracy !== undefined" class="divider">•</span>
+                <span v-if="currentCard?.accuracy !== undefined" class="stat accuracy" :class="getAccuracyClass(currentCard.accuracy)">
+                  {{ Math.round(currentCard.accuracy * 100) }}% accuracy
+                </span>
               </div>
             </div>
           </div>
         </div>
       </template>
     </SwipeContainer>
+
+    <!-- Back Button -->
+    <div class="back-section">
+      <button @click="goBack" class="back-btn neon-button-home">
+        <span class="icon">←</span>
+        <span>НАЗАД В ГЛАВНОЕ МЕНЮ</span>
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSRSStore } from '@/stores/srs'
 import SwipeContainer from '@/components/layout/SwipeContainer.vue'
+import { speakChinese } from '@/utils/speech'
 
+const router = useRouter()
 const srsStore = useSRSStore()
 
 const isLoading = ref(true)
@@ -139,9 +166,9 @@ onMounted(async () => {
 async function loadBatch() {
   isLoading.value = true
   try {
-    await srsStore.loadReviewBatch({ batch_size: 10 })
+    await srsStore.loadMistakesBatch({ batch_size: 20 })
   } catch (error) {
-    console.error('Failed to load review batch:', error)
+    console.error('Failed to load mistakes batch:', error)
   } finally {
     isLoading.value = false
   }
@@ -196,10 +223,25 @@ function previousCard() {
 }
 
 function playAudio() {
-  if (currentCard.value?.audio_url) {
-    const audio = new Audio(currentCard.value.audio_url)
-    audio.play()
+  if (currentCard.value?.hanzi) {
+    speakChinese(currentCard.value.hanzi)
   }
+}
+
+function speakHanzi() {
+  if (currentCard.value?.hanzi) {
+    speakChinese(currentCard.value.hanzi)
+  }
+}
+
+function getAccuracyClass(accuracy: number) {
+  if (accuracy < 0.4) return 'accuracy-poor'
+  if (accuracy < 0.7) return 'accuracy-medium'
+  return 'accuracy-good'
+}
+
+function goBack() {
+  router.push('/')
 }
 </script>
 
@@ -260,6 +302,44 @@ function playAudio() {
 @keyframes float {
   0%, 100% { transform: translate(0, 0); }
   50% { transform: translate(50px, 50px); }
+}
+
+/* Top Back Button */
+.top-back-section {
+  position: absolute;
+  top: var(--spacing-lg);
+  left: var(--spacing-lg);
+  z-index: 10;
+}
+
+.top-back-btn {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 2px solid var(--color-accent-cyan);
+  border-radius: var(--radius-md);
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-accent-cyan);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+}
+
+.top-back-btn:hover {
+  background: var(--gradient-cyber);
+  color: var(--color-bg-primary);
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+  transform: translateX(-5px);
+}
+
+.top-back-btn .icon {
+  font-size: 1.2rem;
 }
 
 /* Loading & Empty States */
@@ -480,6 +560,19 @@ function playAudio() {
   letter-spacing: 2px;
 }
 
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+}
+
+.clickable-word:hover {
+  color: var(--color-accent-cyan);
+  text-shadow: 0 0 20px var(--color-accent-cyan);
+  transform: scale(1.05);
+}
+
 .translation-section {
   text-align: center;
   margin-bottom: var(--spacing-xl);
@@ -653,7 +746,76 @@ function playAudio() {
   font-weight: 600;
 }
 
+.accuracy {
+  font-weight: 700;
+}
+
+.accuracy-poor {
+  color: #ff4757;
+  text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+}
+
+.accuracy-medium {
+  color: #ffa502;
+  text-shadow: 0 0 10px rgba(255, 165, 2, 0.5);
+}
+
+.accuracy-good {
+  color: #2ed573;
+  text-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+}
+
+.back-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.back-btn {
+  background: rgba(17, 19, 24, 0.9);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-accent-primary);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.back-btn:hover {
+  transform: translateY(-4px);
+  background: var(--gradient-cyber);
+  color: var(--color-bg-primary);
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+}
+
+.back-btn .icon {
+  font-size: 1.5rem;
+}
+
 @media (max-width: 768px) {
+  .top-back-section {
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+  }
+
+  .top-back-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .top-back-btn .icon {
+    font-size: 1rem;
+  }
+
   .rating-section {
     grid-template-columns: repeat(2, 1fr);
   }

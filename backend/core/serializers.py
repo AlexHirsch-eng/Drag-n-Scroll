@@ -1,6 +1,7 @@
 """
 Serializers for core app
 """
+from django.db import models
 from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
@@ -28,14 +29,34 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
 class UserSerializer(BaseUserSerializer):
     profile = UserProfileSerializer(read_only=True)
     progress = UserCourseProgressSerializer(read_only=True)
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    likes_received = serializers.SerializerMethodField()
 
     class Meta(BaseUserSerializer.Meta):
         model = User
         fields = [
             'id', 'username', 'email', 'profile', 'progress',
+            'followers_count', 'following_count', 'likes_received',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_followers_count(self, obj):
+        """Get count of users following this user"""
+        return obj.followers.count()
+
+    def get_following_count(self, obj):
+        """Get count of users this user is following"""
+        return obj.following.count()
+
+    def get_likes_received(self, obj):
+        """Get total likes received on user's videos"""
+        from video_app.models import Video
+        total_likes = Video.objects.filter(creator=obj).aggregate(
+            total=models.Sum('likes_count')
+        )['total'] or 0
+        return total_likes
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -86,11 +107,31 @@ class UserDetailSerializer(serializers.ModelSerializer):
     """
     profile = UserProfileSerializer(read_only=True)
     progress = UserCourseProgressSerializer(read_only=True)
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    likes_received = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'profile', 'progress', 'date_joined'
+            'profile', 'progress', 'followers_count', 'following_count',
+            'likes_received', 'date_joined'
         ]
         read_only_fields = ['date_joined']
+
+    def get_followers_count(self, obj):
+        """Get count of users following this user"""
+        return obj.followers.count()
+
+    def get_following_count(self, obj):
+        """Get count of users this user is following"""
+        return obj.following.count()
+
+    def get_likes_received(self, obj):
+        """Get total likes received on user's videos"""
+        from video_app.models import Video
+        total_likes = Video.objects.filter(creator=obj).aggregate(
+            total=models.Sum('likes_count')
+        )['total'] or 0
+        return total_likes

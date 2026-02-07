@@ -35,6 +35,22 @@ export const useSRSStore = defineStore('srs', () => {
     }
   }
 
+  async function loadMistakesBatch(params?: { batch_size?: number; hsk_level?: number }) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const batch = await srsAPI.getMistakesBatch(params)
+      currentBatch.value = batch
+      currentReviewIndex.value = 0
+      return batch
+    } catch (err: any) {
+      error.value = err.response?.data?.detail || 'Failed to load mistakes batch'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function submitReview(request: SubmitReviewRequest) {
     isLoading.value = true
     error.value = null
@@ -114,6 +130,7 @@ export const useSRSStore = defineStore('srs', () => {
     isLoading,
     error,
     loadReviewBatch,
+    loadMistakesBatch,
     submitReview,
     loadDueCount,
     loadStats,

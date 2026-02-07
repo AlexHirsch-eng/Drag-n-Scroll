@@ -245,3 +245,51 @@ def initialize_word_progress(user, word) -> WordProgress:
         }
     )
     return progress
+
+
+def get_mistakes_batch(user, batch_size: int = 20, hsk_level: int = None) -> List[WordProgress]:
+    """
+    Get a batch of words that user struggled with (mistakes review)
+
+    Words are considered "mistakes" if:
+    - SRS level is 0, 1, or 2 (not well learned)
+    - OR accuracy < 70% (struggled with this word)
+    - Has been reviewed at least once
+
+    Args:
+        user: User instance
+        batch_size: Number of words to return
+        hsk_level: Optional HSK level filter
+
+    Returns:
+        List of WordProgress instances
+    """
+    from django.db.models import F, ExpressionWrapper, FloatField
+
+    # Get words with low SRS level (0, 1, 2) that have been reviewed
+    low_level_words = WordProgress.objects.filter(
+        user=user,
+        srs_level__in=[0, 1, 2],
+        total_reviews__gte=1
+    ).select_related('word')
+
+    # Get words with poor accuracy (< 70%)
+    poor_accuracy_words = WordProgress.objects.filter(
+        user=user,
+        total_reviews__gte=1
+    ).annotate(
+        accuracy=ExpressionWrapper(
+            F('correct_reviews') * 1.0 / F('total_reviews'),
+            output_field=FloatField()
+        )
+    ).filter(
+        accuracy__lt=0.7
+    ).select_related('word')
+
+    # Combine both querysets and remove duplicates
+    all_mistakes = (low_level_words | poor_accuracy_words).order_by('srs_level', '-total_reviews')
+
+    if hsk_level is not None:
+        all_mistakes = all_mistakes.filter(word__hsk_level=hsk_level)
+
+    return list(all_mistakes[:batch_size])

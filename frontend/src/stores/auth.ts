@@ -14,6 +14,22 @@ export const useAuthStore = defineStore('auth', () => {
   const isInitialized = ref(false)
   const isAuthenticated = computed(() => !!user.value && !!accessToken.value)
 
+  // AI Access State
+  const aiAccessUntil = ref<string | null>(localStorage.getItem('ai_access_until'))
+  const hasAIAccess = computed(() => {
+    if (!aiAccessUntil.value) return false
+    const accessDate = new Date(aiAccessUntil.value)
+    return accessDate > new Date()
+  })
+  const aiAccessDaysLeft = computed(() => {
+    if (!aiAccessUntil.value) return 0
+    const accessDate = new Date(aiAccessUntil.value)
+    const now = new Date()
+    const diffTime = accessDate.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return Math.max(0, diffDays)
+  })
+
   // Actions
   async function register(data: RegisterData) {
     try {
@@ -130,6 +146,25 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // AI Access Functions
+  function purchaseAIAccess(days: number) {
+    const now = new Date()
+    const currentAccess = aiAccessUntil.value ? new Date(aiAccessUntil.value) : now
+
+    // If current access is expired, start from now, otherwise extend from current end date
+    const startDate = currentAccess > now ? currentAccess : now
+    const endDate = new Date(startDate)
+    endDate.setDate(endDate.getDate() + days)
+
+    aiAccessUntil.value = endDate.toISOString()
+    localStorage.setItem('ai_access_until', aiAccessUntil.value)
+  }
+
+  function clearAIAccess() {
+    aiAccessUntil.value = null
+    localStorage.removeItem('ai_access_until')
+  }
+
   return {
     user,
     profile,
@@ -139,6 +174,9 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     isInitialized,
     isAuthenticated,
+    aiAccessUntil,
+    hasAIAccess,
+    aiAccessDaysLeft,
     register,
     login,
     logout,
@@ -146,5 +184,7 @@ export const useAuthStore = defineStore('auth', () => {
     loadProfile,
     updateProfile,
     initializeAuth,
+    purchaseAIAccess,
+    clearAIAccess,
   }
 })

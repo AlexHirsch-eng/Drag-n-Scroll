@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'vocab',
     'learning',
     'video_app',
-    'chat_app',
+    'chat',
 ]
 
 MIDDLEWARE = [

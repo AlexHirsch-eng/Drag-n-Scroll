@@ -26,8 +26,8 @@
 
         <div class="examples">
           <div v-for="(example, index) in stepData.grammar_rule.examples" :key="index" class="example">
-            <div class="example-hanzi">{{ example.hanzi }}</div>
-            <div class="example-pinyin">{{ example.pinyin }}</div>
+            <div class="example-hanzi clickable-word" @click="speakHanzi(example.hanzi)" title="Нажмите для озвучки">{{ example.hanzi }}</div>
+            <div class="example-pinyin clickable-word" @click="speakHanzi(example.hanzi)" title="Нажмите для озвучки">{{ example.pinyin }}</div>
             <div class="example-translation">{{ userLanguage === 'KZ' ? example.translation_kz : example.translation_ru }}</div>
           </div>
         </div>
@@ -81,14 +81,6 @@
             Correct: {{ correctAnswer }}
           </div>
         </div>
-
-        <button
-          v-if="showResult"
-          @click="completeStep"
-          class="next-btn"
-        >
-          CONTINUE →
-        </button>
       </div>
     </div>
   </div>
@@ -97,6 +89,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   stepData: any
@@ -128,11 +121,16 @@ function submitSentence() {
 
   // Build sentence from components
   const sentence = builtSentence.value.map(c => c.hanzi).join('')
-  correctAnswer.value = props.stepData.correct_hanzi
+  correctAnswer.value = props.stepData?.correct_hanzi || ''
 
   // Check correctness
   isCorrect.value = sentence === correctAnswer.value
   showResult.value = true
+
+  // Auto-submit and move to next step after showing feedback
+  setTimeout(() => {
+    completeStep()
+  }, 2000)
 }
 
 function completeStep() {
@@ -141,6 +139,12 @@ function completeStep() {
   emit('submit', {
     builtSentence: sentence
   })
+}
+
+function speakHanzi(text: string) {
+  if (text) {
+    speakChinese(text)
+  }
 }
 </script>
 
@@ -235,6 +239,19 @@ function completeStep() {
   color: var(--color-text-secondary);
   font-size: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .example-translation {

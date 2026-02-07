@@ -11,7 +11,7 @@
     <div class="content">
       <div v-if="isLoading" class="loading-state">
         <div class="cyber-loader"></div>
-        <div class="loading-text">LOADING PROFILE...</div>
+        <div class="loading-text">ЗАГРУЗКА ПРОФИЛЯ...</div>
       </div>
 
       <div v-else class="profile-container">
@@ -19,7 +19,7 @@
         <div class="section-header">
           <h1 class="cyber-title">
             <span class="title-icon">👤</span>
-            {{ isOwnProfile ? 'PROFILE' : 'USER PROFILE' }}
+            {{ isOwnProfile ? 'ПРОФИЛЬ' : 'ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ' }}
           </h1>
           <div class="tech-line"></div>
         </div>
@@ -37,32 +37,60 @@
           </div>
         </div>
 
+        <!-- Social Stats -->
+        <div class="social-stats-section">
+          <div class="cyber-card social-stats-card">
+            <div class="card-glow"></div>
+            <div class="social-stats-grid">
+              <div class="social-stat">
+                <div class="social-stat-icon">👥</div>
+                <div class="social-stat-value">{{ user?.followers_count || 0 }}</div>
+                <div class="social-stat-label">ПОДПИСЧИКИ</div>
+              </div>
+              <div class="social-stat-divider"></div>
+              <div class="social-stat">
+                <div class="social-stat-icon">👣</div>
+                <div class="social-stat-value">{{ user?.following_count || 0 }}</div>
+                <div class="social-stat-label">ПОДПИСКИ</div>
+              </div>
+              <div class="social-stat-divider"></div>
+              <div class="social-stat">
+                <div class="social-stat-icon">❤️</div>
+                <div class="social-stat-value">{{ user?.likes_received || 0 }}</div>
+                <div class="social-stat-label">ЛАЙКИ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Stats Grid -->
         <div class="stats-section">
-          <h3 class="section-title">PROGRESS STATS</h3>
+          <h3 class="section-title">СТАТИСТИКА ПРОГРЕССА</h3>
           <div class="stats-grid">
-            <div class="stat-card stat-cyan">
-              <div class="stat-icon">⚡</div>
+            <div class="stat-card stat-gold">
+              <div class="stat-icon">
+                <img src="/src/images/coin.png" alt="coins" class="coin-icon-profile">
+              </div>
               <div class="stat-value">{{ user?.progress?.total_xp || 0 }}</div>
-              <div class="stat-label">TOTAL XP</div>
+              <div class="stat-label">ВСЕГО СКРОЛЛОВ</div>
               <div class="stat-bar"></div>
             </div>
             <div class="stat-card stat-red">
               <div class="stat-icon">🔥</div>
               <div class="stat-value">{{ user?.progress?.streak_days || 0 }}</div>
-              <div class="stat-label">STREAK DAYS</div>
+              <div class="stat-label">ДНЕЙ ПОДРЯД</div>
               <div class="stat-bar"></div>
             </div>
             <div class="stat-card stat-gold">
               <div class="stat-icon">📅</div>
               <div class="stat-value">{{ user?.progress?.current_day || 1 }}</div>
-              <div class="stat-label">CURRENT DAY</div>
+              <div class="stat-label">ТЕКУЩИЙ ДЕНЬ</div>
               <div class="stat-bar"></div>
             </div>
             <div class="stat-card stat-cyan">
               <div class="stat-icon">✅</div>
               <div class="stat-value">{{ user?.progress?.completed_days?.length || 0 }}</div>
-              <div class="stat-label">COMPLETED</div>
+              <div class="stat-label">ЗАВЕРШЕНО</div>
               <div class="stat-bar"></div>
             </div>
           </div>
@@ -72,18 +100,18 @@
         <div class="videos-section">
           <h3 class="section-title">
             <span class="title-icon">🎬</span>
-            {{ isOwnProfile ? 'MY VIDEOS' : 'VIDEOS' }}
+            {{ isOwnProfile ? 'МОИ ВИДЕО' : 'ВИДЕО' }}
             <span class="video-count">{{ userVideos.length }}</span>
           </h3>
 
           <div v-if="isLoadingVideos" class="loading-state">
             <div class="cyber-loader"></div>
-            <div class="loading-text">LOADING VIDEOS...</div>
+            <div class="loading-text">ЗАГРУЗКА ВИДЕО...</div>
           </div>
 
           <div v-else-if="userVideos.length === 0" class="empty-videos">
             <div class="empty-icon">📹</div>
-            <div class="empty-text">No videos yet</div>
+            <div class="empty-text">Пока нет видео</div>
           </div>
 
           <div v-else class="videos-grid">
@@ -101,7 +129,7 @@
                 <div class="video-duration">{{ formatDuration(video.duration) }}</div>
               </div>
               <div class="video-info">
-                <div class="video-description">{{ video.description || 'No description' }}</div>
+                <div class="video-description">{{ video.description || 'Нет описания' }}</div>
                 <div class="video-stats">
                   <span class="stat">❤️ {{ video.likes_count }}</span>
                   <span class="stat">💬 {{ video.comments_count }}</span>
@@ -114,23 +142,23 @@
 
         <!-- Settings -->
         <div v-if="isOwnProfile" class="settings-section">
-          <h3 class="section-title">SETTINGS</h3>
+          <h3 class="section-title">НАСТРОЙКИ</h3>
           <div class="cyber-card">
             <div class="card-glow"></div>
             <div class="setting-item">
               <label class="setting-label">
                 <span class="label-icon">🌍</span>
-                <span>Learning Language</span>
+                <span>Язык обучения</span>
               </label>
               <select v-model="profileForm.learning_language" @change="updateProfile" class="cyber-select">
-                <option value="RU">Russian</option>
-                <option value="KZ">Kazakh</option>
+                <option value="RU">Русский</option>
+                <option value="KZ">Казахский</option>
               </select>
             </div>
             <div class="setting-item">
               <label class="setting-label">
                 <span class="label-icon">📊</span>
-                <span>HSK Level</span>
+                <span>Уровень HSK</span>
               </label>
               <div class="setting-value">HSK {{ user?.profile?.current_hsk_level || 1 }}</div>
             </div>
@@ -139,9 +167,17 @@
 
         <!-- Logout Button -->
         <button v-if="isOwnProfile" @click="logout" class="cyber-btn cyber-btn-danger">
-          <span class="btn-text">LOGOUT</span>
+          <span class="btn-text">ВЫЙТИ</span>
           <span class="btn-glitch"></span>
         </button>
+
+        <!-- Back Button -->
+        <div class="back-section">
+          <button @click="goBack" class="cyber-btn back-btn-profile">
+            <span class="btn-text">← НАЗАД ДОМОЙ</span>
+            <span class="btn-glitch"></span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -235,6 +271,10 @@ function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+function goBack() {
+  router.push('/')
 }
 </script>
 
@@ -456,6 +496,58 @@ function formatDuration(seconds: number): string {
   font-size: 0.9rem;
 }
 
+/* Social Stats Section */
+.social-stats-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.social-stats-card {
+  padding: var(--spacing-lg);
+}
+
+.social-stats-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: var(--spacing-md);
+}
+
+.social-stat {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.social-stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.25rem;
+}
+
+.social-stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 15px var(--color-accent-cyan);
+}
+
+.social-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  letter-spacing: 2px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.social-stat-divider {
+  width: 2px;
+  height: 60px;
+  background: var(--gradient-cyber);
+  box-shadow: var(--shadow-glow-primary);
+}
+
 /* Stats Section */
 .section-title {
   font-size: 1.2rem;
@@ -506,6 +598,23 @@ function formatDuration(seconds: number): string {
 .stat-icon {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
+}
+
+.coin-icon-profile {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  animation: coinSpin 3s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+@keyframes coinSpin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
 }
 
 .stat-value {
@@ -787,7 +896,42 @@ function formatDuration(seconds: number): string {
   font-size: 1rem;
 }
 
+.back-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.back-btn-profile {
+  background: rgba(17, 19, 24, 0.9);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 1rem 2rem;
+  color: var(--color-accent-cyan);
+  letter-spacing: 1px;
+}
+
+.back-btn-profile:hover {
+  border-color: var(--color-accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+}
+
 @media (max-width: 768px) {
+  .social-stats-grid {
+    gap: var(--spacing-sm);
+  }
+
+  .social-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .social-stat-icon {
+    font-size: 1.5rem;
+  }
+
+  .social-stat-divider {
+    height: 40px;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

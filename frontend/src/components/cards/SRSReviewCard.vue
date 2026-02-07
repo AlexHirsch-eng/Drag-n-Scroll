@@ -7,8 +7,8 @@
 
     <div class="card-content">
       <div class="card-header">
-        <h3><span class="bracket">&lt;</span>REVIEW<span class="bracket">/&gt;</span></h3>
-        <span class="word-count">{{ words.length }} WORDS</span>
+        <h3><span class="bracket">&lt;</span>ПОВТОРЕНИЕ<span class="bracket">/&gt;</span></h3>
+        <span class="word-count">{{ words.length }} СЛОВ</span>
       </div>
 
       <div class="words-grid">
@@ -30,7 +30,7 @@
       </div>
 
       <div class="card-footer">
-        <p class="instruction">TAP WORD TO HEAR PRONUNCIATION</p>
+        <p class="instruction">НАЖМИТЕ НА СЛОВО ЧТОБЫ УСЛЫШАТЬ ПРОИЗНОШЕНИЕ</p>
       </div>
     </div>
   </div>
@@ -38,6 +38,7 @@
 
 <script setup lang="ts">
 import type { SRSReviewItem } from '@/types/api'
+import { speakChinese } from '@/utils/speech'
 
 defineProps<{
   words: SRSReviewItem[]
@@ -48,9 +49,8 @@ const emit = defineEmits<{
 }>()
 
 function playAudio(word: SRSReviewItem) {
-  if (word.audio_url) {
-    const audio = new Audio(word.audio_url)
-    audio.play()
+  if (word.hanzi) {
+    speakChinese(word.hanzi)
   }
 }
 </script>

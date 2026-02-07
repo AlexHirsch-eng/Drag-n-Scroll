@@ -25,8 +25,8 @@
           >
             <span class="speaker">{{ line.speaker }}:</span>
             <div class="line-content">
-              <span class="hanzi">{{ line.hanzi }}</span>
-              <span class="pinyin">{{ line.pinyin }}</span>
+              <span class="hanzi clickable-word" @click="speakHanzi(line.hanzi)" title="Нажмите для озвучки">{{ line.hanzi }}</span>
+              <span class="pinyin clickable-word" @click="speakHanzi(line.hanzi)" title="Нажмите для озвучки">{{ line.pinyin }}</span>
               <span class="translation">{{ getTranslation(line) }}</span>
             </div>
           </div>
@@ -35,8 +35,8 @@
         <div class="question-section">
           <h4>Question:</h4>
           <div class="question">
-            <span class="question-hanzi">{{ stepData.question_hanzi }}</span>
-            <span class="question-pinyin">{{ stepData.question_pinyin }}</span>
+            <span class="question-hanzi clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_hanzi }}</span>
+            <span class="question-pinyin clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_pinyin }}</span>
           </div>
 
           <button @click="playAudio" class="play-audio-btn">
@@ -61,8 +61,8 @@
             }"
             :disabled="showResult"
           >
-            <span class="option-hanzi">{{ option.hanzi }}</span>
-            <span class="option-pinyin">{{ option.pinyin }}</span>
+            <span class="option-hanzi clickable-word" @click="speakHanzi(option.hanzi)" title="Нажмите для озвучки">{{ option.hanzi }}</span>
+            <span class="option-pinyin clickable-word" @click="speakHanzi(option.hanzi)" title="Нажмите для озвучки">{{ option.pinyin }}</span>
             <span class="option-translation">{{ getTranslation(option) }}</span>
           </button>
         </div>
@@ -77,13 +77,6 @@
           </div>
           <div v-if="explanation" class="explanation">{{ explanation }}</div>
         </div>
-
-        <button
-          @click="completeStep"
-          class="next-btn"
-        >
-          CONTINUE →
-        </button>
       </div>
     </div>
   </div>
@@ -92,6 +85,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   stepData: any
@@ -118,15 +112,20 @@ function selectOption(index: number) {
   if (showResult.value) return
 
   selectedOption.value = index
-  const option = props.stepData.options[index]
+  const option = props.stepData?.options[index]
 
   isCorrect.value = option.is_correct
   showResult.value = true
 
   // Set explanation
   explanation.value = userLanguage.value === 'KZ'
-    ? props.stepData.explanation_kz
-    : props.stepData.explanation_ru
+    ? props.stepData?.explanation_kz
+    : props.stepData?.explanation_ru
+
+  // Auto-submit and move to next step after showing feedback
+  setTimeout(() => {
+    completeStep()
+  }, 2000)
 }
 
 function completeStep() {
@@ -136,9 +135,14 @@ function completeStep() {
 }
 
 function playAudio() {
-  if (props.stepData?.audio_url) {
-    const audio = new Audio(props.stepData.audio_url)
-    audio.play()
+  if (props.stepData?.question_hanzi) {
+    speakChinese(props.stepData.question_hanzi)
+  }
+}
+
+function speakHanzi(text: string) {
+  if (text) {
+    speakChinese(text)
   }
 }
 </script>
@@ -225,6 +229,19 @@ function playAudio() {
 .pinyin {
   color: var(--color-text-secondary);
   font-size: 0.9rem;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .translation {

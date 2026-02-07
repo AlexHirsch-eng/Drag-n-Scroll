@@ -12,8 +12,8 @@
     <div v-if="currentCard" class="flashcard-container">
       <div class="flashcard" :class="{ flipped: showAnswer }">
         <div class="card-front">
-          <div class="hanzi">{{ currentCard.word.hanzi }}</div>
-          <div class="pinyin">{{ currentCard.word.pinyin }}</div>
+          <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ currentCard.word.hanzi }}</div>
+          <div class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ currentCard.word.pinyin }}</div>
           <button @click="playAudio" class="audio-btn">
             <span class="icon">🔊</span> PLAY AUDIO
           </button>
@@ -79,6 +79,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   stepData: any
@@ -122,10 +123,13 @@ function selectOption(wordId: number) {
   showAnswer.value = true
   isCorrect.value = wordId === currentCard.value.word.id
 
-  // Auto-advance after showing feedback, unless it's the last card
+  // Submit answer immediately
+  submitAnswer()
+
+  // For non-last cards, auto-advance after showing feedback
   if (!isLastCard.value) {
     setTimeout(() => {
-      submitAnswer()
+      nextCard()
     }, 1500)
   }
   // For the last card, let user click "COMPLETE STEP" button manually
@@ -145,6 +149,7 @@ function nextCard() {
     currentCardIndex.value++
     selectedOptionId.value = null
     showAnswer.value = false
+    isCorrect.value = false
   }
 }
 
@@ -187,9 +192,14 @@ function completeStep() {
 }
 
 function playAudio() {
-  if (currentCard.value?.word?.audio_url) {
-    const audio = new Audio(currentCard.value.word.audio_url)
-    audio.play()
+  if (currentCard.value?.word?.hanzi) {
+    speakChinese(currentCard.value.word.hanzi)
+  }
+}
+
+function speakHanzi() {
+  if (currentCard.value?.word?.hanzi) {
+    speakChinese(currentCard.value.word.hanzi)
   }
 }
 
@@ -278,6 +288,19 @@ onMounted(() => {
 .pinyin {
   font-size: 1.5rem;
   color: var(--color-text-secondary);
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .audio-btn {

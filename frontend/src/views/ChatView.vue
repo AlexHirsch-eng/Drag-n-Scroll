@@ -149,7 +149,7 @@
     <!-- Main Content Area -->
     <div class="main-content">
       <!-- Chat List (Left Side) -->
-      <div class="chat-sidebar" :class="{ hidden: activeChat }">
+      <div class="chat-sidebar" :class="{ 'mobile-hidden': activeChat }">
         <div class="sidebar-header">
           <h3>Conversations</h3>
           <div class="chat-stats">{{ chats.length }} chats</div>
@@ -261,7 +261,7 @@
             class="message-wrapper"
             :class="{ sent: message.sender_id === currentUserId, received: message.sender_id !== currentUserId }"
           >
-            <div v-if="message.sender_id !== currentUserId" class="message-sender-name">
+            <div v-if="message.sender_id !== currentUserId && message.sender" class="message-sender-name">
               {{ message.sender.username }}
             </div>
             <div class="message-bubble">
@@ -278,15 +278,37 @@
 
               <!-- Translate Button -->
               <button
-                v-if="isChinese(message.text) && !getTranslation(message)"
-                @click="translateMessage(message.id)"
+                v-if="!getTranslation(message)"
+                @click="openLanguageSelector(message.id)"
                 class="translate-btn"
-                :disabled="translatingMessages.has(message.id)"
               >
-                <span v-if="translatingMessages.has(message.id)" class="loading-spinner"></span>
-                <span v-else class="translate-icon">🌐</span>
+                <span class="translate-icon">🌐</span>
                 <span class="translate-text">Translate</span>
               </button>
+
+              <!-- Language Selector Dropdown -->
+              <div
+                v-if="showLanguageSelector && messageToTranslate === message.id"
+                class="language-selector-dropdown"
+              >
+                <div class="language-selector-header">
+                  <span>Select Language</span>
+                  <button @click="closeLanguageSelector" class="close-dropdown-btn">×</button>
+                </div>
+                <div class="language-options">
+                  <button
+                    v-for="lang in availableLanguages"
+                    :key="lang.code"
+                    @click="translateWithLanguage(message.id, lang.code)"
+                    class="language-option"
+                    :disabled="translatingMessages.has(message.id)"
+                  >
+                    <span class="lang-flag">{{ lang.flag }}</span>
+                    <span class="lang-name">{{ lang.name }}</span>
+                    <span v-if="translatingMessages.has(message.id)" class="loading-spinner-small"></span>
+                  </button>
+                </div>
+              </div>
 
               <div class="message-meta">
                 <span class="message-time">{{ formatMessageTime(message.created_at) }}</span>
@@ -433,10 +455,12 @@ const currentUserId = computed(() => authStore.user?.id || 1)
 const messagesContainer = ref<HTMLElement | null>(null)
 const messageInput = ref<HTMLInputElement | null>(null)
 const loading = ref(false)
-const translationLanguage = ref<'ru' | 'en' | 'zh'>('ru')
+const translationLanguage = ref<'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko'>('ru')
 const translatingMessages = ref<Set<number>>(new Set())
 const pollingInterval = ref<number | null>(null)
 const showPracticeModal = ref(false)
+const showLanguageSelector = ref(false)
+const messageToTranslate = ref<number | null>(null)
 
 // Data
 const stories = ref<Story[]>([])
@@ -499,9 +523,12 @@ async function loadSuggestedUsers() {
 // Chat Functions
 async function openChat(chat: ChatRoom) {
   try {
+    console.log('=== Opening chat ===')
+    console.log('Chat:', chat)
     activeChat.value = chat
 
     const messagesData: any = await chatAPI.getMessages(chat.id)
+    console.log('Messages data:', messagesData)
     const messagesList = Array.isArray(messagesData) ? messagesData : (messagesData.results || [])
     messages.value = messagesList
     allMessages[chat.id] = messagesList
@@ -509,6 +536,7 @@ async function openChat(chat: ChatRoom) {
     await chatAPI.markMessagesRead(chat.id)
     chat.unread_count = 0
 
+    console.log('Chat opened successfully, messages loaded:', messagesList.length)
     scrollToBottom()
 
     // Focus input
@@ -523,29 +551,29 @@ async function openChat(chat: ChatRoom) {
 async function sendMessage() {
   if (!newMessage.value.trim() || !activeChat.value) return
 
+  const messageText = newMessage.value
+  newMessage.value = ''
+
   try {
-    const message = await chatAPI.sendMessage(
+    await chatAPI.sendMessage(
       activeChat.value.id,
-      newMessage.value,
+      messageText,
       { messageType: 'text' }
     )
 
-    messages.value.push(message)
+    // Refresh messages after sending (without await to not block)
+    refreshMessages()
 
-    if (!allMessages[activeChat.value.id]) {
-      allMessages[activeChat.value.id] = []
-    }
-    allMessages[activeChat.value.id].push(message)
-
-    activeChat.value.last_message_preview = message.text
-    activeChat.value.last_message_at = message.created_at
+    // Update chat preview
+    activeChat.value.last_message_preview = messageText
+    activeChat.value.last_message_at = new Date().toISOString()
     activeChat.value.last_message_sender = 'me'
 
-    newMessage.value = ''
     scrollToBottom(false)
-    await refreshMessages()
   } catch (error) {
     console.error('Error sending message:', error)
+    // Restore message text on error
+    newMessage.value = messageText
   }
 }
 
@@ -590,17 +618,21 @@ function stopPolling() {
 }
 
 // Translation Functions
-async function translateMessage(messageId: number) {
+async function translateMessage(messageId: number, targetLang: 'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko') {
   if (translatingMessages.value.has(messageId)) return
 
   try {
     translatingMessages.value.add(messageId)
-    const updatedMessage = await chatAPI.translateMessage(messageId, translationLanguage.value)
+    const updatedMessage = await chatAPI.translateMessage(messageId, targetLang)
 
     const index = messages.value.findIndex(m => m.id === messageId)
     if (index !== -1) {
       messages.value[index] = updatedMessage
     }
+
+    // Update translation language to the selected one
+    translationLanguage.value = targetLang
+    closeLanguageSelector()
   } catch (error: any) {
     console.error('Error translating message:', error)
     alert(`Translation failed: ${error.response?.data?.error || error.message}`)
@@ -609,26 +641,64 @@ async function translateMessage(messageId: number) {
   }
 }
 
-function isChinese(text: string): boolean {
-  const chineseRegex = /[\u4e00-\u9fff]/
-  return chineseRegex.test(text)
+function openLanguageSelector(messageId: number) {
+  messageToTranslate.value = messageId
+  showLanguageSelector.value = true
 }
+
+function closeLanguageSelector() {
+  showLanguageSelector.value = false
+  messageToTranslate.value = null
+}
+
+function translateWithLanguage(messageId: number, langCode: 'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko') {
+  translateMessage(messageId, langCode)
+}
+
+const availableLanguages = [
+  { code: 'ru', flag: '🇷🇺', name: 'Russian' },
+  { code: 'en', flag: '🇬🇧', name: 'English' },
+  { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
+  { code: 'kz', flag: '🇰🇿', name: 'Kazakh' },
+  { code: 'de', flag: '🇩🇪', name: 'German' },
+  { code: 'fr', flag: '🇫🇷', name: 'French' },
+  { code: 'es', flag: '🇪🇸', name: 'Spanish' },
+  { code: 'ja', flag: '🇯🇵', name: 'Japanese' },
+  { code: 'ko', flag: '🇰🇷', name: 'Korean' },
+]
 
 function getTranslation(message: ChatMessage): string | null {
   if (translationLanguage.value === 'ru') return message.translation_ru || null
   if (translationLanguage.value === 'en') return message.translation_en || null
   if (translationLanguage.value === 'zh') return message.translation_zh || null
+  if (translationLanguage.value === 'kz') return message.translation_kz || null
+  if (translationLanguage.value === 'de') return message.translation_de || null
+  if (translationLanguage.value === 'fr') return message.translation_fr || null
+  if (translationLanguage.value === 'es') return message.translation_es || null
+  if (translationLanguage.value === 'ja') return message.translation_ja || null
+  if (translationLanguage.value === 'ko') return message.translation_ko || null
   return null
 }
 
 function cycleLanguage() {
-  if (translationLanguage.value === 'ru') translationLanguage.value = 'en'
-  else if (translationLanguage.value === 'en') translationLanguage.value = 'zh'
-  else translationLanguage.value = 'ru'
+  const languages: Array<'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko'> = ['ru', 'en', 'zh', 'kz', 'de', 'fr', 'es', 'ja', 'ko']
+  const currentIndex = languages.indexOf(translationLanguage.value)
+  const nextIndex = (currentIndex + 1) % languages.length
+  translationLanguage.value = languages[nextIndex]
 }
 
 function getFlag(lang: string): string {
-  const flags: Record<string, string> = { ru: '🇷🇺', en: '🇬🇧', zh: '🇨🇳' }
+  const flags: Record<string, string> = {
+    ru: '🇷🇺',
+    en: '🇬🇧',
+    zh: '🇨🇳',
+    kz: '🇰🇿',
+    de: '🇩🇪',
+    fr: '🇫🇷',
+    es: '🇪🇸',
+    ja: '🇯🇵',
+    ko: '🇰🇷'
+  }
   return flags[lang] || '🌐'
 }
 
@@ -717,9 +787,28 @@ function viewMyStory() {
   console.log('View my story')
 }
 
-function startChatWith(user: SuggestedUser) {
-  console.log('Start chat with:', user)
-  closeNewChatModal()
+async function startChatWith(user: SuggestedUser) {
+  try {
+    // Create direct chat with user
+    const chatRoom = await chatAPI.createDirectChat(user.id)
+
+    // Add to chats list if not already there
+    const existingIndex = chats.value.findIndex(c => c.id === chatRoom.id)
+    if (existingIndex === -1) {
+      chats.value.unshift(chatRoom)
+    } else {
+      // Move to top
+      const [chat] = chats.value.splice(existingIndex, 1)
+      chats.value.unshift(chat)
+    }
+
+    // Close modal and open chat
+    closeNewChatModal()
+    await openChat(chatRoom)
+  } catch (error) {
+    console.error('Error starting chat:', error)
+    alert('Failed to start chat. Please try again.')
+  }
 }
 
 function goBack() {
@@ -788,7 +877,7 @@ function goBack() {
 
 .header-subtitle {
   font-size: 0.75rem;
-  color: var(--color-text-muted);
+  color: #A0A8C0;
   font-weight: 500;
 }
 
@@ -964,7 +1053,7 @@ function goBack() {
 
 .exercise-info p {
   font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  color: #B0B8C8;
   margin: 0 0 0.375rem 0;
 }
 
@@ -1106,10 +1195,11 @@ function goBack() {
   display: flex;
   flex-direction: column;
   background: var(--color-bg-secondary);
+  transition: transform 0.3s ease;
 }
 
-.chat-sidebar.hidden {
-  display: none;
+.chat-sidebar.mobile-hidden {
+  display: flex;
 }
 
 .sidebar-header {
@@ -1426,6 +1516,7 @@ function goBack() {
 .message-bubble {
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .message-text {
@@ -1524,6 +1615,104 @@ function goBack() {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--color-accent-primary);
+}
+
+/* Language Selector Dropdown */
+.language-selector-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 0.5rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  min-width: 200px;
+  z-index: 100;
+}
+
+.language-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--color-border-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.close-dropdown-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+}
+
+.close-dropdown-btn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.language-options {
+  display: flex;
+  flex-direction: column;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  width: 100%;
+  text-align: left;
+}
+
+.language-option:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+}
+
+.language-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lang-flag {
+  font-size: 1rem;
+}
+
+.lang-name {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--color-text-primary);
+}
+
+.loading-spinner-small {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-accent-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .message-meta {
@@ -1812,22 +2001,33 @@ function goBack() {
 /* Responsive */
 @media (max-width: 768px) {
   .chat-sidebar {
-    width: 100%;
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--color-bg-primary);
+    width: 100%;
+    height: 100%;
     z-index: 10;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .chat-sidebar.mobile-hidden {
+    transform: translateX(-100%);
   }
 
   .chat-room {
     width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 5;
   }
 
   .message-wrapper {
     max-width: 85%;
+  }
+
+  .mobile-back-btn {
+    display: flex !important;
   }
 }
 </style>

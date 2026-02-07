@@ -15,6 +15,13 @@ export const srsAPI = {
     return apiClient.get('/learning/srs/review-batch/', params)
   },
 
+  async getMistakesBatch(params?: {
+    batch_size?: number
+    hsk_level?: number
+  }): Promise<ReviewBatchResponse> {
+    return apiClient.get('/learning/srs/mistakes-batch/', params)
+  },
+
   async submitReview(data: SubmitReviewRequest): Promise<SubmitReviewResponse> {
     return apiClient.post('/learning/srs/submit-review/', data)
   },

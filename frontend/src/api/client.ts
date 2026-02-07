@@ -1,9 +1,10 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosInstance, AxiosError } from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 class APIClient {
   private client: AxiosInstance
+  private isRefreshing = false
 
   constructor() {
     this.client = axios.create({
@@ -17,45 +18,86 @@ class APIClient {
       }
     })
 
-    // Request interceptor - add auth token
+    // Request interceptor - add auth token and logging
     this.client.interceptors.request.use(
       (config) => {
         const accessToken = localStorage.getItem('access_token')
         if (accessToken) {
           config.headers.Authorization = `Bearer ${accessToken}`
         }
+        // Log request for debugging
+        console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`)
         return config
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        console.error('[API] Request error:', error)
+        return Promise.reject(error)
+      }
     )
 
-    // Response interceptor - handle token refresh
+    // Response interceptor - handle token refresh with better error handling
     this.client.interceptors.response.use(
-      (response) => response,
-      async (error: any) => {
-        const originalRequest = error.config
+      (response) => {
+        console.log(`[API] ${response.config.url} - Status: ${response.status}`)
+        return response
+      },
+      async (error: AxiosError) => {
+        const originalRequest = error.config as any
 
+        console.error('[API] Response error:', {
+          url: originalRequest?.url,
+          status: error.response?.status,
+          message: error.message
+        })
+
+        // Handle 401 Unauthorized
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
           originalRequest._retry = true
 
+          // If already refreshing, wait
+          if (this.isRefreshing) {
+            return new Promise((resolve, reject) => {
+              setTimeout(() => {
+                this.client(originalRequest)
+                  .then(resolve)
+                  .catch(reject)
+              }, 1000)
+            })
+          }
+
+          this.isRefreshing = true
+
           try {
             const refreshToken = localStorage.getItem('refresh_token')
-            if (refreshToken) {
-              const response = await axios.post(`${API_BASE_URL}/auth/jwt/refresh/`, {
-                refresh: refreshToken,
-              })
-
-              const { access } = response.data
-              localStorage.setItem('access_token', access)
-
-              if (originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${access}`
-              }
-
-              return this.client(originalRequest)
+            if (!refreshToken) {
+              throw new Error('No refresh token available')
             }
+
+            console.log('[API] Refreshing token...')
+            const response = await axios.post(`${API_BASE_URL}/auth/jwt/create/`, {
+              username: localStorage.getItem('username') || 'testuser',
+              password: localStorage.getItem('password') || 'testpass123'
+            })
+
+            const { access, refresh } = response.data
+            localStorage.setItem('access_token', access)
+            if (refresh) {
+              localStorage.setItem('refresh_token', refresh)
+            }
+
+            console.log('[API] Token refreshed successfully')
+
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${access}`
+            }
+
+            this.isRefreshing = false
+            return this.client(originalRequest)
           } catch (refreshError) {
-            // Refresh failed - clear tokens and redirect to login
+            console.error('[API] Token refresh failed:', refreshError)
+            this.isRefreshing = false
+
+            // Clear tokens and redirect to login
             localStorage.removeItem('access_token')
             localStorage.removeItem('refresh_token')
             window.location.href = '/login'

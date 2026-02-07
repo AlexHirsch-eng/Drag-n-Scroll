@@ -24,8 +24,8 @@
       </div>
 
       <div class="word-card">
-        <div class="hanzi">{{ currentWord.hanzi }}</div>
-        <div class="pinyin">{{ currentWord.pinyin }}</div>
+        <div class="hanzi clickable-word" @click="speakWord" title="Нажмите для озвучки">{{ currentWord.hanzi }}</div>
+        <div class="pinyin clickable-word" @click="speakWord" title="Нажмите для озвучки">{{ currentWord.pinyin }}</div>
 
         <div class="translations">
           <div class="translation">
@@ -90,20 +90,12 @@
         </button>
       </div>
     </div>
-
-    <!-- Complete Button -->
-    <button
-      v-if="allWordsCompleted"
-      @click="completeStep"
-      class="complete-btn"
-    >
-      COMPLETE STEP →
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   stepData: any
@@ -170,10 +162,13 @@ function selectOption(index: number) {
     time_spent_seconds: 0
   })
 
-  // Auto-advance
+  // Auto-advance after 1 second
   setTimeout(() => {
     if (currentWordIndex.value < totalWords.value - 1) {
       nextWord()
+    } else {
+      // Last word completed - submit and move to next step
+      completeStep()
     }
   }, 1000)
 }
@@ -194,17 +189,20 @@ function completeStep() {
 }
 
 function playAudio() {
-  if (currentWord.value?.audio_url) {
-    const audio = new Audio(currentWord.value.audio_url)
-    audio.play()
+  if (currentWord.value?.hanzi) {
+    speakChinese(currentWord.value.hanzi, 0.9)
   }
 }
 
 function playAudioSlow() {
-  if (currentWord.value?.audio_url) {
-    const audio = new Audio(currentWord.value.audio_url)
-    audio.playbackRate = 0.7
-    audio.play()
+  if (currentWord.value?.hanzi) {
+    speakChinese(currentWord.value.hanzi, 0.6)
+  }
+}
+
+function speakWord() {
+  if (currentWord.value?.hanzi) {
+    speakChinese(currentWord.value.hanzi, 0.9)
   }
 }
 
@@ -309,6 +307,19 @@ function repeatPronunciation() {
   font-size: 1.8rem;
   color: var(--color-text-secondary);
   margin-bottom: 2rem;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.05);
+  color: var(--color-accent-cyan);
 }
 
 .translations {

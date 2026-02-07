@@ -9,17 +9,17 @@
       <div class="logo-section">
         <h1 class="logo">
           <span class="dragon">龍</span>
-          ACCESS
+          ДОСТУП
         </h1>
         <div class="tech-line"></div>
-        <p class="subtitle">BEGIN YOUR JOURNEY</p>
+        <p class="subtitle">НАЧНИТЕ СВОЕ ПУТЕШЕСТВИЕ</p>
       </div>
 
       <div class="cyber-card">
         <div class="card-glow"></div>
         <h2 class="card-title">
           <span class="bracket">&lt;</span>
-          INITIALIZE
+          РЕГИСТРАЦИЯ
           <span class="bracket">/&gt;</span>
         </h2>
 
@@ -30,12 +30,12 @@
           </div>
 
           <div class="form-group">
-            <label>USERNAME</label>
+            <label>ПОЛЬЗОВАТЕЛЬ</label>
             <input
               v-model="form.username"
               type="text"
               required
-              placeholder="Choose your username"
+              placeholder="Придумайте имя пользователя"
               autocomplete="username"
               class="cyber-input"
             />
@@ -47,40 +47,40 @@
               v-model="form.email"
               type="email"
               required
-              placeholder="Enter your email"
+              placeholder="Введите ваш email"
               autocomplete="email"
               class="cyber-input"
             />
           </div>
 
           <div class="form-group">
-            <label>PASSWORD</label>
+            <label>ПАРОЛЬ</label>
             <input
               v-model="form.password"
               type="password"
               required
-              placeholder="Create password"
+              placeholder="Придумайте пароль"
               autocomplete="new-password"
               class="cyber-input"
             />
           </div>
 
           <div class="form-group">
-            <label>LEARNING LANGUAGE</label>
+            <label>ЯЗЫК ОБУЧЕНИЯ</label>
             <select v-model="form.learning_language" required class="cyber-select">
-              <option value="RU">RUSSIAN</option>
-              <option value="KZ">KAZAKH</option>
+              <option value="RU">РУССКИЙ</option>
+              <option value="KZ">КАЗАХСКИЙ</option>
             </select>
           </div>
 
           <button type="submit" :disabled="isLoading" class="submit-btn">
-            <span class="btn-text">{{ isLoading ? 'INITIALIZING...' : 'CREATE ACCOUNT' }}</span>
+            <span class="btn-text">{{ isLoading ? 'РЕГИСТРАЦИЯ...' : 'СОЗДАТЬ АККАУНТ' }}</span>
             <span class="btn-glitch"></span>
           </button>
 
           <div class="footer-link">
-            Already initialized?
-            <router-link to="/login" class="link">Login</router-link>
+            Уже есть аккаунт?
+            <router-link to="/login" class="link">Войти</router-link>
           </div>
         </form>
       </div>
@@ -135,6 +135,7 @@ async function handleRegister() {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  background: var(--color-bg-primary);
 }
 
 .background-effects {
@@ -221,18 +222,18 @@ async function handleRegister() {
   margin: 0 0 1rem 0;
   text-transform: uppercase;
   letter-spacing: 8px;
-  color: var(--color-text-primary);
+  color: #FFFFFF;
   text-shadow:
-    0 0 10px var(--color-accent-cyan),
-    0 0 20px var(--color-accent-cyan),
-    0 0 40px var(--color-accent-cyan);
+    0 0 10px rgba(0, 245, 255, 0.8),
+    0 0 20px rgba(0, 245, 255, 0.6),
+    0 0 40px rgba(0, 245, 255, 0.4);
 }
 
 .logo .dragon {
-  color: var(--color-accent-red);
+  color: #FF6B35;
   text-shadow:
-    0 0 20px var(--color-accent-red),
-    0 0 40px var(--color-accent-red);
+    0 0 20px rgba(255, 107, 53, 0.8),
+    0 0 40px rgba(255, 107, 53, 0.6);
 }
 
 .tech-line {
@@ -244,11 +245,11 @@ async function handleRegister() {
 }
 
 .subtitle {
-  color: var(--color-text-muted);
+  color: #E0E7FF;
   font-size: 0.9rem;
-  letter-spacing: 4px;
-  font-weight: 600;
-  margin: 0;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .cyber-card {
@@ -284,12 +285,14 @@ async function handleRegister() {
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 4px;
-  color: var(--color-text-primary);
+  color: #FFFFFF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
 }
 
 .card-title .bracket {
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   font-size: 1.2rem;
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
 }
 
 .cyber-form {
@@ -324,8 +327,9 @@ async function handleRegister() {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   margin-left: 0.25rem;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
 }
 
 .cyber-input,
@@ -334,9 +338,14 @@ async function handleRegister() {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  color: #FFFFFF;
   font-size: 1rem;
   transition: all 0.3s;
+}
+
+.cyber-select option {
+  background: #1a1a2e;
+  color: #FFFFFF;
 }
 
 .cyber-select {
@@ -359,7 +368,7 @@ async function handleRegister() {
 }
 
 .cyber-input::placeholder {
-  color: var(--color-text-muted);
+  color: #A0A8C0;
 }
 
 .submit-btn {
@@ -393,18 +402,19 @@ async function handleRegister() {
 .footer-link {
   text-align: center;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #B0B8C8;
   margin-top: 1rem;
 }
 
 .footer-link .link {
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s;
 }
 
 .footer-link .link:hover {
-  text-shadow: 0 0 10px var(--color-accent-cyan);
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
+  color: #FFFFFF;
 }
 </style>

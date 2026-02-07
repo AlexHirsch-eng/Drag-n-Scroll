@@ -13,13 +13,13 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="loading">
       <div class="warm-loader"></div>
-      <div class="loading-text">LOADING...</div>
+      <div class="loading-text">ЗАГРУЗКА...</div>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error">
       <p class="error-text">{{ error }}</p>
-      <button @click="loadMainScreen" class="retry-btn">RETRY</button>
+      <button @click="loadMainScreen" class="retry-btn">ПОВТОРИТЬ</button>
     </div>
 
     <!-- Main Content -->
@@ -34,7 +34,7 @@
           </div>
           <div class="day-selector">
             <button @click="changeDay(-1)" class="day-nav-btn" :disabled="currentDay <= 1">←</button>
-            <div class="day-number">DAY {{ currentDay }}</div>
+            <div class="day-number">ДЕНЬ {{ currentDay }}</div>
             <button @click="changeDay(1)" class="day-nav-btn" :disabled="currentDay >= 5">→</button>
           </div>
           <span class="day-title">{{ mainScreenData?.current_course_day.title }}</span>
@@ -42,7 +42,7 @@
         <div class="stats-row">
           <div class="stat-badge stat-primary">
             <span class="icon">⚡</span>
-            <span>{{ mainScreenData?.xp_total }}</span> XP
+            <span>{{ mainScreenData?.xp_total }}</span> СКРОЛЛЫ
           </div>
           <div class="stat-badge stat-pink">
             <span class="icon">🔥</span>
@@ -68,15 +68,15 @@
         >
           <div class="card-glow"></div>
           <div class="session-header">
-            <div class="session-label">SESSION A</div>
+            <div class="session-label">СЕССИЯ A</div>
             <div v-if="mainScreenData?.session_a?.is_completed" class="status-badge completed">
-              ✓ DONE
+              ✓ ГОТОВО
             </div>
             <div v-else-if="mainScreenData?.session_a" class="status-badge progress">
-              IN PROGRESS
+              В ПРОЦЕССЕ
             </div>
             <div v-else class="status-badge new">
-              NEW
+              НОВАЯ
             </div>
           </div>
 
@@ -97,13 +97,13 @@
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: getProgress('A') + '%' }"></div>
             </div>
-            <div class="progress-text">{{ getProgress('A') }}% Complete</div>
+            <div class="progress-text">{{ getProgress('A') }}% Выполнено</div>
           </div>
 
           <div class="start-btn">
-            <span v-if="!mainScreenData?.session_a">START SESSION →</span>
-            <span v-else-if="mainScreenData.session_a.is_completed">REPLAY SESSION →</span>
-            <span v-else>CONTINUE →</span>
+            <span v-if="!mainScreenData?.session_a">НАЧАТЬ СЕССИЮ →</span>
+            <span v-else-if="mainScreenData.session_a.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
+            <span v-else>ПРОДОЛЖИТЬ →</span>
           </div>
         </div>
 
@@ -118,15 +118,15 @@
         >
           <div class="card-glow"></div>
           <div class="session-header">
-            <div class="session-label">SESSION B</div>
+            <div class="session-label">СЕССИЯ B</div>
             <div v-if="mainScreenData?.session_b?.is_completed" class="status-badge completed">
-              ✓ DONE
+              ✓ ГОТОВО
             </div>
             <div v-else-if="mainScreenData?.session_b" class="status-badge progress">
-              IN PROGRESS
+              В ПРОЦЕССЕ
             </div>
             <div v-else class="status-badge new">
-              NEW
+              НОВАЯ
             </div>
           </div>
 
@@ -147,30 +147,22 @@
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: getProgress('B') + '%' }"></div>
             </div>
-            <div class="progress-text">{{ getProgress('B') }}% Complete</div>
+            <div class="progress-text">{{ getProgress('B') }}% Выполнено</div>
           </div>
 
           <div class="start-btn">
-            <span v-if="!mainScreenData?.session_b">START SESSION →</span>
-            <span v-else-if="mainScreenData.session_b.is_completed">REPLAY SESSION →</span>
-            <span v-else>CONTINUE →</span>
+            <span v-if="!mainScreenData?.session_b">НАЧАТЬ СЕССИЮ →</span>
+            <span v-else-if="mainScreenData.session_b.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
+            <span v-else>ПРОДОЛЖИТЬ →</span>
           </div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button @click="goToReview" class="action-btn action-purple">
-          <span class="icon">🔄</span>
-          <span>REVIEW ({{ mainScreenData?.due_for_review || 0 }})</span>
-        </button>
-        <button @click="goToVocab" class="action-btn action-pink">
-          <span class="icon">📖</span>
-          <span>VOCAB</span>
-        </button>
-        <button @click="goToProfile" class="action-btn action-tertiary">
-          <span class="icon">👤</span>
-          <span>PROFILE</span>
+      <!-- Back Button -->
+      <div class="back-section">
+        <button @click="goBack" class="back-btn">
+          <span class="icon">←</span>
+          <span>НАЗАД ДОМОЙ</span>
         </button>
       </div>
     </div>
@@ -195,11 +187,11 @@ const currentDay = ref(1)
 const currentHSKLevel = ref(1)
 
 const steps = [
-  { id: 1, number: 1, label: 'SRS Review', time: '2 min' },
-  { id: 2, number: 2, label: 'New Words', time: '8 min' },
-  { id: 3, number: 3, label: 'Grammar', time: '2 min' },
-  { id: 4, number: 4, label: 'Dialogue', time: '2 min' },
-  { id: 5, number: 5, label: 'Practice', time: '1 min' },
+  { id: 1, number: 1, label: 'SRS Повторение', time: '2 мин' },
+  { id: 2, number: 2, label: 'Новые слова', time: '8 мин' },
+  { id: 3, number: 3, label: 'Грамматика', time: '2 мин' },
+  { id: 4, number: 4, label: 'Диалог', time: '2 мин' },
+  { id: 5, number: 5, label: 'Практика', time: '1 мин' },
 ]
 
 const mainScreenData = computed(() => sessionStore.mainScreenData)
@@ -277,7 +269,8 @@ async function startSession(type: 'A' | 'B') {
       ? mainScreenData.value.session_a
       : mainScreenData.value.session_b
 
-    if (existingSession && !existingSession.is_completed) {
+    // Check if session exists and is not completed (current_step < 6)
+    if (existingSession && !existingSession.is_completed && existingSession.current_step < 6) {
       // Resume existing session
       await sessionStore.resumeSession(existingSession.id)
     } else {
@@ -304,7 +297,7 @@ function isStepCompleted(sessionType: 'A' | 'B', stepNumber: number): boolean {
     ? mainScreenData.value?.session_a
     : mainScreenData.value?.session_b
   if (!session) return false
-  return session.is_completed || session.current_step > stepNumber
+  return session.is_completed || session.current_step > stepNumber || session.current_step >= 6
 }
 
 function getProgress(sessionType: 'A' | 'B'): number {
@@ -315,16 +308,8 @@ function getProgress(sessionType: 'A' | 'B'): number {
   return Math.round((session.current_step / 6) * 100)
 }
 
-function goToReview() {
-  router.push('/review')
-}
-
-function goToVocab() {
-  router.push('/vocab')
-}
-
-function goToProfile() {
-  router.push('/profile')
+function goBack() {
+  router.push('/')
 }
 </script>
 
@@ -870,58 +855,38 @@ function goToProfile() {
   box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
 }
 
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+.back-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
-.action-btn {
+.back-btn {
   background: rgba(37, 29, 45, 0.9);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 107, 53, 0.15);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1.5rem 3rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 0.75rem;
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.3s;
-}
-
-.action-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
-}
-
-.action-purple:hover {
-  background: rgba(157, 78, 221, 0.15);
-  border-color: var(--color-accent-purple);
-  box-shadow: var(--shadow-purple);
-}
-
-.action-pink:hover {
-  background: rgba(255, 117, 143, 0.15);
-  border-color: var(--color-accent-pink);
-  box-shadow: var(--shadow-pink);
-}
-
-.action-tertiary:hover {
-  background: rgba(255, 230, 109, 0.15);
-  border-color: var(--color-accent-tertiary);
-  box-shadow: var(--shadow-warm);
-}
-
-.action-btn .icon {
-  font-size: 2rem;
-}
-
-.action-btn span:last-child {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   letter-spacing: 1px;
+}
+
+.back-btn:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 107, 53, 0.15);
+  border-color: var(--color-accent-primary);
+  box-shadow: var(--shadow-primary);
+}
+
+.back-btn .icon {
+  font-size: 1.5rem;
 }
 
 @keyframes pulse {

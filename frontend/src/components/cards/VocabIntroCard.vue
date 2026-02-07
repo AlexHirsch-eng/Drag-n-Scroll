@@ -7,8 +7,12 @@
 
     <div class="card-content">
       <div class="word-display">
-        <div class="hanzi">{{ stepContent.words?.[0]?.hanzi }}</div>
-        <div class="pinyin">{{ stepContent.words?.[0]?.pinyin }}</div>
+        <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+          {{ stepContent.words?.[0]?.hanzi }}
+        </div>
+        <div class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+          {{ stepContent.words?.[0]?.pinyin }}
+        </div>
       </div>
 
       <div class="translation">
@@ -18,7 +22,7 @@
 
       <button @click="playAudio" class="audio-btn">
         <span class="btn-icon">🔊</span>
-        <span class="btn-text">PLAY AUDIO</span>
+        <span class="btn-text">ПРОСЛУШАТЬ</span>
         <span class="btn-glow"></span>
       </button>
     </div>
@@ -26,7 +30,7 @@
     <div class="swipe-hint">
       <div class="swipe-indicator">
         <span class="arrow">▲</span>
-        <span>SWIPE UP TO CONTINUE</span>
+        <span>СВАЙП ВВЕРХ ДЛЯ ПРОДОЛЖЕНИЯ</span>
       </div>
     </div>
   </div>
@@ -35,6 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { LessonStep } from '@/types/api'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   step: LessonStep
@@ -47,9 +52,16 @@ const emit = defineEmits<{
 const stepContent = computed(() => props.step.content || {})
 
 function playAudio() {
-  const audioUrl = stepContent.value.words?.[0]?.audio_url
-  if (audioUrl) {
-    new Audio(audioUrl).play()
+  const hanzi = stepContent.value.words?.[0]?.hanzi
+  if (hanzi) {
+    speakChinese(hanzi)
+  }
+}
+
+function speakHanzi() {
+  const hanzi = stepContent.value.words?.[0]?.hanzi
+  if (hanzi) {
+    speakChinese(hanzi)
   }
 }
 </script>
@@ -141,6 +153,19 @@ function playAudio() {
 @keyframes textGlow {
   0%, 100% { text-shadow: 0 0 20px var(--color-accent-cyan), 0 0 40px var(--color-accent-cyan); }
   50% { text-shadow: 0 0 30px var(--color-accent-cyan), 0 0 60px var(--color-accent-cyan), 0 0 80px rgba(0, 229, 255, 0.5); }
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.05);
+  filter: brightness(1.2);
 }
 
 .pinyin {

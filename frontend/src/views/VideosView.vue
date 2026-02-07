@@ -3,22 +3,22 @@
     <!-- Loading State -->
     <div v-if="loading && videos.length === 0" class="loading-state">
       <div class="loading-spinner"></div>
-      <p class="loading-text">Loading videos...</p>
+      <p class="loading-text">Загрузка видео...</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!loading && videos.length === 0" class="empty-state">
       <div class="empty-icon">📹</div>
-      <h3 class="empty-title">No Videos Yet</h3>
-      <p class="empty-text">Be the first to create a video!</p>
+      <h3 class="empty-title">Пока нет видео</h3>
+      <p class="empty-text">Станьте первым, кто создаст видео!</p>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error-state">
       <div class="error-icon">⚠️</div>
-      <h3 class="error-title">Oops!</h3>
+      <h3 class="error-title">Ой!</h3>
       <p class="error-text">{{ error }}</p>
-      <button @click="loadVideos()" class="retry-btn">Retry</button>
+      <button @click="loadVideos()" class="retry-btn">Попробовать снова</button>
     </div>
 
     <!-- TikTok-style Video Feed -->
@@ -37,16 +37,25 @@
             :poster="video.thumbnail"
             loop
             playsinline
+            preload="none"
             @click="togglePlay"
             @ended="onVideoEnded"
             @timeupdate="onTimeUpdate"
+            @waiting="onVideoWaiting"
+            @canplay="onVideoCanPlay"
             class="video-element"
             :class="{ 'video-hidden': currentVideoIndex !== index }"
             @error="onVideoError"
           ></video>
 
+          <!-- Loading indicator for current video -->
+          <div v-if="videoLoading && currentVideoIndex === index" class="video-loading-overlay">
+            <div class="video-loading-spinner"></div>
+            <p class="video-loading-text">Загрузка...</p>
+          </div>
+
           <!-- Play/Pause Overlay - Only show for current video -->
-          <div v-if="!isPlaying && currentVideoIndex === index" class="play-overlay">
+          <div v-if="!isPlaying && currentVideoIndex === index && !videoLoading" class="play-overlay">
             <div class="play-icon">▶</div>
           </div>
 
@@ -63,12 +72,12 @@
           <!-- Top Bar -->
           <div class="top-bar">
             <button @click="goBack" class="back-btn">←</button>
-            <h3 class="section-title">VIDEOS</h3>
+            <h3 class="section-title">ВИДЕО</h3>
             <div class="top-bar-actions">
               <button
                 @click="translationLanguage = translationLanguage === 'ru' ? 'en' : 'ru'"
                 class="lang-btn"
-                title="Switch translation language"
+                title="Переключить язык перевода"
               >
                 {{ translationLanguage === 'ru' ? '🇷🇺 RU' : '🇬🇧 EN' }}
               </button>
@@ -90,10 +99,10 @@
               v-model="searchQuery"
               @keyup.enter="performSearch"
               type="text"
-              placeholder="Search videos by hashtags..."
+              placeholder="Поиск видео по хэштегам..."
               class="search-input"
             />
-            <button @click="performSearch" class="search-submit-btn">Search</button>
+            <button @click="performSearch" class="search-submit-btn">Поиск</button>
           </div>
 
           <!-- Right Side Actions -->
@@ -113,13 +122,13 @@
             <!-- Share -->
             <button @click="shareVideo(video)" class="action-btn">
               <div class="action-icon">↪️</div>
-              <div class="action-count">Share</div>
+              <div class="action-count">Поделиться</div>
             </button>
 
             <!-- Save -->
             <button @click="toggleSave(video)" class="action-btn">
               <div class="action-icon">{{ video.is_saved ? '🔖' : '📑' }}</div>
-              <div class="action-count">{{ video.is_saved ? 'Saved' : 'Save' }}</div>
+              <div class="action-count">{{ video.is_saved ? 'Сохранено' : 'Сохранить' }}</div>
             </button>
           </div>
 
@@ -135,14 +144,14 @@
                   @click.stop="followUser(video.creator.id)"
                   class="follow-btn"
                 >
-                  Follow
+                  Подписаться
                 </button>
                 <button
                   v-else
                   @click.stop="unfollowUser(video.creator.id)"
                   class="following-btn"
                 >
-                  Following
+                  Подписки
                 </button>
               </div>
             </div>
@@ -157,7 +166,7 @@
 
             <!-- Lesson Info -->
             <div v-if="video.lesson" class="lesson-info">
-              <div class="lesson-badge">📚 LESSON {{ video.lesson.lesson_number }}</div>
+              <div class="lesson-badge">📚 УРОК {{ video.lesson.lesson_number }}</div>
               <div class="lesson-title">{{ video.lesson.title }}</div>
               <div class="lesson-words">
                 <span v-for="word in video.lesson.words" :key="word" class="lesson-word">
@@ -170,7 +179,7 @@
             <div class="music-info">
               <div class="music-icon">🎵</div>
               <div class="music-text">
-                <div class="music-title">{{ video.music_title || 'Original Sound' }}</div>
+                <div class="music-title">{{ video.music_title || 'Оригинальный звук' }}</div>
                 <div class="music-artist">@{{ video.creator.username }}</div>
               </div>
             </div>
@@ -183,7 +192,7 @@
     <div v-if="showCommentsModal" class="comments-modal" @click="closeComments">
       <div class="comments-content" @click.stop>
         <div class="comments-header">
-          <h3>{{ commentsCount }} Comments</h3>
+          <h3>{{ commentsCount }} Комментариев</h3>
           <button @click="closeComments" class="close-btn">✕</button>
         </div>
 
@@ -212,10 +221,10 @@
                   class="comment-action translate-action"
                   :disabled="translatingComments.has(comment.id)"
                 >
-                  {{ translatingComments.has(comment.id) ? '⏳' : '🌐' }} Translate
+                  {{ translatingComments.has(comment.id) ? '⏳' : '🌐' }} Перевести
                 </button>
                 <button @click="toggleReply(comment.id)" class="comment-action">
-                  Reply
+                  Ответить
                 </button>
               </div>
               <!-- Reply Input -->
@@ -224,14 +233,14 @@
                   v-model="replyText"
                   @keyup.enter="postReply(comment.id)"
                   type="text"
-                  placeholder="Write a reply..."
+                  placeholder="Написать ответ..."
                   class="reply-field"
                 />
                 <div class="reply-actions">
                   <button @click="postReply(comment.id)" class="send-reply-btn" :disabled="!replyText.trim()">
-                    Reply
+                    Ответить
                   </button>
-                  <button @click="cancelReply" class="cancel-reply-btn">Cancel</button>
+                  <button @click="cancelReply" class="cancel-reply-btn">Отмена</button>
                 </div>
               </div>
             </div>
@@ -244,12 +253,12 @@
             v-model="newComment"
             @keyup.enter="postComment"
             type="text"
-            placeholder="Add a comment..."
+            placeholder="Добавить комментарий..."
             class="comment-field"
             :disabled="postingComment"
           />
           <button @click="postComment" class="send-btn" :disabled="!newComment.trim() || postingComment">
-            {{ postingComment ? 'Sending...' : 'Send' }}
+            {{ postingComment ? 'Отправка...' : 'Отправить' }}
           </button>
         </div>
       </div>
@@ -302,11 +311,12 @@ const videoPlayer = ref<HTMLVideoElement | null>(null)
 const videoPlayers = ref<(HTMLVideoElement | null)[]>([])
 const currentVideoId = ref<number | null>(null)
 const loading = ref(false)
+const videoLoading = ref(false)  // Track current video loading state
 const error = ref<string | null>(null)
 
 // Categories
 const categories = ref([
-  { id: 'all', name: '🔥 For You' }
+  { id: 'all', name: '🔥 Для вас' }
 ])
 
 // Load categories on mount
@@ -338,7 +348,7 @@ async function loadCategories() {
   try {
     const categoriesData = await videoAPI.getCategories()
     categories.value = [
-      { id: 'all', name: '🔥 For You' },
+      { id: 'all', name: '🔥 Для вас' },
       ...categoriesData.map((cat: any) => ({
         id: cat.id.toString(),
         name: `${cat.icon || '📹'} ${cat.name}`
@@ -360,7 +370,7 @@ async function loadVideos(page = 1) {
 
     let response
     if (selectedCategory.value === 'all') {
-      response = await videoAPI.getFeed(page, 50)  // Increased from 20 to 50
+      response = await videoAPI.getFeed(page, 10)  // Load only 10 videos at a time for better performance
     } else if (selectedCategory.value === 'trending') {
       response = { videos: await videoAPI.getTrending(), page: 1, has_more: false, total: 0 }
     } else {
@@ -387,7 +397,7 @@ async function loadVideos(page = 1) {
     console.log('Videos in array:', videos.value.map((v, i) => `${i}: ${v.id} - ${v.url ? 'has URL' : 'NO URL'}`))
   } catch (err: any) {
     console.error('Error loading videos:', err)
-    error.value = err.message || 'Failed to load videos. Please try again.'
+    error.value = err.message || 'Не удалось загрузить видео. Попробуйте снова.'
     videos.value = []
   } finally {
     loading.value = false
@@ -437,16 +447,25 @@ function playCurrentVideo() {
   console.log('Video players array length:', videoPlayers.value.length)
   console.log('Non-null players:', videoPlayers.value.map((p, i) => `${i}:${p ? '✓' : '✗'}`).join(', '))
 
-  // Pause all videos first
+  // Pause all videos and unload non-visible ones
   videoPlayers.value.forEach((player, index) => {
     if (player && typeof player.pause === 'function') {
-      if (index !== currentVideoIndex.value) {
-        console.log(`Pausing video at index ${index}`)
-        player.pause()
-        player.currentTime = 0
+      console.log(`Pausing video at index ${index}`)
+      player.pause()
+      player.currentTime = 0
+
+      // Unload videos that are not current or adjacent (to save bandwidth)
+      const isAdjacent = Math.abs(index - currentVideoIndex.value) <= 1
+      if (!isAdjacent) {
+        player.setAttribute('preload', 'none')
+      } else {
+        player.setAttribute('preload', 'auto')  // Preload current and adjacent videos
       }
     }
   })
+
+  // Show loading indicator
+  videoLoading.value = true
 
   // Small delay to ensure DOM is updated
   setTimeout(() => {
@@ -456,18 +475,24 @@ function playCurrentVideo() {
       console.log('Playing video:', videos.value[currentVideoIndex.value]?.description?.substring(0, 30))
       console.log('Video src:', currentPlayer.src)
 
+      // Set preload to auto for current video
+      currentPlayer.setAttribute('preload', 'auto')
+
       // Play with volume to check if it works
       currentPlayer.volume = 0.5
       currentPlayer.play().then(() => {
         isPlaying.value = true
         videoPlayer.value = currentPlayer
+        videoLoading.value = false  // Hide loading indicator when playing
         console.log('✓ Video started successfully')
       }).catch(err => {
         console.error('✗ Error playing video:', err)
         isPlaying.value = false
+        videoLoading.value = false
       })
     } else {
       console.warn('✗ No video player found for index:', currentVideoIndex.value)
+      videoLoading.value = false
     }
   }, 100)
 }
@@ -504,6 +529,17 @@ function onVideoError(event: Event) {
   if (video.error) {
     console.error('Video error code:', video.error.code)
   }
+  videoLoading.value = false
+}
+
+function onVideoWaiting() {
+  console.log('Video is waiting for data...')
+  videoLoading.value = true
+}
+
+function onVideoCanPlay() {
+  console.log('Video can play now')
+  videoLoading.value = false
 }
 
 function handleWheel(event: WheelEvent) {
@@ -591,7 +627,7 @@ async function postComment() {
     }
   } catch (error) {
     console.error('Error posting comment:', error)
-    alert('Failed to post comment. Please try again.')
+    alert('Не удалось отправить комментарий. Попробуйте снова.')
   } finally {
     postingComment.value = false
   }
@@ -674,7 +710,7 @@ async function postReply(parentCommentId: number) {
     }
   } catch (error) {
     console.error('Error posting reply:', error)
-    alert('Failed to post reply. Please try again.')
+    alert('Не удалось отправить ответ. Попробуйте снова.')
   }
 }
 
@@ -685,12 +721,12 @@ async function shareVideo(video: Video) {
     if (navigator.share) {
       await navigator.share({
         title: video.description,
-        text: `Check out this Chinese learning video!`,
+        text: `Посмотрите это видео для изучения китайского!`,
         url: window.location.href
       })
     } else {
       await navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
+      alert('Ссылка скопирована в буфер обмена!')
     }
   } catch (error) {
     console.error('Error sharing video:', error)
@@ -813,14 +849,27 @@ async function performSearch() {
     playCurrentVideo()
   } catch (err: any) {
     console.error('Error searching videos:', err)
-    error.value = err.message || 'Failed to search videos. Please try again.'
+    error.value = err.message || 'Не удалось выполнить поиск. Попробуйте снова.'
   } finally {
     loading.value = false
   }
 }
 
-function goToUserProfile(userId: number) {
-  router.push(`/profile/${userId}`)
+function goToUserProfile(userId: number | undefined) {
+  console.log('[Profile Click] Clicked! User ID:', userId, 'Type:', typeof userId)
+
+  if (!userId) {
+    console.error('[Profile Click] Invalid user ID:', userId)
+    return
+  }
+
+  try {
+    const route = `/profile/${userId}`
+    console.log('[Profile Click] Navigating to:', route)
+    router.push(route)
+  } catch (error) {
+    console.error('[Profile Click] Navigation error:', error)
+  }
 }
 </script>
 
@@ -887,6 +936,34 @@ function goToUserProfile(userId: number) {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
+.video-loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.video-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-accent-cyan, #00e5ff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.video-loading-text {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
 .progress-bar-container {
   position: absolute;
   bottom: 0;
@@ -916,6 +993,12 @@ function goToUserProfile(userId: number) {
   bottom: 0;
   pointer-events: none;
   z-index: 5;
+}
+
+.top-bar,
+.side-actions,
+.bottom-info {
+  pointer-events: all !important;
 }
 
 .top-bar {
@@ -1066,6 +1149,7 @@ function goToUserProfile(userId: number) {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
   pointer-events: all;
+  z-index: 10;
 }
 
 .user-info {
@@ -1088,6 +1172,8 @@ function goToUserProfile(userId: number) {
   cursor: pointer;
   transition: all 0.3s;
   pointer-events: all;
+  z-index: 11;
+  position: relative;
 }
 
 .avatar:hover {
@@ -1105,10 +1191,13 @@ function goToUserProfile(userId: number) {
 .username {
   font-weight: 600;
   font-size: 0.95rem;
+  color: #FFFFFF;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   transition: all 0.3s;
   pointer-events: all;
+  z-index: 11;
+  position: relative;
 }
 
 .username:hover {

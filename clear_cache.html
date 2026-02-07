@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache & Reload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        h1 { font-size: 2em; margin-bottom: 20px; }
+        p { font-size: 1.2em; margin: 10px 0; }
+        .button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .button:hover { transform: scale(1.05); }
+        .success { color: #4ade80; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Clearing Browser Cache...</h1>
+
+    <div id="status">
+        <p>Step 1: Clearing localStorage...</p>
+        <p>Step 2: Clearing sessionStorage...</p>
+        <p>Step 3: Reloading application...</p>
+    </div>
+
+    <script>
+        // Clear all localStorage
+        localStorage.clear();
+        console.log('✓ localStorage cleared');
+
+        // Clear all sessionStorage
+        sessionStorage.clear();
+        console.log('✓ sessionStorage cleared');
+
+        // Update status
+        document.getElementById('status').innerHTML = `
+            <p class="success">✓ Cache cleared successfully!</p>
+            <p class="success">✓ Ready to reload...</p>
+        `;
+
+        // Reload after 2 seconds
+        setTimeout(() => {
+            window.location.href = 'http://localhost:5173';
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -43,6 +43,6 @@ export const authAPI = {
   },
 
   async getUserById(userId: number): Promise<User> {
-    return apiClient.get(`/auth/users/${userId}/`)
+    return apiClient.get(`/user/by-id/${userId}/`)
   },
 }

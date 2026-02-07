@@ -15,7 +15,7 @@ urlpatterns = [
     path('api/vocab/', include('vocab.urls')),
     path('api/course/', include('course.urls')),
     path('api/video/', include('video_app.urls')),
-    path('api/chat/', include('chat_app.urls')),
+    path('api/chat/', include('chat.urls')),
 ]
 
 # Serve media files in development

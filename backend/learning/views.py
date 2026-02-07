@@ -23,7 +23,7 @@ from .serializers import (
     Step4DataSerializer, Step5DataSerializer, AnswerResponseSerializer,
     SessionSummaryResponseSerializer, MainScreenSerializer
 )
-from .srs import update_srs, get_srs_batch, get_due_count, initialize_word_progress
+from .srs import update_srs, get_srs_batch, get_due_count, initialize_word_progress, get_mistakes_batch
 
 
 # ============================================================================
@@ -71,6 +71,11 @@ def main_screen(request):
             return Response({'error': 'Invalid day number'}, status=status.HTTP_400_BAD_REQUEST)
     else:
         day_number = user_progress.current_day
+        # Reset to day 5 if user is beyond available days (max 5 days per course)
+        if day_number > 5:
+            day_number = 5
+            user_progress.current_day = 5
+            user_progress.save()
 
     # Get course
     course = Course.objects.filter(
@@ -832,14 +837,21 @@ def submit_step_4(request):
     explanation = ''
     if dialogue:
         # Check if selected option is correct
-        if 0 <= selected_option_index < len(dialogue.options):
-            is_correct = dialogue.options[selected_option_index].get('is_correct', False)
+        try:
+            if selected_option_index is not None and 0 <= selected_option_index < len(dialogue.options):
+                is_correct = dialogue.options[selected_option_index].get('is_correct', False)
+        except Exception as e:
+            print(f"Error checking dialogue option: {e}")
 
         # Get explanation based on user language
-        if user.profile.preferred_language == 'kz':
-            explanation = dialogue.explanation_kz
-        else:
-            explanation = dialogue.explanation_ru
+        try:
+            if user.profile.preferred_language == 'kz':
+                explanation = dialogue.explanation_kz or ''
+            else:
+                explanation = dialogue.explanation_ru or ''
+        except Exception as e:
+            print(f"Error getting explanation: {e}")
+            explanation = ''
 
     # Create step progress record
     StepProgress.objects.create(
@@ -925,6 +937,157 @@ def submit_step_5(request):
         'correct_answer': {'target_hanzi': exercise.target_hanzi} if exercise else None,
         'next_step': None,  # Session complete
         'session': LearningSessionSerializer(session).data
+    }
+
+    return Response(response_data)
+
+
+# ============================================================================
+# SRS REVIEW API
+# ============================================================================
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def srs_review_batch(request):
+    """
+    Get a batch of words due for SRS review
+    Query params:
+    - batch_size: number of words (default: 10)
+    - hsk_level: optional HSK level filter
+    """
+    user = request.user
+    batch_size = int(request.GET.get('batch_size', 10))
+    hsk_level = int(request.GET.get('hsk_level')) if 'hsk_level' in request.GET else None
+
+    word_progress_list = get_srs_batch(user, batch_size=batch_size, hsk_level=hsk_level)
+
+    words_data = []
+    for wp in word_progress_list:
+        words_data.append({
+            'id': wp.word.id,
+            'hanzi': wp.word.hanzi,
+            'pinyin': wp.word.pinyin,
+            'translation_ru': wp.word.translation_ru,
+            'translation_kz': wp.word.translation_kz,
+            'audio_url': wp.word.audio_url,
+            'srs_level': wp.srs_level,
+            'total_reviews': wp.total_reviews,
+            'accuracy': wp.accuracy
+        })
+
+    response_data = {
+        'batch_id': str(uuid.uuid4()),
+        'batch_number': 1,
+        'total_batches': 1,
+        'words': words_data,
+        'total_due': len(words_data)
+    }
+
+    return Response(response_data)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def srs_mistakes_batch(request):
+    """
+    Get a batch of words user struggled with (mistakes review)
+    Query params:
+    - batch_size: number of words (default: 20)
+    - hsk_level: optional HSK level filter
+    """
+    user = request.user
+    batch_size = int(request.GET.get('batch_size', 20))
+    hsk_level = int(request.GET.get('hsk_level')) if 'hsk_level' in request.GET else None
+
+    word_progress_list = get_mistakes_batch(user, batch_size=batch_size, hsk_level=hsk_level)
+
+    words_data = []
+    for wp in word_progress_list:
+        words_data.append({
+            'id': wp.word.id,
+            'hanzi': wp.word.hanzi,
+            'pinyin': wp.word.pinyin,
+            'translation_ru': wp.word.translation_ru,
+            'translation_kz': wp.word.translation_kz,
+            'audio_url': wp.word.audio_url,
+            'srs_level': wp.srs_level,
+            'total_reviews': wp.total_reviews,
+            'accuracy': wp.accuracy,
+            'correct_reviews': wp.correct_reviews
+        })
+
+    response_data = {
+        'batch_id': str(uuid.uuid4()),
+        'batch_number': 1,
+        'total_batches': 1,
+        'words': words_data,
+        'total_due': len(words_data)
+    }
+
+    return Response(response_data)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def srs_submit_review(request):
+    """
+    Submit SRS review results
+    Body:
+    {
+        "batch_id": "uuid",
+        "reviews": [
+            {"word_id": 1, "quality": 4, "time_spent_seconds": 5},
+            ...
+        ]
+    }
+    """
+    from vocab.models import WordProgress
+
+    user = request.user
+    data = request.data
+    batch_id = data.get('batch_id')
+    reviews = data.get('reviews', [])
+
+    if not reviews:
+        return Response(
+            {'error': 'No reviews provided'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    updated_words = []
+    reviews_processed = 0
+
+    for review in reviews:
+        word_id = review.get('word_id')
+        quality = review.get('quality')
+        time_spent_seconds = review.get('time_spent_seconds', 0)
+
+        try:
+            word_progress = WordProgress.objects.get(user=user, word_id=word_id)
+            old_srs_level = word_progress.srs_level
+            old_interval = word_progress.interval_days
+
+            update_srs(word_progress, quality, time_spent_seconds)
+
+            updated_words.append({
+                'word_id': word_id,
+                'old_srs_level': old_srs_level,
+                'new_srs_level': word_progress.srs_level,
+                'old_interval': old_interval,
+                'new_interval': word_progress.interval_days,
+                'next_review_date': word_progress.next_review_date.isoformat() if word_progress.next_review_date else None
+            })
+            reviews_processed += 1
+        except WordProgress.DoesNotExist:
+            continue
+
+    # Calculate XP earned
+    xp_earned = sum(r.get('quality', 0) for r in reviews if r.get('quality', 0) >= 3) * 2
+
+    response_data = {
+        'reviews_processed': reviews_processed,
+        'words_updated': updated_words,
+        'xp_earned': xp_earned
     }
 
     return Response(response_data)

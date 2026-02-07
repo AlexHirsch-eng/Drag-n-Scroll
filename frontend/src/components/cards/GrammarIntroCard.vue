@@ -7,8 +7,8 @@
 
     <div class="card-content">
       <div class="card-header">
-        <h3><span class="icon">龍</span>GRAMMAR</h3>
-        <span class="rule-count">{{ stepContent.rules?.length || 0 }} RULES</span>
+        <h3><span class="icon">龍</span>ГРАММАТИКА</h3>
+        <span class="rule-count">{{ stepContent.rules?.length || 0 }} ПРАВИЛ</span>
       </div>
 
       <div class="rules-container">
@@ -31,21 +31,21 @@
           </div>
 
           <div v-if="rule.examples && rule.examples.length > 0" class="examples-section">
-            <h5>EXAMPLES</h5>
+            <h5>ПРИМЕРЫ</h5>
             <div
               v-for="(example, index) in rule.examples"
               :key="index"
               class="example-item"
             >
-              <div class="example-hanzi">{{ example.sentence_hanzi }}</div>
-              <div class="example-pinyin">{{ example.sentence_pinyin }}</div>
+              <div class="example-hanzi clickable-word" @click="speakHanzi(example.sentence_hanzi)" title="Нажмите для озвучки">{{ example.sentence_hanzi }}</div>
+              <div class="example-pinyin clickable-word" @click="speakHanzi(example.sentence_hanzi)" title="Нажмите для озвучки">{{ example.sentence_pinyin }}</div>
               <div class="example-translation">
                 <span class="ru">{{ example.translation_ru }}</span>
                 <span class="kz">{{ example.translation_kz }}</span>
               </div>
               <button
-                v-if="example.audio_url"
-                @click="playAudio(example.audio_url)"
+                v-if="example.sentence_hanzi"
+                @click="playAudio(example.sentence_hanzi)"
                 class="audio-btn"
               >
                 🔊
@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { LessonStep } from '@/types/api'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   step: LessonStep
@@ -72,9 +73,14 @@ const props = defineProps<{
 
 const stepContent = computed(() => props.step.content || {})
 
-function playAudio(url: string) {
-  const audio = new Audio(url)
-  audio.play()
+function playAudio(text: string) {
+  speakChinese(text)
+}
+
+function speakHanzi(text: string) {
+  if (text) {
+    speakChinese(text)
+  }
 }
 </script>
 
@@ -297,6 +303,19 @@ function playAudio(url: string) {
   color: var(--color-text-secondary);
   margin-bottom: 0.75rem;
   letter-spacing: 1px;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .example-translation {

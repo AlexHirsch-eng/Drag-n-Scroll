@@ -13,7 +13,8 @@
       <!-- Logo Section -->
       <div class="logo-section">
         <h1 class="logo">
-          <span class="dragon">龍</span>
+          <img src="/src/images/favicon.ico" alt="Drag'n'Scroll Logo" class="logo-image" @error="handleImageError">
+          <span class="dragon" v-show="!imageLoaded">龍</span>
           <span class="logo-text text-gradient-rainbow">DRAG'N'SCROLL</span>
         </h1>
         <p class="tagline">
@@ -32,30 +33,30 @@
             <span class="icon">⚡</span>
             <span class="title-text text-gradient-cyan">INITIALIZE</span>
           </h2>
-          <p class="subtitle">Begin your journey into Chinese mastery</p>
+          <p class="subtitle">Начните свое путешествие в изучении китайского</p>
 
           <div class="features-grid">
             <div class="feature-item">
               <div class="feature-icon glow-pink">📱</div>
-              <div class="feature-text">TikTok Interface</div>
+              <div class="feature-text">Интерфейс TikTok</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon glow-cyan">🧠</div>
-              <div class="feature-text">AI-Powered SRS</div>
+              <div class="feature-text">SRS на базе ИИ</div>
             </div>
             <div class="feature-item">
               <div class="feature-icon glow-yellow">⚡</div>
-              <div class="feature-text">Fast Learning</div>
+              <div class="feature-text">Быстрое обучение</div>
             </div>
           </div>
 
           <div class="buttons">
             <button @click="goToLogin" class="neon-button neon-button-pink">
-              <span class="btn-text">LOGIN</span>
+              <span class="btn-text">ВОЙТИ</span>
               <span class="btn-glitch"></span>
             </button>
             <button @click="goToRegister" class="neon-button">
-              <span class="btn-text">REGISTER</span>
+              <span class="btn-text">РЕГИСТРАЦИЯ</span>
               <span class="btn-glitch"></span>
             </button>
           </div>
@@ -68,24 +69,27 @@
           <div class="card-glow"></div>
           <h2 class="cyber-title">
             <span class="icon">🎮</span>
-            <span class="title-text text-gradient-rainbow">WELCOME BACK</span>
+            <span class="title-text text-gradient-rainbow">ДОБРО ПОЖАЛОВАТЬ</span>
           </h2>
-          <p class="subtitle">{{ user?.username }} is ready to train</p>
+          <p class="subtitle">{{ user?.username }} готов к тренировке</p>
 
           <div class="stats-grid">
-            <div class="stat-card stat-pink">
-              <div class="stat-value text-glow-pink">{{ progress?.total_xp || 0 }}</div>
-              <div class="stat-label">TOTAL XP</div>
+            <div class="stat-card stat-coins">
+              <div class="stat-value-coins">
+                <img src="/src/images/coin.png" alt="coin" class="coin-icon">
+                <span class="coin-amount">{{ userCoins }}</span>
+              </div>
+              <div class="stat-label">TOTAL SCROLLS</div>
               <div class="stat-bar"></div>
             </div>
             <div class="stat-card stat-cyan">
               <div class="stat-value text-glow-cyan">{{ progress?.streak_days || 0 }}</div>
-              <div class="stat-label">STREAK</div>
+              <div class="stat-label">СЕРИЯ</div>
               <div class="stat-bar"></div>
             </div>
             <div class="stat-card stat-yellow">
               <div class="stat-value text-glow-yellow">{{ progress?.current_day || 1 }}</div>
-              <div class="stat-label">DAY</div>
+              <div class="stat-label">ДЕНЬ</div>
               <div class="stat-bar"></div>
             </div>
           </div>
@@ -93,30 +97,39 @@
           <div class="actions">
             <button @click="continueLearning" class="neon-button neon-button-large">
               <span class="btn-icon">▶</span>
-              <span class="btn-text">CONTINUE TRAINING</span>
+              <span class="btn-text">ПРОДОЛЖИТЬ ОБУЧЕНИЕ</span>
+              <span class="btn-glitch"></span>
+            </button>
+
+            <button @click="goToShop" class="neon-button neon-button-large neon-button-shop">
+              <span class="btn-icon">🛒</span>
+              <span class="btn-text">МАГАЗИН</span>
               <span class="btn-glitch"></span>
             </button>
 
             <div class="action-buttons">
               <button @click="goToVocab" class="action-card">
                 <span class="card-icon">📚</span>
-                <span class="card-text">VOCAB</span>
+                <span class="card-text">СЛОВАРЬ</span>
               </button>
               <button @click="goToReview" class="action-card">
                 <span class="card-icon">🔄</span>
-                <span class="card-text">REVIEW</span>
+                <span class="card-text">ПОВТОРЕНИЕ</span>
               </button>
               <button @click="goToVideos" class="action-card action-card-highlight">
                 <span class="card-icon">🎬</span>
-                <span class="card-text">VIDEOS</span>
+                <span class="card-text">ВИДЕО</span>
               </button>
               <button @click="goToChat" class="action-card action-card-highlight">
                 <span class="card-icon">💬</span>
-                <span class="card-text">CHAT</span>
+                <span class="card-text">ЧАТ</span>
               </button>
               <button @click="goToProfile" class="action-card">
                 <span class="card-icon">👤</span>
-                <span class="card-text">PROFILE</span>
+                <span class="card-text">ПРОФИЛЬ</span>
+              </button>
+              <button @click="goToAIChat" class="action-card action-card-highlight">
+                <img src="/src/images/ai.png" alt="AI" class="ai-icon">
               </button>
             </div>
           </div>
@@ -127,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -137,10 +150,17 @@ const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 const progress = computed(() => authStore.user?.progress)
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+const imageLoaded = ref(true)
+const userCoins = ref(1250)
 
 onMounted(async () => {
   await authStore.loadUser()
 })
+
+function handleImageError() {
+  imageLoaded.value = false
+  console.log('Logo image not found, using default dragon symbol')
+}
 
 function goToLogin() {
   router.push('/login')
@@ -172,6 +192,14 @@ function goToVideos() {
 
 function goToChat() {
   router.push('/chat')
+}
+
+function goToAIChat() {
+  router.push('/ai-chat')
+}
+
+function goToShop() {
+  router.push('/shop')
 }
 </script>
 
@@ -377,9 +405,24 @@ function goToChat() {
   text-transform: uppercase;
   letter-spacing: 4px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.logo-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px var(--color-neon-red));
+  animation: neonPulse 3s ease-in-out infinite;
+  transition: all 0.3s;
+}
+
+.logo-image:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 30px var(--color-neon-red));
 }
 
 .logo .dragon {
@@ -391,6 +434,11 @@ function goToChat() {
     0 0 60px var(--color-neon-red),
     0 0 80px rgba(255, 0, 60, 0.5);
   animation: neonPulse 3s ease-in-out infinite;
+  display: none;
+}
+
+.logo .dragon[v-show="true"] {
+  display: block;
 }
 
 .logo-text {
@@ -655,6 +703,19 @@ function goToChat() {
   box-shadow: var(--shadow-glow-pink);
 }
 
+.neon-button-shop {
+  border-color: #FFD700;
+  color: #FFD700;
+}
+
+.neon-button-shop::before {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.neon-button-shop:hover {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
 .neon-button-large {
   width: 100%;
   padding: 1.75rem;
@@ -709,6 +770,52 @@ function goToChat() {
 
 .stat-pink::before {
   background: var(--gradient-pink);
+}
+
+.stat-coins {
+  border-color: #FFD700;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.05));
+}
+
+.stat-coins::before {
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+}
+
+.stat-coins:hover {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  transform: translateY(-4px);
+}
+
+.stat-value-coins {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+}
+
+.coin-icon {
+  width: 51px;
+  height: 51px;
+  object-fit: contain;
+  animation: coinSpin 3s linear infinite;
+}
+
+@keyframes coinSpin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.coin-amount {
+  color: #FFD700;
+  font-size: 2.5rem;
 }
 
 .stat-pink:hover {
@@ -838,9 +945,23 @@ function goToChat() {
 .card-text {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--color-text-secondary);
+  color: #E0E7FF;
   letter-spacing: 2px;
   text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.ai-icon {
+  width: 135px;
+  height: 135px;
+  object-fit: contain;
+  transition: transform var(--transition-base);
+  filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.5));
+}
+
+.action-card:hover .ai-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 20px rgba(0, 245, 255, 0.8));
 }
 
 .action-card-highlight {
@@ -879,7 +1000,8 @@ function goToChat() {
 }
 
 .action-card-highlight .card-text {
-  color: var(--color-neon-cyan);
+  color: #00F5FF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
 }
 
 /* ============================================

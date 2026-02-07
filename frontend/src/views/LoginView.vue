@@ -9,7 +9,7 @@
       <div class="logo-section">
         <h1 class="logo">
           <span class="dragon">龍</span>
-          ACCESS
+          ДОСТУП
         </h1>
         <div class="tech-line"></div>
       </div>
@@ -18,7 +18,7 @@
         <div class="card-glow"></div>
         <h2 class="card-title">
           <span class="bracket">&lt;</span>
-          IDENTIFY
+          АВТОРИЗАЦИЯ
           <span class="bracket">/&gt;</span>
         </h2>
 
@@ -29,36 +29,36 @@
           </div>
 
           <div class="form-group">
-            <label>USERNAME</label>
+            <label>ПОЛЬЗОВАТЕЛЬ</label>
             <input
               v-model="form.username"
               type="text"
               required
-              placeholder="Enter your username"
+              placeholder="Введите имя пользователя"
               autocomplete="username"
               class="cyber-input"
             />
           </div>
 
           <div class="form-group">
-            <label>PASSWORD</label>
+            <label>ПАРОЛЬ</label>
             <input
               v-model="form.password"
               type="password"
               required
-              placeholder="Enter your password"
+              placeholder="Введите пароль"
               autocomplete="current-password"
               class="cyber-input"
             />
           </div>
 
           <button type="submit" :disabled="isLoading" class="submit-btn">
-            <span class="btn-text">{{ isLoading ? 'AUTHENTICATING...' : 'LOGIN' }}</span>
+            <span class="btn-text">{{ isLoading ? 'АВТОРИЗАЦИЯ...' : 'ВОЙТИ' }}</span>
             <span class="btn-glitch"></span>
           </button>
 
           <div class="footer-link">
-            New user? <router-link to="/register" class="link">Create account</router-link>
+            Новый пользователь? <router-link to="/register" class="link">Создать аккаунт</router-link>
           </div>
         </form>
       </div>
@@ -90,7 +90,7 @@ async function handleLogin() {
     await authStore.login(form.value)
     router.push('/')
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Login failed. Please try again.'
+    error.value = err.response?.data?.detail || 'Вход не удался. Попробуйте снова.'
   } finally {
     isLoading.value = false
   }
@@ -105,6 +105,7 @@ async function handleLogin() {
   justify-content: center;
   position: relative;
   overflow: hidden;
+  background: var(--color-bg-primary);
 }
 
 .background-effects {
@@ -191,18 +192,18 @@ async function handleLogin() {
   margin: 0 0 1rem 0;
   text-transform: uppercase;
   letter-spacing: 8px;
-  color: var(--color-text-primary);
+  color: #FFFFFF;
   text-shadow:
-    0 0 10px var(--color-accent-cyan),
-    0 0 20px var(--color-accent-cyan),
-    0 0 40px var(--color-accent-cyan);
+    0 0 10px rgba(0, 245, 255, 0.8),
+    0 0 20px rgba(0, 245, 255, 0.6),
+    0 0 40px rgba(0, 245, 255, 0.4);
 }
 
 .logo .dragon {
-  color: var(--color-accent-red);
+  color: #FF6B35;
   text-shadow:
-    0 0 20px var(--color-accent-red),
-    0 0 40px var(--color-accent-red);
+    0 0 20px rgba(255, 107, 53, 0.8),
+    0 0 40px rgba(255, 107, 53, 0.6);
 }
 
 .tech-line {
@@ -246,12 +247,14 @@ async function handleLogin() {
   font-size: 1.8rem;
   font-weight: 900;
   letter-spacing: 4px;
-  color: var(--color-text-primary);
+  color: #FFFFFF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
 }
 
 .card-title .bracket {
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   font-size: 1.2rem;
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
 }
 
 .cyber-form {
@@ -286,8 +289,9 @@ async function handleLogin() {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 2px;
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   margin-left: 0.25rem;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
 }
 
 .cyber-input {
@@ -310,7 +314,7 @@ async function handleLogin() {
 }
 
 .cyber-input::placeholder {
-  color: var(--color-text-muted);
+  color: #A0A8C0;
 }
 
 .submit-btn {
@@ -344,18 +348,19 @@ async function handleLogin() {
 .footer-link {
   text-align: center;
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: #B0B8C8;
   margin-top: 1rem;
 }
 
 .footer-link .link {
-  color: var(--color-accent-cyan);
+  color: #00F5FF;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s;
 }
 
 .footer-link .link:hover {
-  text-shadow: 0 0 10px var(--color-accent-cyan);
+  text-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
+  color: #FFFFFF;
 }
 </style>

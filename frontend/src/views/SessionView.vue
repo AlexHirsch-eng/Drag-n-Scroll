@@ -8,13 +8,13 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="loading">
       <div class="cyber-loader"></div>
-      <div class="loading-text">LOADING SESSION...</div>
+      <div class="loading-text">ЗАГРУЗКА СЕССИИ...</div>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="error">
       <p class="error-text">{{ error }}</p>
-      <button @click="goBack" class="retry-btn">BACK TO LEARN</button>
+      <button @click="goBack" class="retry-btn">НАЗАД К ОБУЧЕНИЮ</button>
     </div>
 
     <!-- Session Content -->
@@ -22,11 +22,11 @@
       <!-- Header -->
       <div class="header">
         <button @click="goBack" class="back-btn">
-          <span>←</span> EXIT
+          <span>←</span> ВЫЙТИ
         </button>
         <div class="session-info">
-          <span class="session-type">SESSION {{ currentSession.session_type }}</span>
-          <span class="step-indicator">STEP {{ currentStep }}/5</span>
+          <span class="session-type">СЕССИЯ {{ currentSession.session_type }}</span>
+          <span class="step-indicator">ШАГ {{ currentStep }}/5</span>
         </div>
         <div class="timer">
           <span class="icon">⏱️</span>
@@ -59,7 +59,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
-          PREVIOUS
+          НАЗАД
         </button>
 
         <div class="step-indicators">
@@ -68,6 +68,7 @@
             :key="step"
             @click="goToStep(step)"
             class="step-indicator-btn"
+            :disabled="step > sessionStore.currentStep"
             :class="{
               active: step === currentStep,
               completed: step < currentStep
@@ -80,9 +81,9 @@
         <button
           @click="goToNextStep"
           class="nav-btn next-btn"
-          :disabled="currentStep >= 5"
+          :disabled="currentStep >= 5 || currentStep >= sessionStore.currentStep"
         >
-          NEXT
+          ДАЛЕЕ
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 18l6-6-6-6"/>
           </svg>
@@ -135,7 +136,7 @@
       <!-- Scrolls Earned Badge -->
       <div v-if="currentSession.xp_earned > 0" class="scrolls-badge">
         <span class="icon">⚡</span>
-        <span>{{ currentSession.xp_earned }}</span> SCROLLS
+        <span>{{ currentSession.xp_earned }}</span> СКРОЛЛЫ
       </div>
     </div>
 
@@ -196,12 +197,22 @@ async function loadSession() {
   error.value = ''
 
   try {
-    // If we have session data in store, use it
+    // Check if we have session data and step data
     if (!sessionStore.currentSession) {
       error.value = 'No active session found'
       router.push('/learn')
+    } else if (!sessionStore.currentStepData || !sessionStore.currentStepData.cards || sessionStore.currentStepData.cards.length === 0) {
+      // If we have session but no step data (or empty data), load it
+      console.log('Loading step data from server...')
+      const response = await sessionStore.moveToStep(sessionStore.currentStep)
+      sessionStore.currentStepData = response.data
+      console.log('Loaded step data:', response)
+    } else {
+      console.log('Using existing step data:', sessionStore.currentStepData)
     }
+    // If both exist, we're good - data was already loaded by startSession
   } catch (err: any) {
+    console.error('Error in loadSession:', err)
     error.value = err.response?.data?.detail || 'Failed to load session'
   } finally {
     isLoading.value = false
@@ -230,10 +241,19 @@ function stopTimer() {
 async function goToStep(stepNumber: number) {
   if (!currentSession.value || stepNumber < 1 || stepNumber > 5) return
 
-  userStepOverride.value = stepNumber
+  const actualStep = sessionStore.currentStep
 
-  // Load step data for the requested step
-  await loadStepData(stepNumber)
+  // Only allow navigating to current step or completed steps
+  if (stepNumber > actualStep) {
+    console.log('Cannot jump ahead to step', stepNumber, 'current step is', actualStep)
+    return // Don't allow jumping ahead
+  }
+
+  // Only load if moving to a different step
+  if (stepNumber !== actualStep) {
+    userStepOverride.value = stepNumber
+    await loadStepData(stepNumber)
+  }
 }
 
 async function goToPreviousStep() {
@@ -250,12 +270,12 @@ async function goToNextStep() {
 
 async function loadStepData(stepNumber: number) {
   try {
-    // Fetch step data from API - use the correct endpoint
-    const data = await sessionStore.moveToStep(stepNumber)
-    sessionStore.currentStepData = data
-    sessionStore.currentStep = stepNumber
+    // Fetch step data from API
+    const response = await sessionStore.moveToStep(stepNumber)
+    // Store will be updated by moveToStep
   } catch (error) {
     console.error('Error loading step data:', error)
+    error.value = 'Failed to load step data'
   }
 }
 

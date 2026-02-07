@@ -90,6 +90,12 @@ export interface ChatMessage {
   translation_ru?: string | null
   translation_en?: string | null
   translation_zh?: string | null
+  translation_kz?: string | null
+  translation_de?: string | null
+  translation_fr?: string | null
+  translation_es?: string | null
+  translation_ja?: string | null
+  translation_ko?: string | null
   translated_at?: string | null
 }
 
@@ -141,7 +147,7 @@ export const chatAPI = {
   },
 
   async createGroupChat(name: string): Promise<ChatRoomDetail> {
-    return apiClient.post('/chat/rooms/', { name, room_type: 'group' })
+    return apiClient.post('/chat/rooms/create_group/', { name })
   },
 
   async addParticipant(roomId: number, userId: number): Promise<{ message: string }> {
@@ -158,7 +164,7 @@ export const chatAPI = {
   },
 
   async sendMessage(roomId: number, text: string, options?: { messageType?: string; replyTo?: number; attachment?: any }): Promise<ChatMessage> {
-    return apiClient.post('/chat/messages/', {
+    return apiClient.post('/chat/messages/create/', {
       room: roomId,
       text,
       message_type: options?.messageType || 'text',
@@ -236,9 +242,24 @@ export const chatAPI = {
   },
 
   // Message Translation
-  async translateMessage(messageId: number, targetLanguage: 'ru' | 'en' | 'zh'): Promise<ChatMessage> {
+  async translateMessage(messageId: number, targetLanguage: 'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko'): Promise<ChatMessage> {
     return apiClient.post(`/chat/messages/${messageId}/translate/`, {
       target_language: targetLanguage
+    })
+  },
+
+  // AI Chat
+  async sendAIMessage(message: string, history: Array<{ role: string; content: string }>): Promise<{
+    message: string
+    usage?: {
+      prompt_tokens: number
+      completion_tokens: number
+      total_tokens: number
+    }
+  }> {
+    return apiClient.post('/chat/ai/', {
+      message,
+      history
     })
   },
 }

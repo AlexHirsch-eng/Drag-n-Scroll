@@ -1,0 +1,42 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting huggingface_hub
+  Downloading huggingface_hub-1.4.0-py3-none-any.whl.metadata (13 kB)
+Collecting filelock (from huggingface_hub)
+  Downloading filelock-3.20.3-py3-none-any.whl.metadata (2.1 kB)
+Collecting fsspec>=2023.5.0 (from huggingface_hub)
+  Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+Collecting hf-xet<2.0.0,>=1.2.0 (from huggingface_hub)
+  Downloading hf_xet-1.2.0-cp37-abi3-win_amd64.whl.metadata (5.0 kB)
+Requirement already satisfied: httpx<1,>=0.23.0 in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from huggingface_hub) (0.28.1)
+Collecting packaging>=20.9 (from huggingface_hub)
+  Downloading packaging-26.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting pyyaml>=5.1 (from huggingface_hub)
+  Downloading pyyaml-6.0.3-cp313-cp313-win_amd64.whl.metadata (2.4 kB)
+Collecting shellingham (from huggingface_hub)
+  Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+Requirement already satisfied: tqdm>=4.42.1 in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from huggingface_hub) (4.67.3)
+Collecting typer-slim (from huggingface_hub)
+  Downloading typer_slim-0.21.1-py3-none-any.whl.metadata (16 kB)
+Requirement already satisfied: typing-extensions>=4.1.0 in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from huggingface_hub) (4.15.0)
+Requirement already satisfied: anyio in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from httpx<1,>=0.23.0->huggingface_hub) (4.12.1)
+Requirement already satisfied: certifi in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from httpx<1,>=0.23.0->huggingface_hub) (2024.8.30)
+Requirement already satisfied: httpcore==1.* in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from httpx<1,>=0.23.0->huggingface_hub) (1.0.9)
+Requirement already satisfied: idna in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from httpx<1,>=0.23.0->huggingface_hub) (3.10)
+Requirement already satisfied: h11>=0.16 in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from httpcore==1.*->httpx<1,>=0.23.0->huggingface_hub) (0.16.0)
+Requirement already satisfied: colorama in c:\users\aibat\appdata\local\packages\pythonsoftwarefoundation.python.3.13_qbz5n2kfra8p0\localcache\local-packages\python313\site-packages (from tqdm>=4.42.1->huggingface_hub) (0.4.6)
+Collecting click>=8.0.0 (from typer-slim->huggingface_hub)
+  Using cached click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+Downloading huggingface_hub-1.4.0-py3-none-any.whl (553 kB)
+   ---------------------------------------- 553.2/553.2 kB 38.9 kB/s  0:00:12
+Downloading hf_xet-1.2.0-cp37-abi3-win_amd64.whl (2.9 MB)
+   ---------------------------------------- 2.9/2.9 MB 35.9 kB/s  0:01:16
+Downloading fsspec-2026.2.0-py3-none-any.whl (202 kB)
+Downloading packaging-26.0-py3-none-any.whl (74 kB)
+Downloading pyyaml-6.0.3-cp313-cp313-win_amd64.whl (154 kB)
+Downloading filelock-3.20.3-py3-none-any.whl (16 kB)
+Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Downloading typer_slim-0.21.1-py3-none-any.whl (47 kB)
+Using cached click-8.3.1-py3-none-any.whl (108 kB)
+Installing collected packages: shellingham, pyyaml, packaging, hf-xet, fsspec, filelock, click, typer-slim, huggingface_hub
+
+Successfully installed click-8.3.1 filelock-3.20.3 fsspec-2026.2.0 hf-xet-1.2.0 huggingface_hub-1.4.0 packaging-26.0 pyyaml-6.0.3 shellingham-1.5.4 typer-slim-0.21.1

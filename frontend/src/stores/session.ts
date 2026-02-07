@@ -57,20 +57,29 @@ export const useSessionStore = defineStore('session', () => {
     isLoading.value = true
     error.value = null
     try {
+      console.log('Starting session...')
       const response = await learningAPI.startSession({
         course_day_id: courseDayId,
         session_type: sessionType
       })
+
+      console.log('Start session response:', response)
+      console.log('Session data:', response.session)
+      console.log('Step data:', response.data)
+
       currentSession.value = response.session
       currentStep.value = response.step
       currentStepData.value = response.data
       stepStartTime.value = Date.now()
+
+      console.log('After save - currentStepData:', currentStepData.value)
 
       // Set timer based on step type
       setStepTimer(response.step)
 
       return response
     } catch (err: any) {
+      console.error('Error in startSession:', err)
       error.value = err.response?.data?.detail || 'Failed to start session'
       throw err
     } finally {

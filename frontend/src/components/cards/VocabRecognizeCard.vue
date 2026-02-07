@@ -7,8 +7,12 @@
 
     <div class="card-content">
       <div class="question">
-        <div class="hanzi">{{ stepContent.question?.hanzi }}</div>
-        <div class="pinyin">{{ stepContent.question?.pinyin }}</div>
+        <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+          {{ stepContent.question?.hanzi }}
+        </div>
+        <div class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">
+          {{ stepContent.question?.pinyin }}
+        </div>
       </div>
 
       <div class="options" v-if="!showResult">
@@ -26,12 +30,12 @@
 
       <div v-else class="result">
         <div class="result-icon">{{ showCorrect ? '✓' : '✗' }}</div>
-        <div class="result-text">{{ showCorrect ? 'CORRECT!' : 'TRY AGAIN' }}</div>
+        <div class="result-text">{{ showCorrect ? 'ПРАВИЛЬНО!' : 'ПОПРОБУЙТЕ СНОВА' }}</div>
       </div>
     </div>
 
     <div v-if="showResult" class="continue-hint">
-      <span class="hint-text">SWIPE UP FOR NEXT →</span>
+      <span class="hint-text">СВАЙП ВВЕРХ ДЛЯ СЛЕДУЮЩЕГО →</span>
     </div>
   </div>
 </template>
@@ -39,6 +43,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { LessonStep } from '@/types/api'
+import { speakChinese } from '@/utils/speech'
 
 const props = defineProps<{
   step: LessonStep
@@ -70,6 +75,13 @@ function selectOption(optionId: number) {
   setTimeout(() => {
     emit('continue')
   }, 1500)
+}
+
+function speakHanzi() {
+  const hanzi = stepContent.value.question?.hanzi
+  if (hanzi) {
+    speakChinese(hanzi)
+  }
 }
 </script>
 
@@ -159,6 +171,19 @@ function selectOption(optionId: number) {
   text-shadow: 0 0 20px var(--color-accent-cyan);
   line-height: 1;
   margin-bottom: 1rem;
+}
+
+.clickable-word {
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.clickable-word:hover {
+  transform: scale(1.03);
+  color: var(--color-accent-cyan);
 }
 
 .pinyin {

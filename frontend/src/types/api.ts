@@ -8,6 +8,9 @@ export interface User {
   is_staff?: boolean
   profile?: UserProfile
   progress?: UserProgress
+  followers_count?: number
+  following_count?: number
+  likes_received?: number
   created_at: string
   updated_at: string
 }
@@ -281,6 +284,8 @@ export interface SRSReviewItem {
   audio_url: string
   srs_level: number
   total_reviews: number
+  accuracy?: number
+  correct_reviews?: number
 }
 
 export interface ReviewBatchResponse {

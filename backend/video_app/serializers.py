@@ -45,11 +45,12 @@ class VideoListSerializer(serializers.ModelSerializer):
     category = VideoCategorySerializer(read_only=True)
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     class Meta:
         model = Video
         fields = [
-            'id', 'creator', 'video_file', 'thumbnail', 'duration',
+            'id', 'creator', 'video_file', 'url', 'thumbnail', 'duration',
             'description', 'category', 'tags', 'music_title',
             'lesson_number', 'lesson_title', 'lesson_words',
             'views_count', 'likes_count', 'comments_count', 'shares_count',
@@ -73,6 +74,11 @@ class VideoListSerializer(serializers.ModelSerializer):
                 user=request.user
             ).exists()
         return False
+
+    def get_url(self, obj):
+        if obj.video_file:
+            return obj.video_file.url
+        return None
 
 
 class VideoDetailSerializer(serializers.ModelSerializer):
