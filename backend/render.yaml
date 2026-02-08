@@ -1,7 +1,7 @@
 services:
   # Web Service
   - type: web
-    name: drag-n-scroll-api
+    name: drag-n-scroll
     runtime: python
     buildCommand: |
       pip install -r requirements.txt
@@ -18,7 +18,7 @@ services:
       - key: SECRET_KEY
         generate: true
       - key: ALLOWED_HOSTS
-        value: drag-n-scroll-api.onrender.com,drag-n-scroll-api.onrender.com
+        value: drag-n-scroll.onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://drag-n-scroll.vercel.app,https://drag-n-scroll-api.onrender.com
       - key: CORS_ALLOW_ALL_ORIGINS
