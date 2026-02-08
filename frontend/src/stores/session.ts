@@ -290,6 +290,8 @@ export const useSessionStore = defineStore('session', () => {
     currentStepData.value = response.data
 
     console.log('moveToStep complete, currentStep:', currentStep.value, 'stepData:', currentStepData.value)
+
+    return response
   }
 
   function setStepTimer(step: number) {

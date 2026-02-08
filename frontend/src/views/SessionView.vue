@@ -205,8 +205,10 @@ async function loadSession() {
       // If we have session but no step data (or empty data), load it
       console.log('Loading step data from server...')
       const response = await sessionStore.moveToStep(sessionStore.currentStep)
-      sessionStore.currentStepData = response.data
-      console.log('Loaded step data:', response)
+      if (response) {
+        sessionStore.currentStepData = response.data
+        console.log('Loaded step data:', response)
+      }
     } else {
       console.log('Using existing step data:', sessionStore.currentStepData)
     }
@@ -271,10 +273,10 @@ async function goToNextStep() {
 async function loadStepData(stepNumber: number) {
   try {
     // Fetch step data from API
-    const response = await sessionStore.moveToStep(stepNumber)
+    await sessionStore.moveToStep(stepNumber)
     // Store will be updated by moveToStep
-  } catch (error) {
-    console.error('Error loading step data:', error)
+  } catch (err) {
+    console.error('Error loading step data:', err)
     error.value = 'Failed to load step data'
   }
 }

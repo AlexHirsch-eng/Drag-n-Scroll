@@ -118,10 +118,6 @@ const progress = computed(() => {
   return ((currentWordIndex.value + 1) / totalWords.value) * 100
 })
 
-const allWordsCompleted = computed(() => {
-  return currentWordIndex.value >= totalWords.value - 1 && showResult.value
-})
-
 // Generate quiz options (1 correct + 3 distractors)
 const quizOptions = computed(() => {
   if (!currentWord.value) return []

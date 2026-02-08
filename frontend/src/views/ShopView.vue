@@ -53,16 +53,21 @@
             </span>
           </div>
           <div class="product-price">
-            <img src="/src/images/coin.png" alt="coin" class="price-icon">
-            <span class="price-amount">{{ product.price }}</span>
+            <template v-if="product.category === 'premium'">
+              <span class="price-amount price-usd">{{ product.priceDisplay || `$${product.price}` }}</span>
+            </template>
+            <template v-else>
+              <img src="/src/images/coin.png" alt="coin" class="price-icon">
+              <span class="price-amount">{{ product.price }}</span>
+            </template>
           </div>
           <button
             @click="purchaseProduct(product)"
-            :disabled="userGems < product.price || product.owned"
+            :disabled="(product.category !== 'premium' && userGems < product.price) || product.owned"
             :class="['purchase-btn', { owned: product.owned }]"
           >
             <span v-if="product.owned">✓ КУПЛЕНО</span>
-            <span v-else-if="userGems < product.price">НЕДОСТАТОЧНО МОНЕТ</span>
+            <span v-else-if="product.category !== 'premium' && userGems < product.price">НЕДОСТАТОЧНО МОНЕТ</span>
             <span v-else>КУПИТЬ</span>
           </button>
         </div>
@@ -80,9 +85,10 @@
           <p class="modal-description">{{ modalProduct?.description }}</p>
           <div class="modal-price">
             <span class="price-label">Цена:</span>
-            <span class="price-value">💎 {{ modalProduct?.price }}</span>
+            <span class="price-value" v-if="modalProduct?.category === 'premium'">{{ modalProduct?.priceDisplay || `$${modalProduct?.price}` }}</span>
+            <span class="price-value" v-else>💎 {{ modalProduct?.price }}</span>
           </div>
-          <p class="modal-balance">Ваш баланс: <img src="/src/images/coin.png" alt="coin" class="inline-coin"> {{ userGems }}</p>
+          <p class="modal-balance" v-if="modalProduct?.category !== 'premium'">Ваш баланс: <img src="/src/images/coin.png" alt="coin" class="inline-coin"> {{ userGems }}</p>
         </div>
         <div class="modal-footer">
           <button @click="closeModal" class="cancel-btn">ОТМЕНА</button>
@@ -107,6 +113,7 @@ interface Product {
   description: string
   icon: string
   price: number
+  priceDisplay?: string
   category: string
   badge?: string
   rarity: 'common' | 'rare' | 'epic' | 'legendary'
@@ -176,10 +183,11 @@ const products: Product[] = [
   // Premium
   {
     id: 4,
-    name: 'Premium Weekly',
+    name: 'Pro Plan Weekly',
     description: 'Unlock all features for 7 days. Unlimited lessons, no ads, priority support.',
     icon: '⭐',
-    price: 200,
+    price: 2.99,
+    priceDisplay: '$2.99',
     category: 'premium',
     rarity: 'rare',
     stats: ['7 Days', 'All Access', 'No Ads'],
@@ -187,26 +195,28 @@ const products: Product[] = [
   },
   {
     id: 5,
-    name: 'Premium Monthly',
+    name: 'Pro Plan Monthly',
     description: 'Best value! Full access for 30 days. Everything unlimited.',
     icon: '🌟',
-    price: 500,
+    price: 9.99,
+    priceDisplay: '$9.99',
     category: 'premium',
     rarity: 'epic',
     badge: 'BEST VALUE',
-    stats: ['30 Days', 'All Access', 'Save 33%'],
+    stats: ['30 Days', 'All Access', 'Save 60%'],
     owned: false
   },
   {
     id: 6,
-    name: 'Premium Yearly',
-    description: 'Ultimate value! Full year of premium access. Limited time offer!',
+    name: 'Pro Plan Yearly',
+    description: 'Ultimate value! Full year of premium access. Save 70% vs monthly!',
     icon: '👑',
-    price: 3000,
+    price: 99.99,
+    priceDisplay: '$99.99',
     category: 'premium',
     rarity: 'legendary',
-    badge: '-50% OFF',
-    stats: ['365 Days', 'All Access', 'Save 50%'],
+    badge: '-70% OFF',
+    stats: ['365 Days', 'All Access', 'Save 70%'],
     owned: false
   },
 
@@ -323,7 +333,7 @@ const products: Product[] = [
     name: 'AI Chat - 1 Day',
     description: 'Get access to AI Chat bot for 1 day. Practice Chinese conversations!',
     icon: '🤖',
-    price: 50,
+    price: 500,
     category: 'ai-access',
     rarity: 'common',
     stats: ['1 Day Access', 'Unlimited Chat', 'AI Practice'],
@@ -334,7 +344,7 @@ const products: Product[] = [
     name: 'AI Chat - 7 Days',
     description: 'Full access to AI Chat bot for a week. Perfect for intensive practice!',
     icon: '🤖',
-    price: 250,
+    price: 2500,
     category: 'ai-access',
     rarity: 'rare',
     badge: 'POPULAR',
@@ -346,23 +356,11 @@ const products: Product[] = [
     name: 'AI Chat - 30 Days',
     description: 'Monthly access to AI Chat bot. Best value for serious learners!',
     icon: '🤖',
-    price: 800,
+    price: 8000,
     category: 'ai-access',
     rarity: 'epic',
     badge: 'BEST VALUE',
     stats: ['30 Days Access', 'Unlimited Chat', 'Save 45%'],
-    owned: false
-  },
-  {
-    id: 19,
-    name: 'AI Chat - Lifetime',
-    description: 'Permanent access to AI Chat bot. One-time payment, forever practice!',
-    icon: '🤖',
-    price: 3000,
-    category: 'ai-access',
-    rarity: 'legendary',
-    badge: 'LIMITED',
-    stats: ['Forever Access', 'Unlimited Chat', 'Free Updates'],
     owned: false
   }
 ]
@@ -392,7 +390,7 @@ function closeModal() {
 function confirmPurchase() {
   if (!modalProduct.value) return
 
-  userGems.value -= modalProduct.value.price
+  const productIndex = products.findIndex(p => p.id === modalProduct.value!.id)
 
   // Handle AI Access purchases
   if (modalProduct.value.category === 'ai-access') {
@@ -400,16 +398,22 @@ function confirmPurchase() {
       16: 1,   // 1 Day
       17: 7,   // 7 Days
       18: 30,  // 30 Days
-      19: 36500, // Lifetime (100 years)
     }
 
     const days = daysMap[modalProduct.value.id] || 0
     if (days > 0) {
       authStore.purchaseAIAccess(days)
     }
+  } else if (modalProduct.value.category === 'premium') {
+    // Handle Premium purchases (real money payment)
+    // TODO: Integrate with payment gateway (Stripe, PayPal, etc.)
+    alert(`💳 Оплата через платежный шлюз: ${modalProduct.value.priceDisplay}`)
+    if (productIndex !== -1) {
+      products[productIndex].owned = true
+    }
   } else {
     // Mark other products as owned
-    const productIndex = products.findIndex(p => p.id === modalProduct.value!.id)
+    userGems.value -= modalProduct.value.price
     if (productIndex !== -1) {
       products[productIndex].owned = true
     }
@@ -723,6 +727,12 @@ function goBack() {
 .price-amount {
   color: #FFD700;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.price-usd {
+  color: #00F5FF;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.6);
+  font-size: 1.4rem;
 }
 
 .purchase-btn {

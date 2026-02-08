@@ -655,11 +655,7 @@ function translateWithLanguage(messageId: number, langCode: 'ru' | 'en' | 'zh' |
   translateMessage(messageId, langCode)
 }
 
-const availableLanguages: Array<{
-  code: 'ru' | 'en' | 'zh' | 'kz' | 'de' | 'fr' | 'es' | 'ja' | 'ko'
-  flag: string
-  name: string
-}> = [
+const availableLanguages = [
   { code: 'ru', flag: '🇷🇺', name: 'Russian' },
   { code: 'en', flag: '🇬🇧', name: 'English' },
   { code: 'zh', flag: '🇨🇳', name: 'Chinese' },
