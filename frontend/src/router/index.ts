@@ -6,6 +6,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'landing',
+      component: () => import('@/views/LandingView.vue'),
+      meta: { requiresAuth: false },
+    },
+    {
+      path: '/app',
       name: 'home',
       component: () => import('@/views/HomeView.vue'),
       meta: { requiresAuth: false },
@@ -105,7 +111,7 @@ router.beforeEach((to, _from, next) => {
   if (requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (!requiresAuth && authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
-    next({ name: 'home' })
+    next({ name: 'learn' })
   } else {
     next()
   }
