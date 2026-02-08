@@ -5,9 +5,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from core.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', health_check, name='health-check'),
     path('api/auth/', include('djoser.urls.jwt')),
     path('api/auth/', include('djoser.urls')),
     path('api/user/', include('core.urls')),
