@@ -29,6 +29,11 @@
             {{ error }}
           </div>
 
+          <div v-if="success" class="success-alert">
+            <span class="alert-icon">✓</span>
+            {{ success }}
+          </div>
+
           <div class="form-group">
             <label>ПОЛЬЗОВАТЕЛЬ</label>
             <input
@@ -106,14 +111,20 @@ const form = ref<RegisterData>({
 
 const isLoading = ref(false)
 const error = ref('')
+const success = ref('')
 
 async function handleRegister() {
   isLoading.value = true
   error.value = ''
+  success.value = ''
 
   try {
     await authStore.register(form.value)
-    router.push('/learn')
+    // Registration successful - show success message and redirect to login
+    success.value = 'Регистрация успешна! Теперь войдите в систему.'
+    setTimeout(() => {
+      router.push('/login')
+    }, 1500)
   } catch (err: any) {
     const errors = err.response?.data
     if (typeof errors === 'object') {
@@ -310,6 +321,18 @@ async function handleRegister() {
   border: 1px solid var(--color-accent-red);
   border-radius: var(--radius-md);
   color: var(--color-accent-red);
+  font-size: 0.9rem;
+}
+
+.success-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(0, 245, 89, 0.1);
+  border: 1px solid #00F559;
+  border-radius: var(--radius-md);
+  color: #00F559;
   font-size: 0.9rem;
 }
 

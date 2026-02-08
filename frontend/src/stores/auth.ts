@@ -33,15 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   async function register(data: RegisterData) {
     try {
-      const response = await authAPI.register(data)
-      user.value = response.user
-      accessToken.value = response.tokens.access
-      refreshToken.value = response.tokens.refresh
-
-      localStorage.setItem('access_token', response.tokens.access)
-      localStorage.setItem('refresh_token', response.tokens.refresh)
-
-      await loadProfile()
+      await authAPI.register(data)
+      // Registration succeeded - user is created but not authenticated yet
+      // The djoser /auth/users/ endpoint only returns user data, not tokens
+      // User needs to login separately to get authenticated
       return true
     } catch (error) {
       console.error('Registration failed:', error)

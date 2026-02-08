@@ -9,7 +9,7 @@ import type {
 } from '@/types/api'
 
 export const authAPI = {
-  async register(data: RegisterData): Promise<{ user: User; tokens: AuthTokens }> {
+  async register(data: RegisterData): Promise<{ user: User }> {
     return apiClient.post('/auth/users/', data)
   },
 
