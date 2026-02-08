@@ -1,77 +1,110 @@
 <template>
   <div class="landing-view">
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">
-          <span class="dragon">龍</span>
-          <span class="title-text">DRAG'N'SCROLL</span>
-        </h1>
-        <p class="hero-tagline">
-          Master Chinese with AI-Powered Learning
-        </p>
-        <p class="hero-subtitle">
-          TikTok-style interface • Smart SRS • Real Conversations
-        </p>
-        <div class="hero-ctas">
-          <button @click="goToRegister" class="cta-button cta-primary">
-            <span class="btn-icon">🚀</span>
-            <span class="btn-text">Get Started Free</span>
-          </button>
-          <button @click="goToApp" class="cta-button cta-secondary">
-            <span class="btn-icon">▶</span>
-            <span class="btn-text">Open App</span>
-          </button>
+    <!-- Background Effects -->
+    <div class="bg-gradient"></div>
+    <div class="bg-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Fixed Navbar -->
+    <header class="navbar" :class="{ 'navbar-scrolled': isScrolled }">
+      <div class="navbar-container">
+        <div class="navbar-logo" @click="scrollToTop">
+          <span class="logo-icon">龍</span>
+          <span class="logo-text">DRAG'N'SCROLL</span>
         </div>
+        <nav class="navbar-nav">
+          <a @click.prevent="scrollToSection('features')" href="#features" class="nav-link">Features</a>
+          <a @click.prevent="scrollToSection('how')" href="#how" class="nav-link">How It Works</a>
+          <a @click.prevent="scrollToSection('pricing')" href="#pricing" class="nav-link">Pricing</a>
+          <a @click.prevent="scrollToSection('faq')" href="#faq" class="nav-link">FAQ</a>
+        </nav>
+        <button @click="goToApp" class="navbar-cta">Open App</button>
       </div>
-      <div class="hero-visual">
-        <div class="floating-card card-1">📱</div>
-        <div class="floating-card card-2">🧠</div>
-        <div class="floating-card card-3">⚡</div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero section-reveal">
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            <span class="title-dragon">龍</span>
+            <span class="title-main">Master Chinese with AI-Powered Learning</span>
+          </h1>
+          <p class="hero-subtitle">
+            TikTok-style interface • Smart SRS • Real Conversations • Daily 5-min lessons
+          </p>
+          <div class="hero-ctas">
+            <button @click="goToApp" class="btn btn-primary">
+              <span class="btn-icon">▶</span>
+              <span>Open App</span>
+            </button>
+            <button @click="scrollToSection('how')" class="btn btn-secondary">
+              <span class="btn-icon">↓</span>
+              <span>How It Works</span>
+            </button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="visual-card card-1">
+            <div class="card-icon">📱</div>
+            <div class="card-label">TikTok Interface</div>
+          </div>
+          <div class="visual-card card-2">
+            <div class="card-icon">🧠</div>
+            <div class="card-label">AI SRS</div>
+          </div>
+          <div class="visual-card card-3">
+            <div class="card-icon">💬</div>
+            <div class="card-label">AI Chat</div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features-section">
-      <div class="section-container">
+    <section id="features" class="features section-reveal">
+      <div class="features-container">
         <h2 class="section-title">Why Drag'n'Scroll?</h2>
         <div class="features-grid">
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">📱</div>
             <h3 class="feature-title">TikTok-Style Interface</h3>
             <p class="feature-description">
               Swipe through lessons vertically just like your favorite short video app. Intuitive, engaging, and addictive in the best way possible.
             </p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">🧠</div>
             <h3 class="feature-title">AI-Powered SRS</h3>
             <p class="feature-description">
               Our smart spaced repetition system learns your weak points and schedules reviews at the perfect time for maximum retention.
             </p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">💬</div>
             <h3 class="feature-title">AI Chat Practice</h3>
             <p class="feature-description">
               Practice real conversations with our AI chatbot. Get instant feedback and improve your speaking skills naturally.
             </p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">📚</div>
             <h3 class="feature-title">Video Community</h3>
             <p class="feature-description">
               Share your learning journey, watch others progress, and connect with fellow Chinese learners from around the world.
             </p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">🎯</div>
             <h3 class="feature-title">Gamified Learning</h3>
             <p class="feature-description">
               Earn scrolls, unlock achievements, maintain streaks, and compete with friends. Learning has never been this fun.
             </p>
           </div>
-          <div class="feature-card">
+          <div class="feature-card glass-card">
             <div class="feature-icon">📖</div>
             <h3 class="feature-title">Structured Curriculum</h3>
             <p class="feature-description">
@@ -79,91 +112,199 @@
             </p>
           </div>
         </div>
+
+        <!-- Screenshot Gallery Placeholder -->
+        <div class="showcase-section">
+          <h3 class="showcase-title">App Screenshots</h3>
+          <div class="screenshots-grid">
+            <div
+              v-for="(screen, index) in screenshots"
+              :key="index"
+              class="screenshot-placeholder"
+            >
+              <img
+                v-if="screen.loaded"
+                :src="screen.src"
+                :alt="screen.alt"
+                class="screenshot-image"
+              />
+              <div v-else class="screenshot-placeholder-frame">
+                <div class="placeholder-gradient">
+                  <div class="placeholder-icon">📱</div>
+                  <div class="placeholder-text">{{ screen.alt }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Placeholder -->
+        <div class="showcase-section">
+          <h3 class="showcase-title">See It In Action</h3>
+          <div class="video-placeholder">
+            <video
+              v-if="demoVideoLoaded"
+              :src="demoVideoSrc"
+              class="demo-video"
+              controls
+            />
+            <div v-else class="video-placeholder-frame">
+              <div class="play-button">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-caption">Demo Video Coming Soon</div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- How It Works Section -->
-    <section class="how-it-works">
-      <div class="section-container">
+    <section id="how" class="how-it-works section-reveal">
+      <div class="how-container">
         <h2 class="section-title">How It Works</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <h3 class="step-title">Create Account</h3>
-            <p class="step-description">
-              Sign up for free in seconds. No credit card required. Start your Chinese learning journey today.
-            </p>
+        <div class="steps-container" ref="stepsContainer">
+          <div class="steps-progress">
+            <div class="progress-line" :style="{ width: progressWidth }"></div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <h3 class="step-title">Learn Daily</h3>
-            <p class="step-description">
-              Complete short daily lessons tailored to your level. Each session takes just 5-10 minutes of your time.
-            </p>
+          <div class="steps-list">
+            <div
+              v-for="(step, index) in steps"
+              :key="index"
+              class="step-item"
+              :class="{ 'step-active': activeStep === index }"
+              :ref="el => setStepRef(el, index)"
+            >
+              <div class="step-marker">
+                <div class="step-number">{{ index + 1 }}</div>
+              </div>
+              <div class="step-content">
+                <h3 class="step-title">{{ step.title }}</h3>
+                <p class="step-description">{{ step.description }}</p>
+              </div>
+            </div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <h3 class="step-title">Master Chinese</h3>
-            <p class="step-description">
-              Practice with AI-powered reviews, chat with native speakers, and watch your skills grow day by day.
-            </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing section-reveal">
+      <div class="pricing-container">
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <p class="pricing-subtitle">Choose the plan that fits your learning journey</p>
+        <div class="pricing-grid">
+          <div class="pricing-card glass-card">
+            <div class="pricing-header">
+              <h3 class="pricing-title">Starter</h3>
+              <div class="pricing-price">Free</div>
+              <div class="pricing-period">Forever</div>
+            </div>
+            <ul class="pricing-features">
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Daily lessons (5-10 min)</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Basic vocabulary practice</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Spaced repetition reviews</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Progress tracking</span>
+              </li>
+            </ul>
+            <button @click="goToApp" class="pricing-btn">Get Started</button>
+          </div>
+
+          <div class="pricing-card pricing-popular glass-card">
+            <div class="popular-badge">Most Popular</div>
+            <div class="pricing-header">
+              <h3 class="pricing-title">Pro</h3>
+              <div class="pricing-price">$9.99</div>
+              <div class="pricing-period">per month</div>
+            </div>
+            <ul class="pricing-features">
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Everything in Starter</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Unlimited AI chat</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Advanced analytics</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Priority support</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>No ads</span>
+              </li>
+            </ul>
+            <button @click="goToApp" class="pricing-btn pricing-btn-primary">Upgrade to Pro</button>
+          </div>
+
+          <div class="pricing-card glass-card">
+            <div class="pricing-header">
+              <h3 class="pricing-title">Premium</h3>
+              <div class="pricing-price">$99.99</div>
+              <div class="pricing-period">per year</div>
+            </div>
+            <ul class="pricing-features">
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Everything in Pro</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Save 70% vs monthly</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Exclusive content</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>Early access features</span>
+              </li>
+              <li class="feature-item">
+                <span class="check-icon">✓</span>
+                <span>VIP support</span>
+              </li>
+            </ul>
+            <button @click="goToApp" class="pricing-btn">Go Premium</button>
           </div>
         </div>
       </div>
     </section>
 
     <!-- FAQ Section -->
-    <section class="faq-section">
-      <div class="section-container">
+    <section id="faq" class="faq section-reveal">
+      <div class="faq-container">
         <h2 class="section-title">Frequently Asked Questions</h2>
         <div class="faq-list">
-          <div class="faq-item" :class="{ active: activeFaq === 0 }" @click="toggleFaq(0)">
+          <div
+            v-for="(item, index) in faqItems"
+            :key="index"
+            class="faq-item glass-card"
+            :class="{ 'faq-active': activeFaq === index }"
+            @click="toggleFaq(index)"
+          >
             <div class="faq-question">
-              <h3>Is Drag'n'Scroll really free?</h3>
-              <span class="faq-icon">{{ activeFaq === 0 ? '−' : '+' }}</span>
+              <h3 class="faq-question-text">{{ item.question }}</h3>
+              <span class="faq-icon">{{ activeFaq === index ? '−' : '+' }}</span>
             </div>
-            <div class="faq-answer" v-show="activeFaq === 0">
-              <p>Yes! The core app is completely free to use. You get daily lessons, vocabulary practice, and basic features at no cost. Premium features like unlimited AI chat and advanced analytics are available as optional purchases.</p>
-            </div>
-          </div>
-
-          <div class="faq-item" :class="{ active: activeFaq === 1 }" @click="toggleFaq(1)">
-            <div class="faq-question">
-              <h3>How much time do I need per day?</h3>
-              <span class="faq-icon">{{ activeFaq === 1 ? '−' : '+' }}</span>
-            </div>
-            <div class="faq-answer" v-show="activeFaq === 1">
-              <p>Just 5-10 minutes per day! Our lessons are designed for busy learners. Complete a quick session during your commute, lunch break, or before bed. Consistency beats intensity.</p>
-            </div>
-          </div>
-
-          <div class="faq-item" :class="{ active: activeFaq === 2 }" @click="toggleFaq(2)">
-            <div class="faq-question">
-              <h3>What Chinese level do I need?</h3>
-              <span class="faq-icon">{{ activeFaq === 2 ? '−' : '+' }}</span>
-            </div>
-            <div class="faq-answer" v-show="activeFaq === 2">
-              <p>None! Drag'n'Scroll is perfect for absolute beginners. We'll start you from scratch with pinyin and basic greetings, then gradually build up to HSK 1 and beyond.</p>
-            </div>
-          </div>
-
-          <div class="faq-item" :class="{ active: activeFaq === 3 }" @click="toggleFaq(3)">
-            <div class="faq-question">
-              <h3>Can I really learn Chinese with an app?</h3>
-              <span class="faq-icon">{{ activeFaq === 3 ? '−' : '+' }}</span>
-            </div>
-            <div class="faq-answer" v-show="activeFaq === 3">
-              <p>Yes! While apps work best combined with other learning methods, Drag'n'Scroll provides comprehensive vocabulary, grammar, conversation practice, and character writing. Many users successfully reach conversational level.</p>
-            </div>
-          </div>
-
-          <div class="faq-item" :class="{ active: activeFaq === 4 }" @click="toggleFaq(4)">
-            <div class="faq-question">
-              <h3>What is HSK?</h3>
-              <span class="faq-icon">{{ activeFaq === 4 ? '−' : '+' }}</span>
-            </div>
-            <div class="faq-answer" v-show="activeFaq === 4">
-              <p>HSK (Hanyu Shuiping Kaoshi) is China's official standardized test of Chinese language proficiency. It ranges from HSK 1 (beginner) to HSK 6 (advanced/master). Drag'n'Scroll prepares you for all levels.</p>
+            <div class="faq-answer" v-show="activeFaq === index">
+              <p>{{ item.answer }}</p>
             </div>
           </div>
         </div>
@@ -171,79 +312,453 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
-      <div class="section-container">
+    <section class="cta section-reveal">
+      <div class="cta-container">
         <h2 class="cta-title">Ready to Start Your Journey?</h2>
         <p class="cta-subtitle">Join thousands of learners mastering Chinese every day</p>
-        <button @click="goToRegister" class="cta-button cta-large">
+        <button @click="goToApp" class="btn btn-cta">
           <span class="btn-icon">🚀</span>
-          <span class="btn-text">Start Learning Now - It's Free</span>
+          <span>Start Learning Now - It's Free</span>
         </button>
       </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>Drag'n'Scroll</h4>
-          <p>The most fun way to learn Chinese</p>
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h4 class="footer-title">Drag'n'Scroll</h4>
+            <p class="footer-text">The most fun way to learn Chinese</p>
+            <div class="footer-social">
+              <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="social-link">
+                <span class="social-icon">⭐</span>
+                <span>Star on GitHub</span>
+              </a>
+            </div>
+          </div>
+          <div class="footer-section">
+            <h4 class="footer-title">Product</h4>
+            <a @click="scrollToSection('features')" class="footer-link">Features</a>
+            <a @click="scrollToSection('pricing')" class="footer-link">Pricing</a>
+            <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">GitHub</a>
+          </div>
+          <div class="footer-section">
+            <h4 class="footer-title">Company</h4>
+            <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">About</a>
+            <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">Blog</a>
+            <a href="mailto:contact@dragnscroll.com" class="footer-link">Contact</a>
+          </div>
         </div>
-        <div class="footer-section">
-          <h4>Product</h4>
-          <a @click="goToApp" class="footer-link">Features</a>
-          <a @click="goToRegister" class="footer-link">Pricing</a>
-          <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">GitHub</a>
+        <div class="footer-bottom">
+          <p>&copy; {{ currentYear }} Drag'n'Scroll. All rights reserved.</p>
         </div>
-        <div class="footer-section">
-          <h4>Company</h4>
-          <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">About</a>
-          <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank" class="footer-link">Blog</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; {{ currentYear }} Drag'n'Scroll. All rights reserved.</p>
-        <p class="github-link">
-          <a href="https://github.com/AlexHirsch-eng/Drag-n-Scroll" target="_blank">
-            ⭐ Star us on GitHub
-          </a>
-        </p>
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const activeFaq = ref<number | null>(null)
-const currentYear = computed(() => new Date().getFullYear())
 
-function toggleFaq(index: number) {
-  if (activeFaq.value === index) {
-    activeFaq.value = null
-  } else {
-    activeFaq.value = index
+// State
+const isScrolled = ref(false)
+const activeFaq = ref<number | null>(null)
+const activeStep = ref(0)
+const currentYear = computed(() => new Date().getFullYear())
+const progressWidth = computed(() => `${(activeStep.value / 2) * 100}%`)
+
+// Asset loading state
+const screenshots = ref([
+  {
+    src: '/src/assets/screens/screen-1.png',
+    alt: 'Home Screen',
+    loaded: false
+  },
+  {
+    src: '/src/assets/screens/screen-2.png',
+    alt: 'Learning Screen',
+    loaded: false
+  },
+  {
+    src: '/src/assets/screens/screen-3.png',
+    alt: 'Profile Screen',
+    loaded: false
+  }
+])
+
+const demoVideoSrc = '/src/assets/demo/demo.mp4'
+const demoVideoLoaded = ref(false)
+
+// Steps data
+const steps = [
+  {
+    title: 'Create Account',
+    description: 'Sign up for free in seconds. No credit card required. Start your Chinese learning journey today.'
+  },
+  {
+    title: 'Learn Daily',
+    description: 'Complete short daily lessons tailored to your level. Each session takes just 5-10 minutes of your time.'
+  },
+  {
+    title: 'Master Chinese',
+    description: 'Practice with AI-powered reviews, chat with native speakers, and watch your skills grow day by day.'
+  }
+]
+
+// FAQ data
+const faqItems = [
+  {
+    question: 'Is Drag\'n\'Scroll really free?',
+    answer: 'Yes! The core app is completely free to use. You get daily lessons, vocabulary practice, and basic features at no cost. Premium features like unlimited AI chat and advanced analytics are available as optional purchases.'
+  },
+  {
+    question: 'How much time do I need per day?',
+    answer: 'Just 5-10 minutes per day! Our lessons are designed for busy learners. Complete a quick session during your commute, lunch break, or before bed. Consistency beats intensity.'
+  },
+  {
+    question: 'What Chinese level do I need?',
+    answer: 'None! Drag\'n\'Scroll is perfect for absolute beginners. We\'ll start you from scratch with pinyin and basic greetings, then gradually build up to HSK 1 and beyond.'
+  },
+  {
+    question: 'Can I really learn Chinese with an app?',
+    answer: 'Yes! While apps work best combined with other learning methods, Drag\'n\'Scroll provides comprehensive vocabulary, grammar, conversation practice, and character writing. Many users successfully reach conversational level.'
+  },
+  {
+    question: 'What is HSK?',
+    answer: 'HSK (Hanyu Shuiping Kaoshi) is China\'s official standardized test of Chinese language proficiency. It ranges from HSK 1 (beginner) to HSK 6 (advanced/master). Drag\'n\'Scroll prepares you for all levels.'
+  },
+  {
+    question: 'How does the AI chat feature work?',
+    answer: 'Our AI chatbot uses advanced language models to simulate real conversations in Chinese. You can practice daily scenarios, get instant corrections, and improve your speaking skills naturally. Available in Pro and Premium plans.'
+  }
+]
+
+// Refs for scroll tracking
+const stepRefs = ref<HTMLElement[]>([])
+const stepsContainer = ref<HTMLElement | null>(null)
+
+function setStepRef(el: any, index: number) {
+  if (el) {
+    stepRefs.value[index] = el
   }
 }
 
-function goToRegister() {
-  router.push('/register')
-}
-
+// Navigation
 function goToApp() {
-  // If user is logged in, go to learn, otherwise go to register
   router.push('/learn')
 }
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function scrollToSection(id: string) {
+  const element = document.getElementById(id)
+  if (element) {
+    const offset = 80 // Navbar height
+    const top = element.getBoundingClientRect().top + window.pageYOffset - offset
+    window.scrollTo({ top, behavior: 'smooth' })
+  }
+}
+
+// FAQ toggle
+function toggleFaq(index: number) {
+  activeFaq.value = activeFaq.value === index ? null : index
+}
+
+// Scroll handling
+function handleScroll() {
+  isScrolled.value = window.scrollY > 50
+
+  // Update active step based on scroll position
+  if (stepsContainer.value) {
+    const scrollPos = window.pageYOffset + window.innerHeight / 2
+
+    stepRefs.value.forEach((step, index) => {
+      if (step) {
+        const stepTop = step.getBoundingClientRect().top + window.pageYOffset
+        if (scrollPos >= stepTop && scrollPos < stepTop + 300) {
+          activeStep.value = index
+        }
+      }
+    })
+  }
+}
+
+// Intersection Observer for reveal animations
+function setupRevealAnimations() {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+        }
+      })
+    },
+    {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    }
+  )
+
+  document.querySelectorAll('.section-reveal').forEach((section) => {
+    observer.observe(section)
+  })
+
+  return observer
+}
+
+// Load assets
+async function loadAssets() {
+  // Try to load screenshots
+  for (const screenshot of screenshots.value) {
+    try {
+      const response = await fetch(screenshot.src)
+      if (response.ok) {
+        screenshot.loaded = true
+      }
+    } catch {
+      // Keep placeholder
+    }
+  }
+
+  // Try to load video
+  try {
+    const response = await fetch(demoVideoSrc)
+    if (response.ok) {
+      demoVideoLoaded.value = true
+    }
+  } catch {
+    // Keep placeholder
+  }
+}
+
+// Lifecycle
+let revealObserver: IntersectionObserver | null = null
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  revealObserver = setupRevealAnimations()
+  loadAssets()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+  if (revealObserver) {
+    revealObserver.disconnect()
+  }
+})
 </script>
 
 <style scoped>
 .landing-view {
   min-height: 100vh;
-  background: var(--color-bg-primary);
+  background: #0a0a0f;
+  position: relative;
   overflow-x: hidden;
+}
+
+/* ============================================
+   BACKGROUND EFFECTS
+   ============================================ */
+
+.bg-gradient {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(120, 0, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0, 229, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255, 46, 46, 0.08) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-blobs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: blobFloat 20s ease-in-out infinite;
+}
+
+.blob-1 {
+  width: 600px;
+  height: 600px;
+  background: rgba(120, 0, 255, 0.3);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: rgba(0, 229, 255, 0.3);
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 7s;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 46, 46, 0.2);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 14s;
+}
+
+@keyframes blobFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem 0;
+  transition: all 0.3s ease;
+}
+
+.navbar-scrolled {
+  background: rgba(10, 10, 15, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+.logo-icon {
+  font-size: 2rem;
+}
+
+.logo-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00e5ff, #ff2e2e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+
+.navbar-nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  color: #00e5ff;
+}
+
+.navbar-cta {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  border: none;
+  border-radius: 50px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navbar-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.3);
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.section-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.section-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+section {
+  position: relative;
+  z-index: 1;
+  padding: 6rem 2rem;
+}
+
+.section-title {
+  font-size: 3rem;
+  font-weight: 900;
+  text-align: center;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
 }
 
 /* ============================================
@@ -254,278 +769,194 @@ function goToApp() {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  position: relative;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(0, 229, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(255, 46, 46, 0.1) 0%, transparent 50%);
+  padding-top: 6rem;
+}
+
+.hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
 }
 
 .hero-content {
-  max-width: 700px;
-  text-align: center;
-  position: relative;
   z-index: 2;
 }
 
 .hero-title {
-  font-size: 4rem;
-  font-weight: 900;
-  margin: 0 0 1rem 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1rem;
-  letter-spacing: 4px;
-  animation: fadeInDown 1s ease-out;
+  margin: 0 0 1.5rem 0;
 }
 
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dragon {
+.title-dragon {
   font-size: 5rem;
-  color: var(--color-neon-red);
-  text-shadow:
-    0 0 20px var(--color-neon-red),
-    0 0 40px var(--color-neon-red),
-    0 0 60px rgba(255, 0, 60, 0.5);
-  animation: dragonFloat 6s ease-in-out infinite;
+  color: #ff2e2e;
+  text-shadow: 0 0 30px rgba(255, 46, 46, 0.8);
+  animation: dragonPulse 3s ease-in-out infinite;
 }
 
-@keyframes dragonFloat {
+@keyframes dragonPulse {
   0%, 100% {
-    transform: translateY(0) rotate(0deg);
+    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: translateY(-20px) rotate(3deg);
+    transform: scale(1.05);
+    opacity: 0.8;
   }
 }
 
-.title-text {
-  background: var(--gradient-neon-rainbow);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 3rem;
-  letter-spacing: 8px;
-}
-
-.hero-tagline {
-  font-size: 1.5rem;
-  margin: 0 0 0.5rem 0;
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  letter-spacing: 2px;
-  animation: fadeInDown 1s ease-out 0.2s both;
+.title-main {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1.2;
 }
 
 .hero-subtitle {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 0 2rem 0;
-  color: var(--color-text-muted);
-  letter-spacing: 1px;
-  animation: fadeInDown 1s ease-out 0.4s both;
+  line-height: 1.6;
 }
 
 .hero-ctas {
   display: flex;
   gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  animation: fadeInUp 1s ease-out 0.6s both;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.cta-button {
-  padding: 1.25rem 2.5rem;
+.btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 50px;
   font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 2px;
-  border: none;
-  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.cta-primary {
-  background: var(--gradient-neon-cyber);
-  color: var(--color-bg-primary);
-  box-shadow: var(--shadow-glow-cyan);
+.btn-primary {
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  color: white;
 }
 
-.cta-primary:hover {
+.btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow:
-    var(--shadow-glow-cyan),
-    0 0 30px rgba(0, 229, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4);
 }
 
-.cta-secondary {
-  background: transparent;
-  border: 2px solid var(--color-neon-cyan);
-  color: var(--color-neon-cyan);
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
-.cta-secondary:hover {
-  background: rgba(0, 229, 255, 0.1);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-glow-cyan);
-}
-
-.cta-large {
-  padding: 1.5rem 3rem;
-  font-size: 1.2rem;
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-icon {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
 }
 
 .hero-visual {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 1;
+  position: relative;
+  height: 500px;
 }
 
-.floating-card {
+.visual-card {
   position: absolute;
-  background: var(--color-bg-card);
+  width: 200px;
+  height: 280px;
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
-  border: 2px solid var(--color-border-primary);
-  border-radius: var(--radius-xl);
-  padding: 2rem;
-  font-size: 3rem;
-  opacity: 0.1;
-  animation: float 6s ease-in-out infinite;
-  box-shadow: var(--shadow-card);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  animation: floatCard 6s ease-in-out infinite;
 }
 
 .card-1 {
-  top: 20%;
-  left: 10%;
+  top: 0;
+  left: 0;
   animation-delay: 0s;
 }
 
 .card-2 {
-  top: 60%;
-  right: 10%;
+  top: 100px;
+  right: 50px;
   animation-delay: 2s;
 }
 
 .card-3 {
-  bottom: 20%;
-  left: 20%;
+  bottom: 50px;
+  left: 50px;
   animation-delay: 4s;
 }
 
-@keyframes float {
+@keyframes floatCard {
   0%, 100% {
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0) rotate(-2deg);
   }
   50% {
-    transform: translateY(-30px) rotate(5deg);
+    transform: translateY(-20px) rotate(2deg);
   }
 }
 
-/* ============================================
-   SECTIONS
-   ============================================ */
-
-section {
-  padding: 5rem 2rem;
+.card-icon {
+  font-size: 4rem;
 }
 
-.section-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 900;
+.card-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
   text-align: center;
-  margin: 0 0 3rem 0;
-  letter-spacing: 2px;
-  background: var(--gradient-neon-cyber);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* ============================================
    FEATURES SECTION
    ============================================ */
 
-.features-section {
-  background: rgba(0, 0, 0, 0.2);
+.features-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
+  margin-bottom: 4rem;
 }
 
-.feature-card {
-  background: var(--color-bg-card);
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
-  border: 2px solid var(--color-border-primary);
-  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   padding: 2rem;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--gradient-neon-cyber);
-  transform: scaleX(0);
-  transition: transform 0.3s;
-}
-
-.feature-card:hover {
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 229, 255, 0.3);
   transform: translateY(-5px);
-  border-color: var(--color-neon-cyan);
-  box-shadow:
-    var(--shadow-card),
-    var(--shadow-glow-cyan);
-}
-
-.feature-card:hover::before {
-  transform: scaleX(1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .feature-icon {
@@ -536,131 +967,407 @@ section {
 .feature-title {
   font-size: 1.5rem;
   font-weight: 700;
+  color: white;
   margin: 0 0 1rem 0;
-  color: var(--color-neon-cyan);
 }
 
 .feature-description {
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin: 0;
+}
+
+/* Showcase Sections */
+.showcase-section {
+  margin: 4rem 0;
+}
+
+.showcase-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  margin: 0 0 2rem 0;
+}
+
+.screenshots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.screenshot-placeholder {
+  aspect-ratio: 9 / 16;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.screenshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.screenshot-placeholder-frame {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.2), rgba(120, 0, 255, 0.2));
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-gradient {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  opacity: 0.5;
+}
+
+.placeholder-text {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.video-placeholder {
+  max-width: 800px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.demo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-placeholder-frame {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 46, 46, 0.2), rgba(120, 0, 255, 0.2));
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.play-button {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.play-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.1);
+}
+
+.play-icon {
+  font-size: 2rem;
+  color: white;
+  margin-left: 0.3rem;
+}
+
+.video-caption {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ============================================
    HOW IT WORKS SECTION
    ============================================ */
 
-.how-it-works {
-  background: var(--color-bg-elevated);
+.how-container {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 3rem;
-  text-align: center;
-}
-
-.step {
+.steps-container {
   position: relative;
-  padding: 2rem;
+  padding: 2rem 0;
+}
+
+.steps-progress {
+  position: absolute;
+  left: 39px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.progress-line {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(180deg, #00e5ff, #7800ff);
+  transition: width 0.3s ease;
+}
+
+.steps-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 2rem;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.step-item.step-active {
+  opacity: 1;
+}
+
+.step-marker {
+  flex-shrink: 0;
 }
 
 .step-number {
   width: 80px;
   height: 80px;
-  background: var(--gradient-neon-cyber);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   font-weight: 900;
-  margin: 0 auto 1.5rem;
-  box-shadow:
-    var(--shadow-glow-cyan),
-    0 0 30px rgba(0, 229, 255, 0.3);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.step-active .step-number {
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  border-color: transparent;
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.step-content {
+  flex: 1;
+  padding-top: 1rem;
 }
 
 .step-title {
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: 700;
+  color: white;
   margin: 0 0 1rem 0;
-  color: var(--color-neon-cyan);
 }
 
 .step-description {
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin: 0;
+}
+
+/* ============================================
+   PRICING SECTION
+   ============================================ */
+
+.pricing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pricing-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin: 0 0 3rem 0;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  align-items: start;
+}
+
+.pricing-card {
+  position: relative;
+}
+
+.pricing-popular {
+  border-color: rgba(0, 229, 255, 0.5);
+  background: rgba(0, 229, 255, 0.05);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.pricing-header {
+  text-align: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+}
+
+.pricing-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1rem 0;
+}
+
+.pricing-price {
+  font-size: 3rem;
+  font-weight: 900;
+  color: white;
+  margin: 0.5rem 0;
+}
+
+.pricing-period {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.check-icon {
+  color: #00e5ff;
+  font-weight: 900;
+  font-size: 1.2rem;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pricing-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.pricing-btn-primary {
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  border-color: transparent;
+}
+
+.pricing-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 229, 255, 0.4);
 }
 
 /* ============================================
    FAQ SECTION
    ============================================ */
 
-.faq-section {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.faq-list {
+.faq-container {
   max-width: 800px;
   margin: 0 auto;
 }
 
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .faq-item {
-  background: var(--color-bg-card);
-  backdrop-filter: blur(20px);
-  border: 2px solid var(--color-border-primary);
-  border-radius: var(--radius-lg);
-  margin-bottom: 1rem;
-  overflow: hidden;
-  transition: all 0.3s;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .faq-item:hover {
-  border-color: var(--color-neon-cyan);
+  border-color: rgba(0, 229, 255, 0.3);
 }
 
 .faq-question {
-  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
-  user-select: none;
   gap: 1rem;
+  padding: 1.5rem;
   margin: 0;
 }
 
-.faq-question h3 {
+.faq-question-text {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
+  color: white;
   margin: 0;
-  color: var(--color-text-primary);
   flex: 1;
   text-align: left;
 }
 
 .faq-icon {
   font-size: 1.5rem;
-  color: var(--color-neon-cyan);
+  color: #00e5ff;
   flex-shrink: 0;
-  transition: transform 0.3s;
+  transition: transform 0.3s ease;
 }
 
-.faq-item:hover .faq-icon {
+.faq-active .faq-icon {
   transform: rotate(180deg);
 }
 
 .faq-answer {
   padding: 0 1.5rem 1.5rem;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  border-top: 1px solid var(--color-border-primary);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .faq-answer p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
   margin: 0;
 }
 
@@ -668,42 +1375,41 @@ section {
    CTA SECTION
    ============================================ */
 
-.cta-section {
-  background: var(--gradient-neon-cyber);
-  position: relative;
-  overflow: hidden;
+.cta {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(120, 0, 255, 0.1));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.cta-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
-  opacity: 0.3;
+.cta-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .cta-title {
   font-size: 2.5rem;
   font-weight: 900;
-  text-align: center;
+  color: white;
   margin: 0 0 1rem 0;
-  color: var(--color-bg-primary);
-  text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
-  position: relative;
-  z-index: 1;
 }
 
 .cta-subtitle {
-  font-size: 1.1rem;
-  text-align: center;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 0 2rem 0;
-  color: var(--color-bg-primary);
-  opacity: 0.9;
-  position: relative;
-  z-index: 1;
+}
+
+.btn-cta {
+  padding: 1.25rem 3rem;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #00e5ff, #7800ff);
+  color: white;
+}
+
+.btn-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(0, 229, 255, 0.4);
 }
 
 /* ============================================
@@ -711,74 +1417,86 @@ section {
    ============================================ */
 
 .footer {
-  background: var(--color-bg-elevated);
-  border-top: 1px solid var(--color-border-primary);
-  padding: 3rem 2rem 2rem;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4rem 2rem 2rem;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .footer-content {
-  max-width: 1200px;
-  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  margin-bottom: 3rem;
 }
 
-.footer-section h4 {
-  color: var(--color-neon-cyan);
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-title {
+  color: #00e5ff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
   letter-spacing: 1px;
 }
 
-.footer-section p {
-  color: var(--color-text-muted);
-  margin: 0;
+.footer-text {
+  color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
-  font-size: 0.9rem;
+  margin: 0;
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.social-link:hover {
+  color: #00e5ff;
+}
+
+.social-icon {
+  font-size: 1.2rem;
 }
 
 .footer-link {
-  display: block;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
   cursor: pointer;
 }
 
 .footer-link:hover {
-  color: var(--color-neon-cyan);
+  color: #00e5ff;
 }
 
 .footer-bottom {
-  max-width: 1200px;
-  margin: 0 auto;
   padding-top: 2rem;
-  border-top: 1px solid var(--color-border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
 }
 
 .footer-bottom p {
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
   margin: 0;
-  font-size: 0.85rem;
-}
-
-.github-link a {
-  color: var(--color-neon-cyan);
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.github-link a:hover {
-  color: var(--color-neon-pink);
 }
 
 /* ============================================
@@ -786,70 +1504,59 @@ section {
    ============================================ */
 
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
+  .navbar-nav {
+    display: none;
   }
 
-  .dragon {
-    font-size: 3rem;
-  }
-
-  .title-text {
-    font-size: 2rem;
-    letter-spacing: 4px;
-  }
-
-  .hero-tagline {
-    font-size: 1.2rem;
+  .hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 
   .hero-ctas {
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
   }
 
-  .cta-button {
-    width: 100%;
-    justify-content: center;
+  .hero-visual {
+    display: none;
+  }
+
+  .title-dragon {
+    font-size: 3rem;
+  }
+
+  .title-main {
+    font-size: 1.8rem;
   }
 
   .section-title {
     font-size: 2rem;
   }
 
-  .steps {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .steps-progress {
+    left: 19px;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .step-title {
+    font-size: 1.3rem;
+  }
+
+  .pricing-grid {
     grid-template-columns: 1fr;
   }
 
   .footer-content {
     grid-template-columns: 1fr;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .floating-card {
-    display: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero {
-    padding: 1rem;
-  }
-
-  .section-title {
-    font-size: 1.75rem;
-  }
-
-  .faq-question {
-    padding: 1rem;
-  }
-
-  .faq-answer {
-    padding: 0 1rem 1rem;
   }
 }
 </style>
