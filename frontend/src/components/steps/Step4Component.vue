@@ -3,15 +3,15 @@
     <div class="step-header">
       <h2 class="step-title">
         <span class="icon">🎧</span>
-        LISTENING
+        АУДИРОВАНИЕ
       </h2>
-      <p class="step-subtitle">Listen and choose the right response</p>
+      <p class="step-subtitle">Слушайте и выбирайте правильный ответ</p>
     </div>
 
     <!-- No Data State -->
     <div v-if="!stepData || !stepData.lines || stepData.lines.length === 0" class="no-data">
-      <p>No dialogue exercise available for this step.</p>
-      <p class="hint">Please check back later or contact support.</p>
+      <p>Нет упражнения на диалог для этого шага.</p>
+      <p class="hint">Пожалуйста, вернитесь позже или свяжитесь с поддержкой.</p>
     </div>
 
     <div v-else class="dialogue-container">
@@ -33,21 +33,21 @@
         </div>
 
         <div class="question-section">
-          <h4>Question:</h4>
+          <h4>Вопрос:</h4>
           <div class="question">
             <span class="question-hanzi clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_hanzi }}</span>
             <span class="question-pinyin clickable-word" @click="speakHanzi(stepData.question_hanzi)" title="Нажмите для озвучки">{{ stepData.question_pinyin }}</span>
           </div>
 
           <button @click="playAudio" class="play-audio-btn">
-            <span class="icon">🔊</span> PLAY DIALOGUE
+            <span class="icon">🔊</span> ВОСПРОИЗВЕСТИ ДИАЛОГ
           </button>
         </div>
       </div>
 
       <!-- Response Options -->
       <div class="options-section">
-        <h4>How would you respond?</h4>
+        <h4>Как бы вы ответили?</h4>
         <div class="options-grid">
           <button
             v-for="(option, index) in stepData.options"
@@ -73,7 +73,7 @@
         <div class="feedback" :class="{ correct: isCorrect, incorrect: !isCorrect }">
           <div class="feedback-icon">{{ isCorrect ? '✓' : '✗' }}</div>
           <div class="feedback-text">
-            {{ isCorrect ? 'CORRECT!' : 'NOT QUITE' }}
+            {{ isCorrect ? 'ПРАВИЛЬНО!' : 'НЕ СОВСЕМ' }}
           </div>
           <div v-if="explanation" class="explanation">{{ explanation }}</div>
         </div>

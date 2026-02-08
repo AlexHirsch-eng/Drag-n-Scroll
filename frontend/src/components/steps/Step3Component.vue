@@ -3,15 +3,15 @@
     <div class="step-header">
       <h2 class="step-title">
         <span class="icon">📝</span>
-        GRAMMAR
+        ГРАММАТИКА
       </h2>
-      <p class="step-subtitle">Build sentences with the new pattern</p>
+      <p class="step-subtitle">Составляйте предложения с новым шаблоном</p>
     </div>
 
     <!-- No Data State -->
     <div v-if="!stepData || !stepData.grammar_rule" class="no-data">
-      <p>No grammar exercise available for this step.</p>
-      <p class="hint">Please check back later or contact support.</p>
+      <p>Нет грамматического упражнения для этого шага.</p>
+      <p class="hint">Пожалуйста, вернитесь позже или свяжитесь с поддержкой.</p>
     </div>
 
     <div v-else class="grammar-container">
@@ -62,23 +62,23 @@
               {{ comp.hanzi }}
             </span>
             <span v-if="builtSentence.length === 0" class="placeholder">
-              Click components above to build your sentence
+              Нажимайте на компоненты выше, чтобы составить предложение
             </span>
           </div>
         </div>
 
         <button @click="submitSentence" class="submit-btn" :disabled="builtSentence.length === 0">
-          CHECK ANSWER
+          ПРОВЕРИТЬ ОТВЕТ
         </button>
 
         <!-- Feedback -->
         <div v-if="showResult" class="feedback" :class="{ correct: isCorrect, incorrect: !isCorrect }">
           <div class="feedback-icon">{{ isCorrect ? '✓' : '✗' }}</div>
           <div class="feedback-text">
-            {{ isCorrect ? 'CORRECT!' : 'TRY AGAIN' }}
+            {{ isCorrect ? 'ПРАВИЛЬНО!' : 'ПОПРОБУЙТЕ СНОВА' }}
           </div>
           <div v-if="!isCorrect && correctAnswer" class="correct-answer">
-            Correct: {{ correctAnswer }}
+            Правильно: {{ correctAnswer }}
           </div>
         </div>
       </div>

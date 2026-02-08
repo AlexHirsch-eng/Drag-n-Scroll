@@ -68,7 +68,9 @@
       <div v-else class="chat-container">
         <!-- Chat Header -->
         <div class="chat-header">
-          <div class="ai-avatar">🤖</div>
+          <div class="ai-avatar">
+            <img src="/src/images/ai.png" alt="AI" class="ai-avatar-img">
+          </div>
           <div class="header-info">
             <h1 class="chat-title">AI 中文助手</h1>
             <p class="chat-subtitle">Практикуйте китайский с ИИ помощником</p>
@@ -105,7 +107,9 @@
           </div>
 
           <div v-for="(message, index) in messages" :key="index" :class="['message', message.role]">
-            <div v-if="message.role === 'assistant'" class="message-avatar ai">🤖</div>
+            <div v-if="message.role === 'assistant'" class="message-avatar ai">
+              <img src="/src/images/ai.png" alt="AI" class="ai-message-avatar">
+            </div>
             <div class="message-content">
               <div class="message-text">{{ message.content }}</div>
               <div class="message-time">{{ formatTime(message.timestamp) }}</div>
@@ -115,7 +119,9 @@
 
           <!-- Typing Indicator -->
           <div v-if="isTyping" class="message assistant typing">
-            <div class="message-avatar ai">🤖</div>
+            <div class="message-avatar ai">
+              <img src="/src/images/ai.png" alt="AI" class="ai-message-avatar">
+            </div>
             <div class="message-content">
               <div class="typing-indicator">
                 <span></span>
@@ -514,8 +520,19 @@ function goToShop() {
 }
 
 .ai-avatar {
-  font-size: 2.5rem;
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   animation: float 3s ease-in-out infinite;
+}
+
+.ai-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.5));
 }
 
 @keyframes float {
@@ -693,8 +710,8 @@ function goToShop() {
 }
 
 .message-avatar {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -706,6 +723,14 @@ function goToShop() {
 .message-avatar.ai {
   background: linear-gradient(135deg, rgba(0, 245, 255, 0.2), rgba(180, 0, 255, 0.2));
   border: 2px solid var(--color-neon-cyan);
+  padding: 0;
+  overflow: hidden;
+}
+
+.ai-message-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .message-avatar.user {

@@ -41,7 +41,7 @@
         </div>
         <div class="stats-row">
           <div class="stat-badge stat-primary">
-            <span class="icon">⚡</span>
+            <img src="/src/images/coin.png" alt="coin" class="coin-icon-learn">
             <span>{{ mainScreenData?.xp_total }}</span> СКРОЛЛЫ
           </div>
           <div class="stat-badge stat-pink">
@@ -631,6 +631,23 @@ function goBack() {
   background: rgba(255, 230, 109, 0.15);
   border: 1px solid var(--color-accent-tertiary);
   color: var(--color-accent-tertiary);
+}
+
+.coin-icon-learn {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  animation: coinFloat 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
+@keyframes coinFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(10deg);
+  }
 }
 
 .sessions-grid {

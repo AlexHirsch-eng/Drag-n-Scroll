@@ -3,9 +3,9 @@
     <div class="step-header">
       <h2 class="step-title">
         <span class="icon">🔄</span>
-        SRS REVIEW
+        SRS ПОВТОРЕНИЕ
       </h2>
-      <p class="step-subtitle">Review words from previous lessons</p>
+      <p class="step-subtitle">Повторите слова из предыдущих уроков</p>
     </div>
 
     <!-- Flashcard -->
@@ -15,7 +15,7 @@
           <div class="hanzi clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ currentCard.word.hanzi }}</div>
           <div class="pinyin clickable-word" @click="speakHanzi" title="Нажмите для озвучки">{{ currentCard.word.pinyin }}</div>
           <button @click="playAudio" class="audio-btn">
-            <span class="icon">🔊</span> PLAY AUDIO
+            <span class="icon">🔊</span> ВОСПРОИЗВЕСТИ АУДИО
           </button>
         </div>
 
@@ -44,7 +44,7 @@
           {{ isCorrect ? '✓' : '✗' }}
         </div>
         <div class="feedback-text">
-          {{ isCorrect ? 'CORRECT!' : 'TRY AGAIN NEXT TIME' }}
+          {{ isCorrect ? 'ПРАВИЛЬНО!' : 'ПОПРОБУЙТЕ В СЛЕДУЮЩИЙ РАЗ' }}
         </div>
       </div>
 
@@ -53,7 +53,7 @@
         @click="nextCard"
         class="next-btn"
       >
-        NEXT CARD →
+        СЛЕДУЮЩАЯ КАРТОЧКА →
       </button>
 
       <button
@@ -62,13 +62,13 @@
         class="next-btn complete-btn"
         :disabled="isSubmitting"
       >
-        {{ isSubmitting ? 'SUBMITTING...' : 'COMPLETE STEP →' }}
+        {{ isSubmitting ? 'ОТПРАВКА...' : 'ЗАВЕРШИТЬ ШАГ →' }}
       </button>
     </div>
 
     <!-- Progress -->
     <div class="progress-indicator">
-      <span>Card {{ currentCardIndex + 1 }} of {{ totalCards }}</span>
+      <span>Карточка {{ currentCardIndex + 1 }} из {{ totalCards }}</span>
       <div class="mini-progress">
         <div class="progress-fill" :style="{ width: progress + '%' }"></div>
       </div>

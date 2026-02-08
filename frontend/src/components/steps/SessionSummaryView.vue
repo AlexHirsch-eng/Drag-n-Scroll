@@ -14,7 +14,7 @@
           <div class="stat-icon">📖</div>
           <div class="stat-content">
             <div class="stat-value">{{ summaryData?.words_learned }}</div>
-            <div class="stat-label">Words Learned</div>
+            <div class="stat-label">Выучено слов</div>
           </div>
         </div>
 
@@ -22,15 +22,17 @@
           <div class="stat-icon">🎯</div>
           <div class="stat-content">
             <div class="stat-value">{{ summaryData?.accuracy_percentage }}</div>
-            <div class="stat-label">Accuracy</div>
+            <div class="stat-label">Точность</div>
           </div>
         </div>
 
         <div class="stat-item">
-          <div class="stat-icon">⚡</div>
+          <div class="stat-icon">
+            <img src="/src/images/coin.png" alt="coin" class="coin-icon-summary">
+          </div>
           <div class="stat-content">
             <div class="stat-value">{{ summaryData?.xp_earned }}</div>
-            <div class="stat-label">SCROLLS Earned</div>
+            <div class="stat-label">Заработано СКРОЛЛОВ</div>
           </div>
         </div>
 
@@ -38,14 +40,14 @@
           <div class="stat-icon">⏱️</div>
           <div class="stat-content">
             <div class="stat-value">{{ summaryData?.time_spent_minutes }}m</div>
-            <div class="stat-label">Time Spent</div>
+            <div class="stat-label">Затрачено времени</div>
           </div>
         </div>
       </div>
 
       <!-- Problematic Words -->
       <div v-if="summaryData && summaryData.problematic_words_count > 0" class="problematic-section">
-        <h4>Words to Review ({{ summaryData.problematic_words_count }})</h4>
+        <h4>Слова для повторения ({{ summaryData.problematic_words_count }})</h4>
         <div class="problematic-words">
           <div
             v-for="word in summaryData.problematic_words"
@@ -63,17 +65,17 @@
       <div v-if="summaryData?.is_day_completed" class="day-complete-banner">
         <div class="banner-icon">🏆</div>
         <div class="banner-text">
-          <h3>DAY COMPLETE!</h3>
-          <p>Both Session A and Session B finished</p>
+          <h3>ДЕНЬ ЗАВЕРШЁН!</h3>
+          <p>Обе сессии A и B завершены</p>
         </div>
       </div>
 
       <div class="summary-actions">
         <button @click="$emit('close')" class="action-btn primary">
-          BACK TO LEARN
+          НАЗАД К ОБУЧЕНИЮ
         </button>
         <button v-if="!summary?.is_day_completed" @click="startOtherSession" class="action-btn secondary">
-          START {{ otherSessionType }} →
+          НАЧАТЬ {{ otherSessionType }} →
         </button>
       </div>
     </div>
@@ -120,7 +122,7 @@ const summaryData = computed(() => {
 })
 
 const otherSessionType = computed(() => {
-  return props.session?.session_type === 'A' ? 'SESSION B' : 'SESSION A'
+  return props.session?.session_type === 'A' ? 'СЕССИЮ B' : 'СЕССИЮ A'
 })
 
 function startOtherSession() {
@@ -240,6 +242,26 @@ function startOtherSession() {
 
 .stat-icon {
   font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coin-icon-summary {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  animation: coinPulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes coinPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .stat-content {

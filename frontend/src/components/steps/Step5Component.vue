@@ -3,31 +3,31 @@
     <div class="step-header">
       <h2 class="step-title">
         <span class="icon">🧩</span>
-        WORD ARRANGEMENT
+        ПОРЯДОК СЛОВ
       </h2>
-      <p class="step-subtitle">Arrange the words to build the sentence</p>
+      <p class="step-subtitle">Расположите слова, чтобы составить предложение</p>
     </div>
 
     <!-- No Data State -->
     <div v-if="!stepData || !stepData.scrambled_words || stepData.scrambled_words.length === 0" class="no-data">
       <div class="no-data-icon">📝</div>
-      <p>No word arrangement exercise available for this step.</p>
-      <p class="hint">Check back later or try a different session!</p>
-      <button @click="skipStep" class="skip-btn">SKIP STEP</button>
+      <p>Нет упражнения на порядок слов для этого шага.</p>
+      <p class="hint">Вернитесь позже или попробуйте другую сессию!</p>
+      <button @click="skipStep" class="skip-btn">ПРОПУСТИТЬ ШАГ</button>
     </div>
 
     <div v-else class="arrangement-container">
       <!-- Target Sentence Display -->
       <div class="target-card">
         <div class="target-info">
-          <span class="label">LISTEN AND BUILD:</span>
+          <span class="label">СЛУШАЙТЕ И СОСТАВЛЯЙТЕ:</span>
           <span class="target-hanzi clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_hanzi }}</span>
           <span class="target-pinyin clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_pinyin }}</span>
           <span class="target-translation">{{ getTranslation(stepData) }}</span>
         </div>
 
         <button @click="playAudio" class="audio-btn">
-          <span class="icon">🔊</span> PLAY AUDIO
+          <span class="icon">🔊</span> ВОСПРОИЗВЕСТИ АУДИО
         </button>
 
         <div v-if="stepData.hint" class="hint">
@@ -38,8 +38,8 @@
       <!-- Word Bank -->
       <div class="word-bank-section">
         <div class="section-header">
-          <h4>Available Words</h4>
-          <span class="word-count">{{ availableWords.length }} words</span>
+          <h4>Доступные слова</h4>
+          <span class="word-count">{{ availableWords.length }} слов</span>
         </div>
         <div class="word-bank">
           <div
@@ -57,7 +57,7 @@
       <!-- Arrangement Area -->
       <div class="arrangement-area">
         <div class="section-header">
-          <h4>Your Sentence</h4>
+          <h4>Ваше предложение</h4>
           <span class="progress-text">{{ arrangementSlots.filter(s => s.word).length }} / {{ arrangementSlots.length }}</span>
         </div>
         <div class="arrangement-slots">
@@ -71,7 +71,7 @@
             <span v-if="slot.word" class="word-hanzi clickable-word" @click.stop="speakHanzi(slot.word.hanzi)" title="Нажмите для озвучки">{{ slot.word.hanzi }}</span>
             <span v-else class="empty-slot">
               <span class="slot-number">{{ index + 1 }}</span>
-              <span class="slot-label">empty</span>
+              <span class="slot-label">пусто</span>
             </span>
             <button v-if="slot.word" class="remove-btn">×</button>
           </div>
@@ -79,7 +79,7 @@
 
         <!-- Current Sentence Preview -->
         <div v-if="arrangementSlots.some(s => s.word)" class="sentence-preview">
-          <span class="preview-label">Current:</span>
+          <span class="preview-label">Текущее:</span>
           <span class="preview-text">{{ currentSentence }}</span>
         </div>
       </div>
@@ -87,11 +87,11 @@
       <!-- Action Buttons -->
       <div class="action-section">
         <button @click="resetArrangement" class="reset-btn" v-if="arrangementSlots.some(s => s.word)">
-          <span class="icon">↺</span> RESET
+          <span class="icon">↺</span> СБРОСИТЬ
         </button>
 
         <button @click="checkArrangement" class="check-btn" :disabled="!isComplete">
-          <span class="icon">✓</span> CHECK ANSWER
+          <span class="icon">✓</span> ПРОВЕРИТЬ ОТВЕТ
         </button>
 
         <!-- Feedback -->
@@ -99,10 +99,10 @@
           <div class="feedback-content">
             <div class="feedback-icon">{{ isCorrect ? '🎉' : '💪' }}</div>
             <div class="feedback-text">
-              {{ isCorrect ? 'PERFECT!' : 'KEEP TRYING!' }}
+              {{ isCorrect ? 'ИДЕАЛЬНО!' : 'ПРОДОЛЖАЙТЕ СТАРАТЬСЯ!' }}
             </div>
             <div v-if="!isCorrect" class="feedback-hint">
-              Try again or reset to start over
+              Попробуйте снова или сбросьте для начала заново
             </div>
           </div>
         </div>

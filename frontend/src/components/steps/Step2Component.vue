@@ -3,21 +3,21 @@
     <div class="step-header">
       <h2 class="step-title">
         <span class="icon">📖</span>
-        NEW WORDS
+        НОВЫЕ СЛОВА
       </h2>
-      <p class="step-subtitle">Learn 5 new words</p>
+      <p class="step-subtitle">Изучите 5 новых слов</p>
     </div>
 
     <!-- No Data State -->
     <div v-if="!stepData || !words || words.length === 0" class="no-data">
-      <p>No words available for this step.</p>
-      <p class="hint">This might be because all words have been learned.</p>
+      <p>Нет слов для этого шага.</p>
+      <p class="hint">Это может быть потому, что все слова уже выучены.</p>
     </div>
 
     <!-- Word Display -->
     <div v-else-if="currentWord" class="word-container">
       <div class="progress-indicator">
-        <span>Word {{ currentWordIndex + 1 }} / {{ totalWords }}</span>
+        <span>Слово {{ currentWordIndex + 1 }} / {{ totalWords }}</span>
         <div class="mini-progress">
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
         </div>
@@ -40,19 +40,19 @@
 
         <div class="audio-section">
           <button @click="playAudio" class="audio-btn">
-            <span class="icon">🔊</span> NORMAL SPEED
+            <span class="icon">🔊</span> НОРМАЛЬНАЯ СКОРОСТЬ
           </button>
           <button @click="playAudioSlow" class="audio-btn audio-btn-slow">
-            <span class="icon">🐢</span> SLOW SPEED
+            <span class="icon">🐢</span> МЕДЛЕННАЯ СКОРОСТЬ
           </button>
         </div>
 
         <!-- Pronunciation Practice -->
         <div class="pronunciation-section">
-          <p class="pronunciation-prompt">Practice pronunciation:</p>
+          <p class="pronunciation-prompt">Практикуйте произношение:</p>
           <button @click="repeatPronunciation" class="repeat-btn">
             <span class="icon">🎤</span>
-            <span>REPEAT</span>
+            <span>ПОВТОРИТЬ</span>
           </button>
           <div v-if="pronunciationResult" class="pronunciation-result" :class="{ ok: pronunciationResult === 'OK' }">
             {{ pronunciationResult }}
@@ -62,8 +62,8 @@
 
       <!-- Mini Test -->
       <div class="mini-test">
-        <h3>Quick Quiz</h3>
-        <p class="quiz-prompt">Select the correct translation:</p>
+        <h3>Быстрый тест</h3>
+        <p class="quiz-prompt">Выберите правильный перевод:</p>
         <div class="options-grid">
           <button
             v-for="(option, index) in quizOptions"
@@ -86,7 +86,7 @@
           @click="nextWord"
           class="next-btn"
         >
-          NEXT WORD →
+          СЛЕДУЮЩЕЕ СЛОВО →
         </button>
       </div>
     </div>
