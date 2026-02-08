@@ -74,15 +74,17 @@ class APIClient {
             }
 
             console.log('[API] Refreshing token...')
-            const response = await axios.post(`${API_BASE_URL}/auth/jwt/create/`, {
-              username: localStorage.getItem('username') || 'testuser',
-              password: localStorage.getItem('password') || 'testpass123'
+            const response = await axios.post(`${API_BASE_URL}/auth/jwt/refresh/`, {
+              refresh: refreshToken
             })
 
-            const { access, refresh } = response.data
+            const { access } = response.data
             localStorage.setItem('access_token', access)
-            if (refresh) {
-              localStorage.setItem('refresh_token', refresh)
+
+            // Djoser simplejwt doesn't return refresh token on refresh (rotate is on backend)
+            // but if it does, save it
+            if (response.data.refresh) {
+              localStorage.setItem('refresh_token', response.data.refresh)
             }
 
             console.log('[API] Token refreshed successfully')

@@ -8,9 +8,15 @@ node_modules/
 dist/
 build/
 
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Python / backend (если есть)
 venv/
-.env
 __pycache__/
 *.pyc
 
