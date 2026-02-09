@@ -1199,7 +1199,12 @@ def create_demo_data(request):
 
         created_words = []
         for word_data in words_data:
-            word = Word.objects.create(**word_data)
+            # Use get_or_create to avoid duplicate key errors
+            word, created = Word.objects.get_or_create(
+                hanzi=word_data['hanzi'],
+                pinyin=word_data['pinyin'],
+                defaults=word_data
+            )
             course_day.new_words.add(word)
             created_words.append({
                 'id': word.id,
@@ -1209,29 +1214,32 @@ def create_demo_data(request):
 
         # Create grammar rule
         from vocab.models import GrammarRule, GrammarExample
-        grammar_rule = GrammarRule.objects.create(
+        grammar_rule, _ = GrammarRule.objects.get_or_create(
             hsk_level=1,
             title="Порядок слов в предложении",
-            pattern="Подлежащее + Сказуемое + Дополнение",
-            explanation_ru="В китайском языке порядок слов строгий: сначала подлежащее, потом сказуемое, затем дополнение.",
-            explanation_kz="Қытай тілінде сөз тәртірі қатаң: бастауыш, айтылымы, толықтауыш."
+            defaults={
+                'pattern': "Подлежащее + Сказуемое + Дополнение",
+                'explanation_ru': "В китайском языке порядок слов строгий: сначала подлежащее, потом сказуемое, затем дополнение.",
+                'explanation_kz': "Қытай тілінде сөз тәртірі қатаң: бастауыш, айтылымы, толықтауыш."
+            }
         )
 
-        # Add grammar examples
-        GrammarExample.objects.create(
-            grammar_rule=grammar_rule,
-            sentence_hanzi="我很好。",
-            sentence_pinyin="Wǒ hěn hǎo.",
-            translation_ru="Я очень хорошо.",
-            translation_kz="Мен өте жақсымын."
-        )
-        GrammarExample.objects.create(
-            grammar_rule=grammar_rule,
-            sentence_hanzi="你好吗？",
-            sentence_pinyin="Nǐ hǎo ma?",
-            translation_ru="Как дела?",
-            translation_kz="Қалың қалай?"
-        )
+        # Add grammar examples (check if they exist)
+        if not grammar_rule.examples.exists():
+            GrammarExample.objects.create(
+                grammar_rule=grammar_rule,
+                sentence_hanzi="我很好。",
+                sentence_pinyin="Wǒ hěn hǎo.",
+                translation_ru="Я очень хорошо.",
+                translation_kz="Мен өте жақсымын."
+            )
+            GrammarExample.objects.create(
+                grammar_rule=grammar_rule,
+                sentence_hanzi="你好吗？",
+                sentence_pinyin="Nǐ hǎo ma?",
+                translation_ru="Как дела?",
+                translation_kz="Қалың қалай?"
+            )
         course_day.grammar_rules.add(grammar_rule)
 
         # Create grammar tasks for sessions A and B
