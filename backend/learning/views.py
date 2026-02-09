@@ -615,6 +615,9 @@ def submit_step_1(request):
     # Mark as problematic if incorrect
     if not is_correct:
         card.is_problematic = True
+        # Ensure problematic_words is a list
+        if session.problematic_words is None:
+            session.problematic_words = []
         if card.word.id not in session.problematic_words:
             session.problematic_words.append(card.word.id)
 
