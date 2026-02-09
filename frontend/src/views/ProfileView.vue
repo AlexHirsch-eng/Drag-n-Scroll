@@ -287,8 +287,8 @@ const authStore = useAuthStore()
 
 const isLoading = ref(true)
 const isLoadingVideos = ref(true)
-const isOwnProfile = computed(() => !route.params.id)
 const profileUserId = computed(() => route.params.id ? parseInt(route.params.id as string) : authStore.user?.id)
+const isOwnProfile = computed(() => profileUserId.value === authStore.user?.id)
 const user = ref(authStore.user)
 const userVideos = ref<Video[]>([])
 const profileForm = ref({
