@@ -1139,8 +1139,6 @@ def create_demo_data(request):
             existing.delete()
 
         # Create HSK 1 Course
-
-        # Create HSK 1 Course
         course = Course.objects.create(
             hsk_level=1,
             title="HSK 1 - Начальный уровень",
