@@ -32,7 +32,7 @@
         <!-- Video Player - Keep video element always in DOM -->
         <div class="video-player">
           <video
-            :ref="(el) => { if(el) videoPlayers.value[index] = el as HTMLVideoElement }"
+            :ref="(el) => { if(el) videoPlayers[index] = el as HTMLVideoElement }"
             :src="video.url"
             :poster="video.thumbnail"
             loop
