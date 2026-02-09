@@ -1091,3 +1091,128 @@ def srs_submit_review(request):
     }
 
     return Response(response_data)
+
+
+# ============================================================================
+# ADMIN: CREATE DEMO DATA
+# ============================================================================
+
+@api_view(['POST'])
+def create_demo_data(request):
+    """
+    Create demo course data (HSK 1 with basic words)
+    Protected by secret key to prevent abuse
+    """
+    from course.models import Course, CourseDay
+    from vocab.models import Word
+
+    # Simple secret key protection
+    SECRET_KEY = 'drag-n-scroll-demo-2026'
+    provided_key = request.data.get('secret_key') or request.GET.get('secret_key')
+
+    if provided_key != SECRET_KEY:
+        return Response(
+            {'error': 'Unauthorized: Invalid secret key'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    try:
+        # Check if course already exists
+        existing = Course.objects.filter(hsk_level=1, is_active=True).first()
+        if existing:
+            return Response({
+                'message': 'Demo course already exists',
+                'course': {
+                    'id': existing.id,
+                    'title': existing.title,
+                    'hsk_level': existing.hsk_level
+                }
+            })
+
+        # Create HSK 1 Course
+        course = Course.objects.create(
+            hsk_level=1,
+            title="HSK 1 - Начальный уровень",
+            description="Базовый курс китайского языка для начинающих",
+            is_active=True
+        )
+
+        # Create Day 1
+        course_day = CourseDay.objects.create(
+            course=course,
+            day_number=1,
+            title="Урок 1: Приветствие и знакомство",
+            description="Научимся здороваться и представляться",
+            estimated_minutes=15
+        )
+
+        # Create basic words
+        words_data = [
+            {
+                'hanzi': '你好',
+                'pinyin': 'nǐ hǎo',
+                'translation_ru': 'Привет',
+                'translation_kz': 'Сәлем',
+                'hsk_level': 1
+            },
+            {
+                'hanzi': '我',
+                'pinyin': 'wǒ',
+                'translation_ru': 'Я',
+                'translation_kz': 'Мен',
+                'hsk_level': 1
+            },
+            {
+                'hanzi': '你',
+                'pinyin': 'nǐ',
+                'translation_ru': 'Ты',
+                'translation_kz': 'Сен',
+                'hsk_level': 1
+            },
+            {
+                'hanzi': '谢谢',
+                'pinyin': 'xièxie',
+                'translation_ru': 'Спасибо',
+                'translation_kz': 'Рахмет',
+                'hsk_level': 1
+            },
+            {
+                'hanzi': '再见',
+                'pinyin': 'zàijiàn',
+                'translation_ru': 'До свидания',
+                'translation_kz': 'Сау бол',
+                'hsk_level': 1
+            }
+        ]
+
+        created_words = []
+        for word_data in words_data:
+            word = Word.objects.create(**word_data)
+            course_day.new_words.add(word)
+            created_words.append({
+                'id': word.id,
+                'hanzi': word.hanzi,
+                'pinyin': word.pinyin
+            })
+
+        return Response({
+            'message': 'Demo course created successfully',
+            'course': {
+                'id': course.id,
+                'title': course.title,
+                'hsk_level': course.hsk_level
+            },
+            'day': {
+                'id': course_day.id,
+                'day_number': course_day.day_number,
+                'title': course_day.title
+            },
+            'words_created': len(created_words),
+            'words': created_words
+        }, status=status.HTTP_201_CREATED)
+
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to create demo data: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

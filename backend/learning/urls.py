@@ -26,4 +26,7 @@ urlpatterns = [
     path('srs/review-batch/', views.srs_review_batch, name='srs-review-batch'),
     path('srs/mistakes-batch/', views.srs_mistakes_batch, name='srs-mistakes-batch'),
     path('srs/submit-review/', views.srs_submit_review, name='srs-submit-review'),
+
+    # Admin: Create Demo Data
+    path('create-demo-data/', views.create_demo_data, name='create-demo-data'),
 ]

@@ -189,6 +189,7 @@
 import { ref, nextTick, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { chatAPI } from '@/api/chat'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -286,24 +287,7 @@ async function sendMessage() {
       }))
 
     // Call real AI API
-    const response = await fetch('http://localhost:8000/api/chat/ai/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-      },
-      body: JSON.stringify({
-        message: messageText,
-        history: history
-      })
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'API request failed')
-    }
-
-    const data = await response.json()
+    const data = await chatAPI.sendAIMessage(messageText, history)
 
     // Remove typing indicator
     isTyping.value = false
