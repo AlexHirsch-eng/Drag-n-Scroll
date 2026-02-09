@@ -274,7 +274,7 @@ function formatDuration(seconds: number): string {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 </script>
 

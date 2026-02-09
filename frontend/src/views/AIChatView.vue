@@ -331,7 +331,7 @@ function clearChat() {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 
 function goToShop() {

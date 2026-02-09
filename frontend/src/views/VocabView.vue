@@ -163,7 +163,7 @@ function getCardClass(srsLevel: number) {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 
 function speakWord(hanzi: string) {

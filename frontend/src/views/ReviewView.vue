@@ -241,7 +241,7 @@ function getAccuracyClass(accuracy: number) {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 </script>
 

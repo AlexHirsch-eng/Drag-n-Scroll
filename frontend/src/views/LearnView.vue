@@ -309,7 +309,7 @@ function getProgress(sessionType: 'A' | 'B'): number {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 </script>
 

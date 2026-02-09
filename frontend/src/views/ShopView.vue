@@ -428,7 +428,7 @@ function confirmPurchase() {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 </script>
 

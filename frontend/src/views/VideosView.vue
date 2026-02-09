@@ -812,7 +812,7 @@ function formatTime(dateString: string): string {
 }
 
 function goBack() {
-  router.push('/')
+  router.push('/app')
 }
 
 function toggleSearch() {
