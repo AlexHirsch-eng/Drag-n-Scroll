@@ -171,7 +171,7 @@ SIMPLE_JWT = {
 # Example: https://drag-n-scroll.vercel.app,https://your-custom-domain.com
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://[::1]:5173,https://drag-n-scroll.vercel.app',
+    default='http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://[::1]:5173,https://drag-n-scroll.vercel.app,https://frontend-nine-iota-48.vercel.app',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
