@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'course',
     'vocab',
     'learning',
-    'video_app',
+    'video',
     'chat',
 ]
 

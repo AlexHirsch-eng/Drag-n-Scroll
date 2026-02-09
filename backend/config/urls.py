@@ -16,7 +16,7 @@ urlpatterns = [
     path('api/learning/', include('learning.urls')),
     path('api/vocab/', include('vocab.urls')),
     path('api/course/', include('course.urls')),
-    path('api/video/', include('video_app.urls')),
+    path('api/video/', include('video.urls')),
     path('api/chat/', include('chat.urls')),
 ]
 
