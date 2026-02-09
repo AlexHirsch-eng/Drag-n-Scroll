@@ -140,6 +140,97 @@
           </div>
         </div>
 
+        <!-- Post Video Section (only for own profile) -->
+        <div v-if="isOwnProfile" class="post-video-section">
+          <h3 class="section-title">
+            <span class="title-icon">📹</span>
+            ДОБАВИТЬ ВИДЕО
+          </h3>
+          <button @click="showPostVideoModal = true" class="cyber-btn cyber-btn-primary">
+            <span class="btn-text">+ ПОСТИТЬ ВИДЕО</span>
+            <span class="btn-glitch"></span>
+          </button>
+        </div>
+
+        <!-- Post Video Modal -->
+        <div v-if="showPostVideoModal" class="modal-overlay" @click.self="showPostVideoModal = false">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>📹 Добавить видео</h2>
+              <button @click="showPostVideoModal = false" class="close-btn">×</button>
+            </div>
+            <form @submit.prevent="postVideo" class="post-video-form">
+              <div class="form-group">
+                <label class="form-label">Название *</label>
+                <input
+                  v-model="videoForm.title"
+                  type="text"
+                  class="cyber-input"
+                  placeholder="Название видео"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ссылка на видео *</label>
+                <input
+                  v-model="videoForm.video_url"
+                  type="url"
+                  class="cyber-input"
+                  placeholder="https://youtube.com/watch?v=..."
+                  required
+                >
+                <div class="form-hint">Поддерживается: YouTube, Vimeo, и другие платформы</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ссылка на обложку</label>
+                <input
+                  v-model="videoForm.thumbnail_url"
+                  type="url"
+                  class="cyber-input"
+                  placeholder="https://img.youtube.com/vi/.../maxresdefault.jpg"
+                >
+              </div>
+              <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea
+                  v-model="videoForm.description"
+                  class="cyber-textarea"
+                  rows="3"
+                  placeholder="О чем видео..."
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Уровень HSK</label>
+                <select v-model="videoForm.hsk_level" class="cyber-select">
+                  <option :value="1">HSK 1</option>
+                  <option :value="2">HSK 2</option>
+                  <option :value="3">HSK 3</option>
+                  <option :value="4">HSK 4</option>
+                  <option :value="5">HSK 5</option>
+                  <option :value="6">HSK 6</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Теги (через запятую)</label>
+                <input
+                  v-model="videoForm.tags"
+                  type="text"
+                  class="cyber-input"
+                  placeholder="грамматика, произношение, иероглифы"
+                >
+              </div>
+              <div class="form-actions">
+                <button type="button" @click="showPostVideoModal = false" class="cyber-btn cyber-btn-secondary">
+                  <span class="btn-text">ОТМЕНА</span>
+                </button>
+                <button type="submit" class="cyber-btn cyber-btn-primary" :disabled="isPosting">
+                  <span class="btn-text">{{ isPosting ? 'ОТПРАВКА...' : 'ОПУБЛИКОВАТЬ' }}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <!-- Settings -->
         <div v-if="isOwnProfile" class="settings-section">
           <h3 class="section-title">НАСТРОЙКИ</h3>
@@ -204,6 +295,18 @@ const profileForm = ref({
   learning_language: user.value?.profile?.learning_language || 'RU'
 })
 
+// Post video form
+const showPostVideoModal = ref(false)
+const isPosting = ref(false)
+const videoForm = ref({
+  title: '',
+  video_url: '',
+  thumbnail_url: '',
+  description: '',
+  hsk_level: 1,
+  tags: ''
+})
+
 onMounted(async () => {
   // Load profile data
   if (!isOwnProfile.value && profileUserId.value) {
@@ -247,6 +350,55 @@ async function loadUserVideos() {
     console.error('Error loading user videos:', error)
   } finally {
     isLoadingVideos.value = false
+  }
+}
+
+async function postVideo() {
+  if (!videoForm.value.title.trim() || !videoForm.value.video_url.trim()) {
+    alert('Пожалуйста, заполните название и ссылку на видео')
+    return
+  }
+
+  try {
+    isPosting.value = true
+
+    // Parse tags from comma-separated string
+    const tagsArray = videoForm.value.tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0)
+
+    const videoData = {
+      title: videoForm.value.title.trim(),
+      video_url: videoForm.value.video_url.trim(),
+      thumbnail_url: videoForm.value.thumbnail_url.trim() || undefined,
+      description: videoForm.value.description.trim() || '',
+      hsk_level: videoForm.value.hsk_level,
+      tags: tagsArray
+    }
+
+    const newVideo = await videoAPI.postVideo(videoData)
+
+    // Add to videos list
+    userVideos.value.unshift(newVideo)
+
+    // Close modal and reset form
+    showPostVideoModal.value = false
+    videoForm.value = {
+      title: '',
+      video_url: '',
+      thumbnail_url: '',
+      description: '',
+      hsk_level: 1,
+      tags: ''
+    }
+
+    alert('Видео успешно опубликовано!')
+  } catch (error: any) {
+    console.error('Error posting video:', error)
+    alert('Ошибка при публикации видео: ' + (error.response?.data?.detail || error.message))
+  } finally {
+    isPosting.value = false
   }
 }
 
@@ -948,5 +1100,178 @@ function goBack() {
   .video-thumbnail {
     height: 350px;
   }
+}
+
+/* Post Video Section */
+.post-video-section {
+  margin-top: 2rem;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-neon-cyan);
+  border-radius: var(--radius-2xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 50px rgba(0, 245, 255, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  background: var(--gradient-neon-cyan);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+}
+
+/* Post Video Form */
+.post-video-form {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.cyber-input {
+  width: 100%;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.cyber-input:focus {
+  outline: none;
+  border-color: var(--color-neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+}
+
+.cyber-textarea {
+  width: 100%;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+
+.cyber-textarea:focus {
+  outline: none;
+  border-color: var(--color-neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+}
+
+.cyber-select {
+  width: 100%;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.cyber-select:focus {
+  outline: none;
+  border-color: var(--color-neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.2);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.form-actions .cyber-btn {
+  flex: 1;
 }
 </style>

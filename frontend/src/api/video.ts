@@ -197,4 +197,35 @@ export const videoAPI = {
   }> {
     return apiClient.post('/video/admin/import-videos/')
   },
+
+  // Simple video posting via URL (YouTube, Vimeo, etc.)
+  async postVideo(data: {
+    title: string
+    description?: string
+    video_url: string
+    thumbnail_url?: string
+    hsk_level?: number
+    tags?: string[]
+  }): Promise<Video> {
+    return apiClient.post('/video/videos/', data)
+  },
+
+  // Get all videos with filtering (simplified)
+  async getAllVideos(params?: {
+    hsk_level?: number
+    tags?: string
+    search?: string
+    sort?: 'recent' | 'popular' | 'views'
+    page?: number
+    page_size?: number
+  }): Promise<VideoListResponse> {
+    return apiClient.get('/video/videos/list/', { params })
+  },
+
+  // Get user's posted videos
+  async getUserPostedVideos(userId?: number): Promise<Video[]> {
+    return apiClient.get('/video/videos/', {
+      params: userId ? { user: userId } : undefined
+    })
+  },
 }
