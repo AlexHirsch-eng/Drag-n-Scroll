@@ -140,11 +140,11 @@
           </div>
         </div>
 
-        <!-- Post Video Section (only for own profile) -->
-        <div v-if="isOwnProfile" class="post-video-section">
+        <!-- Post Video Section (DEBUG: always visible to test) -->
+        <div class="post-video-section">
           <h3 class="section-title">
             <span class="title-icon">📹</span>
-            ДОБАВИТЬ ВИДЕО
+            ДОБАВИТЬ ВИДЕО <span style="color: red; font-size: 0.8em;">(DEBUG: isOwnProfile={{ isOwnProfile }})</span>
           </h3>
           <button @click="showPostVideoModal = true" class="cyber-btn cyber-btn-primary">
             <span class="btn-text">+ ПОСТИТЬ ВИДЕО</span>
