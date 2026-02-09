@@ -308,6 +308,12 @@ const videoForm = ref({
 })
 
 onMounted(async () => {
+  // Debug logging
+  console.log('[ProfileView] isOwnProfile:', isOwnProfile.value)
+  console.log('[ProfileView] profileUserId:', profileUserId.value)
+  console.log('[ProfileView] authStore.user?.id:', authStore.user?.id)
+  console.log('[ProfileView] route.params.id:', route.params.id)
+
   // Load profile data
   if (!isOwnProfile.value && profileUserId.value) {
     // Load another user's profile
