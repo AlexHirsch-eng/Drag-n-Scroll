@@ -88,7 +88,7 @@ async function handleLogin() {
 
   try {
     await authStore.login(form.value)
-    router.push('/')
+    router.push('/app')
   } catch (err: any) {
     error.value = err.response?.data?.detail || 'Вход не удался. Попробуйте снова.'
   } finally {

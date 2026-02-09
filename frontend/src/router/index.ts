@@ -111,7 +111,9 @@ router.beforeEach((to, _from, next) => {
   if (requiresAuth && !authStore.isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } })
   } else if (!requiresAuth && authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
-    next({ name: 'learn' })
+    next({ name: 'app' })
+  } else if (!requiresAuth && authStore.isAuthenticated && to.name === 'landing') {
+    next({ name: 'app' })
   } else {
     next()
   }

@@ -449,7 +449,7 @@ function setStepRef(el: any, index: number) {
 
 // Navigation
 function goToApp() {
-  router.push('/learn')
+  router.push('/app')
 }
 
 function scrollToTop() {
