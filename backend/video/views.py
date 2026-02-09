@@ -177,3 +177,25 @@ def videos_list(request):
         'page_size': page_size,
         'has_more': end < total
     })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def user_feed(request, user_id):
+    """
+    Get all videos posted by a specific user
+    Used in profile page to show user's posted videos
+    """
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+
+    # Get user or return 404
+    user = get_object_or_404(User, id=user_id)
+
+    # Get all videos by this user
+    videos = Video.objects.filter(user=user).select_related('user').order_by('-created_at')
+
+    serializer = VideoSerializer(videos, many=True, context={'request': request})
+
+    return Response(serializer.data)
