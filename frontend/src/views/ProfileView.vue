@@ -328,29 +328,42 @@ onMounted(async () => {
   console.log('[ProfileView] authStore.user?.id:', authStore.user?.id)
   console.log('[ProfileView] route.params.id:', route.params.id)
 
-  // Load profile data
-  if (!isOwnProfile.value && profileUserId.value) {
-    // Load another user's profile
-    try {
-      user.value = await authAPI.getUserById(profileUserId.value)
-    } catch (error) {
-      console.error('Error loading user profile:', error)
-      router.push('/videos')
-    }
-  } else {
-    // Load own profile
-    if (!user.value) {
-      await authStore.loadUser()
+  // Load profile data with timeout
+  try {
+    const loadWithTimeout = Promise.race([
+      (async () => {
+        if (!isOwnProfile.value && profileUserId.value) {
+          // Load another user's profile
+          user.value = await authAPI.getUserById(profileUserId.value)
+        } else {
+          // Load own profile
+          if (!user.value) {
+            await authStore.loadUser()
+            user.value = authStore.user
+            if (user.value?.profile) {
+              profileForm.value.learning_language = user.value.profile.learning_language
+            }
+          }
+        }
+      })(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Backend timeout - server may be waking up')), 45000)
+      )
+    ])
+
+    await loadWithTimeout
+  } catch (error) {
+    console.error('Error loading profile:', error)
+    // Show error but still allow page to render
+    if (!user.value && authStore.user) {
       user.value = authStore.user
-      if (user.value?.profile) {
-        profileForm.value.learning_language = user.value.profile.learning_language
-      }
     }
   }
+
   isLoading.value = false
 
-  // Load user videos
-  await loadUserVideos()
+  // Load user videos (non-blocking)
+  loadUserVideos()
 })
 
 async function loadUserVideos() {
@@ -358,8 +371,14 @@ async function loadUserVideos() {
 
   try {
     isLoadingVideos.value = true
-    // Get videos from the user's feed endpoint
-    const videos = await videoAPI.getUserFeed(user.value.id)
+    // Get videos from the user's feed endpoint with timeout
+    const videos = await Promise.race([
+      videoAPI.getUserFeed(user.value.id),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Video loading timeout')), 30000)
+      )
+    ]) as Video[]
+
     userVideos.value = videos.map(video => ({
       ...video,
       url: video.video_file,
@@ -368,6 +387,7 @@ async function loadUserVideos() {
     console.log('User videos loaded:', userVideos.value.length)
   } catch (error) {
     console.error('Error loading user videos:', error)
+    // Don't show alert, just log the error
   } finally {
     isLoadingVideos.value = false
   }
