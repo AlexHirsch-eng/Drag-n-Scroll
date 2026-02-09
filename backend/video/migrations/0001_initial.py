@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import core.models
 
 
 class Migration(migrations.Migration):
@@ -29,7 +28,7 @@ class Migration(migrations.Migration):
                 ('comments_count', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='posted_videos', to=core.models.user)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='posted_videos', to='core.user')),
             ],
             options={
                 'verbose_name': 'Видео',
@@ -43,7 +42,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('video', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='likes', to='video.video')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='liked_videos', to=core.models.user)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='liked_videos', to='core.user')),
             ],
             options={
                 'verbose_name': 'Лайк видео',
@@ -59,7 +58,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('video', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='video.video')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='video_comments', to=core.models.user)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='video_comments', to='core.user')),
             ],
             options={
                 'verbose_name': 'Комментарий видео',
