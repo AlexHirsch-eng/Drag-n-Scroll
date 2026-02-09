@@ -1120,15 +1120,25 @@ def create_demo_data(request):
     try:
         # Check if course already exists
         existing = Course.objects.filter(hsk_level=1, is_active=True).first()
-        if existing:
+        force = request.data.get('force', False)
+
+        if existing and not force:
             return Response({
                 'message': 'Demo course already exists',
                 'course': {
                     'id': existing.id,
                     'title': existing.title,
                     'hsk_level': existing.hsk_level
-                }
+                },
+                'hint': 'Set force=true to overwrite existing course'
             })
+
+        # Delete existing course if force=true
+        if existing and force:
+            # Delete course and all related objects will be cascade deleted
+            existing.delete()
+
+        # Create HSK 1 Course
 
         # Create HSK 1 Course
         course = Course.objects.create(
@@ -1196,6 +1206,146 @@ def create_demo_data(request):
                 'pinyin': word.pinyin
             })
 
+        # Create grammar rule
+        from vocab.models import GrammarRule, GrammarExample
+        grammar_rule = GrammarRule.objects.create(
+            hsk_level=1,
+            title="Порядок слов в предложении",
+            pattern="Подлежащее + Сказуемое + Дополнение",
+            explanation_ru="В китайском языке порядок слов строгий: сначала подлежащее, потом сказуемое, затем дополнение.",
+            explanation_kz="Қытай тілінде сөз тәртірі қатаң: бастауыш, айтылымы, толықтауыш."
+        )
+
+        # Add grammar examples
+        GrammarExample.objects.create(
+            grammar_rule=grammar_rule,
+            sentence_hanzi="我很好。",
+            sentence_pinyin="Wǒ hěn hǎo.",
+            translation_ru="Я очень хорошо.",
+            translation_kz="Мен өте жақсымын."
+        )
+        GrammarExample.objects.create(
+            grammar_rule=grammar_rule,
+            sentence_hanzi="你好吗？",
+            sentence_pinyin="Nǐ hǎo ma?",
+            translation_ru="Как дела?",
+            translation_kz="Қалың қалай?"
+        )
+        course_day.grammar_rules.add(grammar_rule)
+
+        # Create grammar tasks for sessions A and B
+        GrammarTask.objects.create(
+            course_day=course_day,
+            session_type='A',
+            grammar_rule=grammar_rule,
+            task_prompt_ru="Постройте предложение: Я + спасибо",
+            task_prompt_kz="Сөйлем құрастырыңыз: Мен + рахмет",
+            components=[
+                {'id': 'w1', 'hanzi': '我', 'pinyin': 'wǒ'},
+                {'id': 'w2', 'hanzi': '很', 'pinyin': 'hěn'},
+                {'id': 'w3', 'hanzi': '好', 'pinyin': 'hǎo'}
+            ],
+            correct_hanzi="我很好",
+            correct_pinyin="Wǒ hěn hǎo",
+            correct_translation_ru="Я очень хорошо",
+            correct_translation_kz="Мен өте жақсымын"
+        )
+
+        GrammarTask.objects.create(
+            course_day=course_day,
+            session_type='B',
+            grammar_rule=grammar_rule,
+            task_prompt_ru="Постройте предложение: Ты + хорошо",
+            task_prompt_kz="Сөйлем құрастырыңыз: Сен + жақсы",
+            components=[
+                {'id': 'w1', 'hanzi': '你', 'pinyin': 'nǐ'},
+                {'id': 'w2', 'hanzi': '好', 'pinyin': 'hǎo'},
+                {'id': 'w3', 'hanzi': '吗', 'pinyin': 'ma'}
+            ],
+            correct_hanzi="你好吗",
+            correct_pinyin="Nǐ hǎo ma",
+            correct_translation_ru="Как дела (ты хорошо)?",
+            correct_translation_kz="Қалың қалай (сен жақсысың ба)?"
+        )
+
+        # Create dialogues for sessions A and B
+        Dialogue.objects.create(
+            course_day=course_day,
+            session_type='A',
+            lines=[
+                {'speaker': 'A', 'hanzi': '你好！', 'pinyin': 'Nǐ hǎo!', 'translation': 'Привет!'},
+                {'speaker': 'B', 'hanzi': '你好！', 'pinyin': 'Nǐ hǎo!', 'translation': 'Привет!'},
+                {'speaker': 'A', 'hanzi': '我很好。', 'pinyin': 'Wǒ hěn hǎo.', 'translation': 'Я хорошо.'},
+                {'speaker': 'B', 'hanzi': '谢谢！', 'pinyin': 'Xièxie!', 'translation': 'Спасибо!'}
+            ],
+            question_hanzi=" Speaker B говорит '谢谢'?",
+            question_pinyin="Speaker B says '谢谢'?",
+            question_translation_ru="Что говорит Speaker B?",
+            question_translation_kz="Speaker B не айтады?",
+            audio_url="",
+            options=[
+                {'translation_ru': 'Да', 'translation_kz': 'Иә', 'is_correct': True},
+                {'translation_ru': 'Нет', 'translation_kz': 'Жоқ', 'is_correct': False}
+            ],
+            explanation_ru="В диалоге Speaker B говорит '谢谢' (спасибо).",
+            explanation_kz="Диалогта Speaker B '谢谢' (рахмет) дейді."
+        )
+
+        Dialogue.objects.create(
+            course_day=course_day,
+            session_type='B',
+            lines=[
+                {'speaker': 'A', 'hanzi': '你好吗？', 'pinyin': 'Nǐ hǎo ma?', 'translation': 'Как дела?'},
+                {'speaker': 'B', 'hanzi': '我很好。', 'pinyin': 'Wǒ hěn hǎo.', 'translation': 'Я хорошо.'},
+                {'speaker': 'A', 'hanzi': '再见！', 'pinyin': 'Zàijiàn!', 'translation': 'До свидания!'},
+                {'speaker': 'B', 'hanzi': '再见！', 'pinyin': 'Zàijiàn!', 'translation': 'До свидания!'}
+            ],
+            question_hanzi="Сколько раз говорят '再见'?",
+            question_pinyin="How many times do they say '再见'?",
+            question_translation_ru="Сколько раз говорят '再见'?",
+            question_translation_kz="'再见' қанша рет айтылады?",
+            audio_url="",
+            options=[
+                {'text': '1 раз', 'text_kz': '1 рет', 'is_correct': False},
+                {'text': '2 раза', 'text_kz': '2 рет', 'is_correct': True}
+            ],
+            explanation_ru="Оба собеседника говорят '再见' один раз = 2 раза.",
+            explanation_kz="Екі сөйлесуші де бір реттен '再见' айтады = 2 рет."
+        )
+
+        # Create word arrangement exercises for sessions A and B
+        WordArrangementExercise.objects.create(
+            course_day=course_day,
+            session_type='A',
+            target_hanzi="你好",
+            target_pinyin="Nǐ hǎo",
+            target_translation_ru="Привет",
+            target_translation_kz="Сәлем",
+            audio_url="",
+            scrambled_words=[
+                {'id': 'w1', 'hanzi': '好', 'pinyin': 'hǎo'},
+                {'id': 'w2', 'hanzi': '你', 'pinyin': 'nǐ'}
+            ],
+            hint_ru="Порядок: ты → привет",
+            hint_kz="Тәртіп: сен → сәлем"
+        )
+
+        WordArrangementExercise.objects.create(
+            course_day=course_day,
+            session_type='B',
+            target_hanzi="谢谢",
+            target_pinyin="Xièxie",
+            target_translation_ru="Спасибо",
+            target_translation_kz="Рахмет",
+            audio_url="",
+            scrambled_words=[
+                {'id': 'w1', 'hanzi': '谢', 'pinyin': 'xiè'},
+                {'id': 'w2', 'hanzi': '谢', 'pinyin': 'xie'}
+            ],
+            hint_ru="Оба иероглифа одинаковые",
+            hint_kz="Екі иероглиф бірдей"
+        )
+
         return Response({
             'message': 'Demo course created successfully',
             'course': {
@@ -1209,7 +1359,10 @@ def create_demo_data(request):
                 'title': course_day.title
             },
             'words_created': len(created_words),
-            'words': created_words
+            'words': created_words,
+            'grammar_tasks': 2,
+            'dialogues': 2,
+            'exercises': 2
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
