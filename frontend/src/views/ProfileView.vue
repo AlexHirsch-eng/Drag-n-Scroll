@@ -288,7 +288,21 @@ const authStore = useAuthStore()
 const isLoading = ref(true)
 const isLoadingVideos = ref(true)
 const profileUserId = computed(() => route.params.id ? parseInt(route.params.id as string) : authStore.user?.id)
-const isOwnProfile = computed(() => profileUserId.value === authStore.user?.id)
+
+// Simplified isOwnProfile - if no ID in route, it's own profile
+const isOwnProfile = computed(() => {
+  // If route has no ID parameter, it's own profile
+  if (!route.params.id) return true
+
+  // If we have auth user, compare IDs
+  if (authStore.user?.id) {
+    return profileUserId.value === authStore.user.id
+  }
+
+  // Default to false if not authenticated
+  return false
+})
+
 const user = ref(authStore.user)
 const userVideos = ref<Video[]>([])
 const profileForm = ref({
