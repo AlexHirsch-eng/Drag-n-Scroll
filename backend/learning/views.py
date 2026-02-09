@@ -1098,6 +1098,7 @@ def srs_submit_review(request):
 # ============================================================================
 
 @api_view(['POST'])
+@permission_classes([])
 def create_demo_data(request):
     """
     Create demo course data (HSK 1 with basic words)
