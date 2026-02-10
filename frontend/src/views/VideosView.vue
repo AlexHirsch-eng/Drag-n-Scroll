@@ -74,13 +74,13 @@
             <p class="video-loading-text">Загрузка...</p>
           </div>
 
-          <!-- Play/Pause Overlay - Only show for current video -->
-          <div v-if="!isPlaying && currentVideoIndex === index && !videoLoading" class="play-overlay">
+          <!-- Play/Pause Overlay - Only show for non-YouTube videos -->
+          <div v-if="!isPlaying && currentVideoIndex === index && !videoLoading && !isYouTubeVideo(video.url)" class="play-overlay">
             <div class="play-icon">▶</div>
           </div>
 
-          <!-- Progress Bar - Only show for current video -->
-          <div v-if="currentVideoIndex === index" class="progress-bar-container">
+          <!-- Progress Bar - Only show for non-YouTube videos -->
+          <div v-if="currentVideoIndex === index && !isYouTubeVideo(video.url)" class="progress-bar-container">
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: progress + '%' }"></div>
             </div>
@@ -466,6 +466,29 @@ function playCurrentVideo() {
   console.log('Playing video index:', currentVideoIndex.value, 'Total videos:', videos.value.length)
   console.log('Video players array length:', videoPlayers.value.length)
   console.log('Non-null players:', videoPlayers.value.map((p, i) => `${i}:${p ? '✓' : '✗'}`).join(', '))
+
+  const currentVideo = videos.value[currentVideoIndex.value]
+
+  // Check if current video has no URL - skip to next
+  if (!currentVideo || !currentVideo.url) {
+    console.log('No URL for current video, skipping to next...')
+    videoLoading.value = false
+    // Auto-advance to next video
+    if (currentVideoIndex.value < videos.value.length - 1) {
+      currentVideoIndex.value++
+    } else {
+      currentVideoIndex.value = 0 // Loop back to start
+    }
+    return
+  }
+
+  // Check if current video is YouTube - it will autoplay via iframe
+  if (isYouTubeVideo(currentVideo.url)) {
+    console.log('YouTube video detected, will autoplay via iframe')
+    isPlaying.value = true
+    videoLoading.value = false
+    return
+  }
 
   // Pause all videos and unload non-visible ones
   videoPlayers.value.forEach((player, index) => {
