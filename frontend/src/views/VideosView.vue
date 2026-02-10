@@ -33,18 +33,17 @@
         <div class="video-player">
           <!-- YouTube Embed -->
           <iframe
-            v-if="isYouTubeVideo(video.url)"
+            v-if="isYouTubeVideo(video.url) && currentVideoIndex === index"
             :src="getYouTubeEmbedUrl(video.url)"
             class="video-element video-iframe"
-            :class="{ 'video-hidden': currentVideoIndex !== index }"
             frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
           ></iframe>
 
           <!-- HTML5 Video -->
           <video
-            v-else-if="video.url"
+            v-else-if="video.url && !isYouTubeVideo(video.url)"
             :ref="(el) => { if(el) videoPlayers[index] = el as HTMLVideoElement }"
             :src="video.url"
             :poster="video.thumbnail"
