@@ -190,8 +190,12 @@ def user_feed(request, user_id):
     """
     Get all videos posted by a specific user
     Used in profile page to show user's posted videos
+
+    Uses raw SQL to avoid Django model field validation issues when
+    database schema is out of sync.
     """
     from django.contrib.auth import get_user_model
+    from django.db import connection
 
     User = get_user_model()
 
@@ -208,41 +212,66 @@ def user_feed(request, user_id):
         logger.error(f"Error fetching user {user_id}: {e}", exc_info=True)
         return Response({'error': f'Error fetching user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # Get all videos by this user - SAFE approach without VideoSerializer
+    # Get all videos by this user using RAW SQL to avoid model field issues
     try:
-        # Query videos without select_related to avoid field access issues
-        videos = Video.objects.filter(user=user).order_by('-created_at')
-        logger.info(f"Found {videos.count()} videos for user {user_id}")
+        with connection.cursor() as cursor:
+            # First, check what columns exist in video_video table
+            cursor.execute("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'video_video'
+                ORDER BY column_name;
+            """)
+            columns = [row[0] for row in cursor.fetchall()]
+            logger.info(f"Available columns in video_video: {columns}")
 
-        # Manually serialize to avoid field errors
-        data = []
-        for video in videos:
-            try:
-                # Use getattr for safe field access
-                video_data = {
-                    'id': video.id,
-                    'title': video.title,
-                    'description': video.description or '',
-                    'video_url': getattr(video, 'video_url', ''),
-                    'thumbnail_url': getattr(video, 'thumbnail_url', ''),
-                    'views_count': getattr(video, 'views_count', 0),
-                    'likes_count': getattr(video, 'likes_count', 0),
-                    'comments_count': getattr(video, 'comments_count', 0),
-                    'created_at': video.created_at.isoformat() if video.created_at else None,
-                    'creator': {
-                        'id': video.user.id,
-                        'username': video.user.username,
-                        'email': getattr(video.user, 'email', '')
+            # Build SELECT query based on available columns
+            safe_columns = ['id', 'title', 'description', 'video_url', 'thumbnail_url',
+                          'views_count', 'likes_count', 'comments_count', 'created_at', 'user_id']
+            select_columns = [col for col in safe_columns if col in columns]
+
+            if not select_columns:
+                logger.error("No safe columns available in video_video table!")
+                return Response([])
+
+            query = f"""
+                SELECT {', '.join(select_columns)}
+                FROM video_video
+                WHERE user_id = %s
+                ORDER BY created_at DESC;
+            """
+            cursor.execute(query, [user_id])
+            rows = cursor.fetchall()
+            logger.info(f"Found {len(rows)} videos for user {user_id}")
+
+            # Build response data
+            data = []
+            for row in rows:
+                try:
+                    row_dict = dict(zip(select_columns, row))
+                    video_data = {
+                        'id': row_dict.get('id'),
+                        'title': row_dict.get('title', ''),
+                        'description': row_dict.get('description', ''),
+                        'video_url': row_dict.get('video_url', ''),
+                        'thumbnail_url': row_dict.get('thumbnail_url', ''),
+                        'views_count': row_dict.get('views_count', 0),
+                        'likes_count': row_dict.get('likes_count', 0),
+                        'comments_count': row_dict.get('comments_count', 0),
+                        'created_at': row_dict.get('created_at').isoformat() if row_dict.get('created_at') else None,
+                        'creator': {
+                            'id': user.id,
+                            'username': user.username,
+                            'email': getattr(user, 'email', '')
+                        }
                     }
-                }
-                data.append(video_data)
-            except Exception as e:
-                logger.error(f"Error serializing video {video.id}: {e}", exc_info=True)
-                # Continue with other videos
-                continue
+                    data.append(video_data)
+                except Exception as e:
+                    logger.error(f"Error processing video row: {e}", exc_info=True)
+                    continue
 
-        logger.info(f"Successfully serialized {len(data)} videos")
-        return Response(data)
+            logger.info(f"Successfully serialized {len(data)} videos")
+            return Response(data)
 
     except Exception as e:
         logger.error(f"Critical error in user_feed: {e}", exc_info=True)
