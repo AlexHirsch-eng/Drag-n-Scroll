@@ -9,12 +9,7 @@
 
     <!-- Content -->
     <div class="content">
-      <div v-if="isLoading" class="loading-state">
-        <div class="cyber-loader"></div>
-        <div class="loading-text">ЗАГРУЗКА ПРОФИЛЯ...</div>
-      </div>
-
-      <div v-else class="profile-container">
+      <div class="profile-container">
         <!-- Header -->
         <div class="section-header">
           <h1 class="cyber-title">
@@ -285,7 +280,6 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const isLoading = ref(true)
 const isLoadingVideos = ref(true)
 const profileUserId = computed(() => route.params.id ? parseInt(route.params.id as string) : authStore.user?.id)
 
@@ -328,41 +322,33 @@ onMounted(async () => {
   console.log('[ProfileView] authStore.user?.id:', authStore.user?.id)
   console.log('[ProfileView] route.params.id:', route.params.id)
 
-  // Load profile data with timeout
-  try {
-    const loadWithTimeout = Promise.race([
-      (async () => {
-        if (!isOwnProfile.value && profileUserId.value) {
-          // Load another user's profile
-          user.value = await authAPI.getUserById(profileUserId.value)
-        } else {
-          // Load own profile
-          if (!user.value) {
-            await authStore.loadUser()
-            user.value = authStore.user
-            if (user.value?.profile) {
-              profileForm.value.learning_language = user.value.profile.learning_language
-            }
-          }
-        }
-      })(),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Backend timeout - server may be waking up')), 45000)
-      )
-    ])
-
-    await loadWithTimeout
-  } catch (error) {
-    console.error('Error loading profile:', error)
-    // Show error but still allow page to render
-    if (!user.value && authStore.user) {
-      user.value = authStore.user
+  // Initialize user immediately from authStore (instant render)
+  if (isOwnProfile.value && authStore.user) {
+    user.value = authStore.user
+    if (user.value?.profile) {
+      profileForm.value.learning_language = user.value.profile.learning_language
     }
   }
 
-  isLoading.value = false
+  // Load fresh data in background (non-blocking)
+  if (!isOwnProfile.value && profileUserId.value) {
+    // Load another user's profile in background
+    authAPI.getUserById(profileUserId.value)
+      .then(data => { user.value = data })
+      .catch(err => console.error('Error loading user profile:', err))
+  } else if (isOwnProfile.value) {
+    // Refresh own profile data in background
+    authStore.loadUser()
+      .then(() => {
+        user.value = authStore.user
+        if (user.value?.profile) {
+          profileForm.value.learning_language = user.value.profile.learning_language
+        }
+      })
+      .catch(err => console.error('Error refreshing profile:', err))
+  }
 
-  // Load user videos (non-blocking)
+  // Load user videos in background (non-blocking)
   loadUserVideos()
 })
 
