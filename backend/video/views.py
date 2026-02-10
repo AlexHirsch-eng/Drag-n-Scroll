@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.db import models as django_models
+from django.core.management import call_command
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import Video, VideoLike, VideoComment
 from .serializers import (
@@ -189,17 +193,28 @@ def user_feed(request, user_id):
     """
     from django.contrib.auth import get_user_model
 
+    # Auto-migrate if needed (for Render compatibility)
+    try:
+        call_command('migrate', 'video', '--run-syncdb', verbosity=0)
+    except Exception as e:
+        logger.warning(f"Migration warning: {e}")
+
     User = get_user_model()
 
     # Get user or return 404
     user = get_object_or_404(User, id=user_id)
 
     # Get all videos by this user
-    videos = Video.objects.filter(user=user).select_related('user').order_by('-created_at')
-
-    serializer = VideoSerializer(videos, many=True, context={'request': request})
-
-    return Response(serializer.data)
+    try:
+        videos = Video.objects.filter(user=user).select_related('user').order_by('-created_at')
+        serializer = VideoSerializer(videos, many=True, context={'request': request})
+        return Response(serializer.data)
+    except Exception as e:
+        logger.error(f"Error in user_feed: {e}", exc_info=True)
+        return Response(
+            {'error': f'Database error: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['POST'])
