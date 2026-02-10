@@ -122,103 +122,46 @@ class VideoViewSet(viewsets.ModelViewSet):
     def upload(self, request):
         """
         Upload video action
-        Handles video upload from device (multipart/form-data)
-        Uses raw SQL to avoid Django model field validation issues
+        Uses Django ORM for simplicity and reliability
         """
-        from django.db import connection
         import json
 
-        logger.info(f'ViewSet upload called - data keys: {list(request.data.keys())}')
-        logger.info(f'ViewSet upload called - FILES keys: {list(request.FILES.keys())}')
+        logger.info(f'ViewSet upload action called')
 
-        # Check what columns exist in video_video table
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT column_name
-                FROM information_schema.columns
-                WHERE table_name = 'video_video'
-                ORDER BY column_name;
-            """)
-            columns = [row[0] for row in cursor.fetchall()]
-            logger.info(f"Available columns in video_video: {columns}")
+        try:
+            # Parse tags
+            tags_str = request.data.get('tags', '[]')
+            try:
+                tags = json.loads(tags_str) if isinstance(tags_str, str) else tags_str
+            except:
+                tags = []
 
-        # Validate title is present
-        title = request.data.get('title', '').strip()
-        if not title:
-            return Response(
-                {'title': ['Название обязательно']},
-                status=status.HTTP_400_BAD_REQUEST
+            # Create video using Django ORM
+            video = Video.objects.create(
+                user=request.user,
+                title=request.data.get('title', '').strip(),
+                description=request.data.get('description', ''),
+                video_url=request.data.get('video_url', ''),
+                thumbnail_url=request.data.get('thumbnail_url', ''),
+                hsk_level=request.data.get('hsk_level', 1),
+                tags=tags,
+                views_count=0,
+                likes_count=0,
+                comments_count=0
             )
 
-        # Parse tags
-        tags_str = request.data.get('tags', '[]')
-        try:
-            tags = json.loads(tags_str) if isinstance(tags_str, str) else tags_str
-        except:
-            tags = []
-
-        try:
-            # Build video object using raw SQL
-            with connection.cursor() as cursor:
-                # Define columns in FIXED ORDER to match values
-                # Order matters! Must match the col_values order exactly
-                col_order = [
-                    'title', 'description', 'video_url', 'thumbnail_url',
-                    'hsk_level', 'tags', 'user_id',
-                    'views_count', 'likes_count', 'comments_count'
-                ]
-
-                # Build values in the same order as col_order
-                col_values = []
-                col_names = []
-
-                for col in col_order:
-                    if col in columns and col not in ['created_at', 'updated_at', 'id']:
-                        col_names.append(col)
-                        if col == 'title':
-                            col_values.append(request.data.get('title', ''))
-                        elif col == 'description':
-                            col_values.append(request.data.get('description', ''))
-                        elif col == 'video_url':
-                            col_values.append(request.data.get('video_url', ''))
-                        elif col == 'thumbnail_url':
-                            col_values.append(request.data.get('thumbnail_url', ''))
-                        elif col == 'hsk_level':
-                            col_values.append(request.data.get('hsk_level', 1))
-                        elif col == 'tags':
-                            col_values.append(json.dumps(tags) if tags else '[]')
-                        elif col == 'user_id':
-                            col_values.append(request.user.id)
-                        elif col in ['views_count', 'likes_count', 'comments_count']:
-                            col_values.append(0)
-
-                logger.info(f"Inserting columns: {col_names}")
-                logger.info(f"Inserting values: {col_values}")
-
-                placeholders = ', '.join(['%s'] * len(col_values))
-
-                query = f"""
-                    INSERT INTO video_video ({', '.join(col_names)})
-                    VALUES ({placeholders})
-                    RETURNING id, created_at;
-                """
-
-                cursor.execute(query, col_values)
-                result = cursor.fetchone()
-                video_id = result[0]
-                created_at = result[1]
-                logger.info(f"Created video with ID: {video_id}")
+            logger.info(f"Created video with ID: {video.id}")
 
             response_data = {
-                'id': video_id,
-                'title': request.data.get('title', ''),
-                'description': request.data.get('description', ''),
-                'video_url': request.data.get('video_url', ''),
-                'thumbnail_url': request.data.get('thumbnail_url', ''),
-                'views_count': 0,
-                'likes_count': 0,
-                'comments_count': 0,
-                'created_at': created_at.isoformat() if created_at else None,
+                'id': video.id,
+                'title': video.title,
+                'description': video.description or '',
+                'video_url': video.video_url or '',
+                'thumbnail_url': video.thumbnail_url or '',
+                'views_count': video.views_count,
+                'likes_count': video.likes_count,
+                'comments_count': video.comments_count,
+                'created_at': video.created_at.isoformat() if video.created_at else None,
                 'creator': {
                     'id': request.user.id,
                     'username': request.user.username,
@@ -401,111 +344,49 @@ def user_feed(request, user_id):
 @csrf_exempt
 def upload_video(request):
     """
-    Upload a video file (supports multipart/form-data)
-    Use this for uploading video files from device
-    CSRF exempt because multipart/form-data doesn't work well with CSRF headers
-
-    Uses raw SQL to avoid Django model field validation issues when
-    database schema is out of sync.
+    Upload a video (supports URL or file upload)
+    Uses Django ORM which is simpler and more reliable than raw SQL
     """
-    from django.db import connection
+    from .models import Video
     import json
 
-    # Debug logging
-    logger.info(f'Upload video request data keys: {list(request.data.keys())}')
-    logger.info(f'Upload video request FILES keys: {list(request.FILES.keys())}')
-    logger.info(f'Content-Type: {request.content_type}')
+    logger.info(f'Standalone upload_video called')
 
-    # Check what columns exist in video_video table
-    with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name = 'video_video'
-            ORDER BY column_name;
-        """)
-        columns = [row[0] for row in cursor.fetchall()]
-        logger.info(f"Available columns in video_video: {columns}")
+    try:
+        # Parse tags
+        tags_str = request.data.get('tags', '[]')
+        try:
+            tags = json.loads(tags_str) if isinstance(tags_str, str) else tags_str
+        except:
+            tags = []
 
-    # Validate title is present
-    title = request.data.get('title', '').strip()
-    if not title:
-        return Response(
-            {'title': ['Название обязательно']},
-            status=status.HTTP_400_BAD_REQUEST
+        # Create video using Django ORM
+        video = Video.objects.create(
+            user=request.user,
+            title=request.data.get('title', '').strip(),
+            description=request.data.get('description', ''),
+            video_url=request.data.get('video_url', ''),
+            thumbnail_url=request.data.get('thumbnail_url', ''),
+            hsk_level=request.data.get('hsk_level', 1),
+            tags=tags,
+            views_count=0,
+            likes_count=0,
+            comments_count=0
         )
 
-    # Parse tags
-    tags_str = request.data.get('tags', '[]')
-    try:
-        tags = json.loads(tags_str) if isinstance(tags_str, str) else tags_str
-    except:
-        tags = []
-
-    try:
-        # Build video object using raw SQL to avoid model field validation
-        with connection.cursor() as cursor:
-
-            # Define columns in FIXED ORDER to match values
-            # Order matters! Must match the col_values order exactly
-            col_order = [
-                'title', 'description', 'video_url', 'thumbnail_url',
-                'hsk_level', 'tags', 'user_id',
-                'views_count', 'likes_count', 'comments_count'
-            ]
-
-            # Build values in the same order as col_order
-            col_values = []
-            col_names = []
-
-            for col in col_order:
-                if col in columns and col not in ['created_at', 'updated_at', 'id']:
-                    col_names.append(col)
-                    if col == 'title':
-                        col_values.append(request.data.get('title', ''))
-                    elif col == 'description':
-                        col_values.append(request.data.get('description', ''))
-                    elif col == 'video_url':
-                        col_values.append(request.data.get('video_url', ''))
-                    elif col == 'thumbnail_url':
-                        col_values.append(request.data.get('thumbnail_url', ''))
-                    elif col == 'hsk_level':
-                        col_values.append(request.data.get('hsk_level', 1))
-                    elif col == 'tags':
-                        col_values.append(json.dumps(tags) if tags else '[]')
-                    elif col == 'user_id':
-                        col_values.append(request.user.id)
-                    elif col in ['views_count', 'likes_count', 'comments_count']:
-                        col_values.append(0)
-
-            logger.info(f"Inserting columns: {col_names}")
-            logger.info(f"Inserting values: {col_values}")
-
-            placeholders = ', '.join(['%s'] * len(col_values))
-
-            query = f"""
-                INSERT INTO video_video ({', '.join(col_names)})
-                VALUES ({placeholders})
-                RETURNING id, created_at;
-            """
-
-            cursor.execute(query, col_values)
-            result = cursor.fetchone()
-            video_id = result[0]
-            created_at = result[1]
-            logger.info(f"Created video with ID: {video_id}")
+        logger.info(f"Created video with ID: {video.id}")
 
         # Return response
         response_data = {
-            'id': video_id,
-            'title': request.data.get('title', ''),
-            'description': request.data.get('description', ''),
-            'video_url': request.data.get('video_url', ''),
-            'thumbnail_url': request.data.get('thumbnail_url', ''),
-            'views_count': 0,
-            'likes_count': 0,
-            'comments_count': 0,
-            'created_at': created_at.isoformat() if created_at else None,
+            'id': video.id,
+            'title': video.title,
+            'description': video.description or '',
+            'video_url': video.video_url or '',
+            'thumbnail_url': video.thumbnail_url or '',
+            'views_count': video.views_count,
+            'likes_count': video.likes_count,
+            'comments_count': video.comments_count,
+            'created_at': video.created_at.isoformat() if video.created_at else None,
             'creator': {
                 'id': request.user.id,
                 'username': request.user.username,
@@ -516,7 +397,7 @@ def upload_video(request):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     except Exception as e:
-        logger.error(f'Error uploading video: {e}', exc_info=True)
+        logger.error(f'Error in standalone upload_video: {e}', exc_info=True)
         return Response(
             {'error': f'Error uploading video: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
