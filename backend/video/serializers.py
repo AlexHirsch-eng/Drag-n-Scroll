@@ -89,13 +89,15 @@ class VideoSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         """Get video URL based on type"""
-        if obj.video_type == 'file' and obj.video_file:
+        # Check if video has file, otherwise return URL
+        if obj.video_file:
             return obj.video_file.url
         return obj.video_url or ''
 
     def get_video_file(self, obj):
         """Get video file URL based on type"""
-        if obj.video_type == 'file' and obj.video_file:
+        # Check if video has file, otherwise return URL
+        if obj.video_file:
             return obj.video_file.url
         return obj.video_url or ''
 
@@ -122,7 +124,7 @@ class VideoCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Validate that either video_url or video_file is provided"""
-        video_type = data.get('video_type', 'url')
+        video_type = data.get('video_type') or 'url'
 
         if video_type == 'url' and not data.get('video_url'):
             raise serializers.ValidationError({"video_url": "Обязательно укажите ссылку на видео"})

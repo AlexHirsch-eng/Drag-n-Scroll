@@ -2,6 +2,7 @@
 API views for Video sharing
 Users can post videos, like, comment, and browse all videos
 """
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
@@ -203,10 +204,12 @@ def user_feed(request, user_id):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
+@csrf_exempt
 def upload_video(request):
     """
     Upload a video file (supports multipart/form-data)
     Use this for uploading video files from device
+    CSRF exempt because multipart/form-data doesn't work well with CSRF headers
     """
     serializer = VideoCreateSerializer(data=request.data, context={'request': request})
 

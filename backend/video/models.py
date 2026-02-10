@@ -17,16 +17,18 @@ class Video(models.Model):
     description = models.TextField(blank=True)
 
     # Video source: either URL (YouTube, Vimeo) or uploaded file
-    video_url = models.URLField(max_length=500, blank=True, help_text="YouTube, Vimeo, etc.")
+    video_url = models.URLField(max_length=500, blank=True, default='', help_text="YouTube, Vimeo, etc.")
     video_file = models.FileField(upload_to='videos/', blank=True, null=True, help_text="Uploaded video file")
 
-    thumbnail_url = models.URLField(max_length=500, blank=True)
+    thumbnail_url = models.URLField(max_length=500, blank=True, default='')
     thumbnail = models.ImageField(upload_to='video_thumbnails/', blank=True, null=True)
 
-    # Video type
+    # Video type - nullable for backward compatibility
     video_type = models.CharField(
         max_length=20,
         choices=[('url', 'URL Link'), ('file', 'Uploaded File')],
+        blank=True,
+        null=True,
         default='url'
     )
 

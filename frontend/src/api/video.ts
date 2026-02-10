@@ -212,9 +212,8 @@ export const videoAPI = {
 
   // Upload video file from device
   async uploadVideo(formData: FormData): Promise<Video> {
-    return apiClient.post('/video/videos/upload/', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    // Don't set Content-Type - axios will set it automatically with correct boundary
+    return apiClient.post('/video/videos/upload/', formData)
   },
 
   // Get all videos with filtering (simplified)
