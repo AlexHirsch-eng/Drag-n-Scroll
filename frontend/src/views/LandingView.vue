@@ -994,8 +994,8 @@ section {
 }
 
 .feature-image {
-  width: 100%;
-  height: 200px;
+  width: 70%;
+  height: 140px;
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 1rem;
