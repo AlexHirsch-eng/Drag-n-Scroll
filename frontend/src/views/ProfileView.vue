@@ -202,13 +202,20 @@
 
               <!-- File Upload (shown when video_type is 'file') -->
               <div v-if="videoForm.video_type === 'file'" class="form-group">
+                <div class="warning-banner" style="background: rgba(255, 152, 0, 0.1); border: 1px solid #ff9800; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                  <div style="color: #ff9800; font-weight: 600; margin-bottom: 4px;">⚠️ Временно недоступно</div>
+                  <div style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em;">
+                    Загрузка файлов с устройства временно отключена. Используйте ссылки на YouTube или другие видеоплатформы.
+                  </div>
+                </div>
                 <label class="form-label">Видеофайл *</label>
                 <input
                   @change="(e: any) => videoForm.video_file = e.target.files[0]"
                   type="file"
                   accept="video/*"
                   class="cyber-input"
-                  required
+                  disabled
+                  style="opacity: 0.5; cursor: not-allowed;"
                 >
                 <div class="form-hint">Форматы: MP4, WebM, MOV (макс. 100MB)</div>
               </div>
@@ -433,6 +440,12 @@ async function loadUserVideos() {
 }
 
 async function postVideo() {
+  // Block file uploads temporarily
+  if (videoForm.value.video_type === 'file') {
+    alert('⚠️ Загрузка файлов с устройства временно отключена.\n\nПожалуйста, используйте ссылку на видео (YouTube, Vimeo и др.)\n\nМы работаем над восстановлением этой функции.')
+    return
+  }
+
   // Validate based on video type
   if (!videoForm.value.title.trim()) {
     alert('Пожалуйста, введите название видео')
@@ -441,11 +454,6 @@ async function postVideo() {
 
   if (videoForm.value.video_type === 'url' && !videoForm.value.video_url.trim()) {
     alert('Пожалуйста, введите ссылку на видео')
-    return
-  }
-
-  if (videoForm.value.video_type === 'file' && !videoForm.value.video_file) {
-    alert('Пожалуйста, выберите видеофайл')
     return
   }
 
