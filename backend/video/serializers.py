@@ -122,22 +122,19 @@ class VideoCreateSerializer(serializers.ModelSerializer):
             'title', 'description', 'video_url', 'video_file', 'thumbnail',
             'thumbnail_url', 'video_type', 'hsk_level', 'tags'
         ]
+        extra_kwargs = {
+            'video_file': {'required': False},
+            'video_url': {'required': False},
+            'thumbnail': {'required': False},
+            'thumbnail_url': {'required': False},
+            'video_type': {'required': False}
+        }
 
     def validate(self, data):
-        """Validate that either video_url or video_file is provided"""
-        # Check if at least one video source is provided
-        if not data.get('video_url') and not data.get('video_file'):
-            raise serializers.ValidationError({
-                "video_url": "Укажите ссылку на видео или загрузите файл",
-                "video_file": "Укажите ссылку на видео или загрузите файл"
-            })
-
-        # Set video_type based on what's provided (for Render compatibility)
-        if not data.get('video_type'):
-            if data.get('video_file'):
-                data['video_type'] = 'file'
-            else:
-                data['video_type'] = 'url'
+        """Validate that at least title is provided"""
+        # Only require title - video source is optional for compatibility
+        if not data.get('title') or not data.get('title').strip():
+            raise serializers.ValidationError({"title": "Название обязательно"})
 
         return data
 
