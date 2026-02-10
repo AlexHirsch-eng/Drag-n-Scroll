@@ -502,7 +502,26 @@ async function postVideo() {
     alert('Видео успешно опубликовано!')
   } catch (error: any) {
     console.error('Error posting video:', error)
-    alert('Ошибка при публикации видео: ' + (error.response?.data?.detail || error.message))
+    console.error('Error response:', error.response?.data)
+
+    // Format validation errors
+    if (error.response?.data) {
+      const errors = error.response.data
+      let errorMsg = 'Ошибка при публикации видео:\n'
+
+      if (typeof errors === 'string') {
+        errorMsg += errors
+      } else if (typeof errors === 'object') {
+        Object.keys(errors).forEach(key => {
+          const fieldErrors = Array.isArray(errors[key]) ? errors[key] : [errors[key]]
+          errorMsg += `\n${key}: ${fieldErrors.join(', ')}`
+        })
+      }
+
+      alert(errorMsg)
+    } else {
+      alert('Ошибка при публикации видео: ' + (error.message || 'Неизвестная ошибка'))
+    }
   } finally {
     isPosting.value = false
   }
