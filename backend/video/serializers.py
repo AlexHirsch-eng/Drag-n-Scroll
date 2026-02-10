@@ -119,7 +119,7 @@ class VideoCreateSerializer(serializers.ModelSerializer):
         model = Video
         fields = [
             'title', 'description', 'video_url', 'video_file', 'thumbnail',
-            'thumbnail_url', 'hsk_level', 'tags'
+            'thumbnail_url', 'video_type', 'hsk_level', 'tags'
         ]
 
     def validate(self, data):
@@ -130,6 +130,13 @@ class VideoCreateSerializer(serializers.ModelSerializer):
                 "video_url": "Укажите ссылку на видео или загрузите файл",
                 "video_file": "Укажите ссылку на видео или загрузите файл"
             })
+
+        # Set video_type based on what's provided (for Render compatibility)
+        if not data.get('video_type'):
+            if data.get('video_file'):
+                data['video_type'] = 'file'
+            else:
+                data['video_type'] = 'url'
 
         return data
 
