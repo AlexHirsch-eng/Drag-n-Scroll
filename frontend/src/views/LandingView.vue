@@ -367,6 +367,11 @@ import l3 from '@/images/l3.png'
 import l4 from '@/images/l4.png'
 import l5 from '@/images/l5.png'
 import l6 from '@/images/l6.png'
+import w1 from '@/images/w1.jpeg'
+import w2 from '@/images/w2.jpeg'
+import w3 from '@/images/w3.jpeg'
+import w4 from '@/images/w4.jpeg'
+import w5 from '@/images/w5.jpeg'
 
 const router = useRouter()
 
@@ -380,33 +385,28 @@ const progressWidth = computed(() => `${(activeStep.value / 2) * 100}%`)
 // Asset loading state
 const screenshots = ref([
   {
-    src: l1,
-    alt: 'Главная',
+    src: w1,
+    alt: 'Скриншот 1',
     loaded: true
   },
   {
-    src: l2,
-    alt: 'Уроки',
+    src: w2,
+    alt: 'Скриншот 2',
     loaded: true
   },
   {
-    src: l3,
-    alt: 'Профиль',
+    src: w3,
+    alt: 'Скриншот 3',
     loaded: true
   },
   {
-    src: l4,
-    alt: 'Видео',
+    src: w4,
+    alt: 'Скриншот 4',
     loaded: true
   },
   {
-    src: l5,
-    alt: 'AI Чат',
-    loaded: true
-  },
-  {
-    src: l6,
-    alt: 'Словарь',
+    src: w5,
+    alt: 'Скриншот 5',
     loaded: true
   }
 ])
