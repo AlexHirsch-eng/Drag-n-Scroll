@@ -411,10 +411,19 @@ async function loadVideos(page = 1) {
     console.log('API Response - Loaded videos:', response.videos.length, 'Total:', response.total)
     console.log('Video IDs:', response.videos.map((v, i) => `${i}: ID=${v.id}, Creator=${v.creator.username}`))
 
+    // Filter out videos without URLs before adding them
+    const validVideos = response.videos.filter(video => {
+      const hasUrl = video.video_file || video.url
+      console.log(`Video ${video.id}: ${hasUrl ? 'HAS URL' : 'NO URL - filtering out'}`)
+      return hasUrl
+    })
+
+    console.log('Valid videos after filtering:', validVideos.length, 'out of', response.videos.length)
+
     if (page === 1) {
-      videos.value = response.videos
+      videos.value = validVideos
     } else {
-      videos.value.push(...response.videos)
+      videos.value.push(...validVideos)
     }
 
     // Set video URLs to use backend media
@@ -483,16 +492,11 @@ function playCurrentVideo() {
 
   const currentVideo = videos.value[currentVideoIndex.value]
 
-  // Check if current video has no URL - skip to next
+  // Should not happen after filtering, but just in case
   if (!currentVideo || !currentVideo.url) {
-    console.log('No URL for current video, skipping to next...')
+    console.error('No video or URL at current index:', currentVideoIndex.value)
     videoLoading.value = false
-    // Auto-advance to next video
-    if (currentVideoIndex.value < videos.value.length - 1) {
-      currentVideoIndex.value++
-    } else {
-      currentVideoIndex.value = 0 // Loop back to start
-    }
+    isPlaying.value = false
     return
   }
 
@@ -912,13 +916,20 @@ async function performSearch() {
 
     // Search by hashtag
     const results = await videoAPI.getVideosByHashtag(searchQuery.value.trim())
-    videos.value = results.map(video => ({
+
+    // Filter out videos without URLs
+    const validResults = results.filter(video => {
+      const hasUrl = video.video_file || video.url
+      return hasUrl
+    })
+
+    videos.value = validResults.map(video => ({
       ...video,
       url: video.video_file,
       thumbnail: video.thumbnail || ''
     }))
 
-    console.log('Search results:', videos.value.length, 'videos')
+    console.log('Search results:', videos.value.length, 'videos (filtered from', results.length, 'total)')
 
     currentVideoIndex.value = 0
     await nextTick()
