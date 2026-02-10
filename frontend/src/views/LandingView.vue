@@ -70,45 +70,45 @@
         <h2 class="section-title">Why Drag'n'Scroll?</h2>
         <div class="features-grid">
           <div class="feature-card glass-card">
-            <div class="feature-icon">📱</div>
-            <h3 class="feature-title">TikTok-Style Interface</h3>
+            <img :src="l4" alt="Видео" class="feature-image">
+            <h3 class="feature-title">Видео уроки</h3>
             <p class="feature-description">
-              Swipe through lessons vertically just like your favorite short video app. Intuitive, engaging, and addictive in the best way possible.
+              Листайте видео вертикально как в TikTok. Интуитивно, увлекательно и эффективно.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <div class="feature-icon">🧠</div>
-            <h3 class="feature-title">AI-Powered SRS</h3>
+            <img :src="l2" alt="Уроки" class="feature-image">
+            <h3 class="feature-title">Умные повторы</h3>
             <p class="feature-description">
-              Our smart spaced repetition system learns your weak points and schedules reviews at the perfect time for maximum retention.
+              Система SRS запоминает ваши слабые места и планирует повторы в идеальное время для лучшего запоминания.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <div class="feature-icon">💬</div>
-            <h3 class="feature-title">AI Chat Practice</h3>
+            <img :src="l5" alt="AI Чат" class="feature-image">
+            <h3 class="feature-title">AI Чат</h3>
             <p class="feature-description">
-              Practice real conversations with our AI chatbot. Get instant feedback and improve your speaking skills naturally.
+              Тренируйте реальные разговоры с AI-чатом. Получайте мгновенную обратную связь и улучшайте навыки разговора.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <div class="feature-icon">📚</div>
-            <h3 class="feature-title">Video Community</h3>
+            <img :src="l1" alt="Главная" class="feature-image">
+            <h3 class="feature-title">Сообщество</h3>
             <p class="feature-description">
-              Share your learning journey, watch others progress, and connect with fellow Chinese learners from around the world.
+              Делитесь своим прогрессом, смотрите видео других учеников и общайтесь с изучающими китайский со всего мира.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <div class="feature-icon">🎯</div>
-            <h3 class="feature-title">Gamified Learning</h3>
+            <img :src="l3" alt="Профиль" class="feature-image">
+            <h3 class="feature-title">Геймификация</h3>
             <p class="feature-description">
-              Earn scrolls, unlock achievements, maintain streaks, and compete with friends. Learning has never been this fun.
+              Зарабатывайте свитки, открывайте достижения, поддерживайте серию побед и соревнуйтесь с друзьями.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <div class="feature-icon">📖</div>
-            <h3 class="feature-title">Structured Curriculum</h3>
+            <img :src="l6" alt="Словарь" class="feature-image">
+            <h3 class="feature-title">Словарь</h3>
             <p class="feature-description">
-              Follow a carefully designed learning path from HSK 1 to HSK 6. Build your vocabulary step by step with daily lessons.
+              Структурированная программа от HSK 1 до HSK 6. Расширяйте словарный запас шаг за шагом с ежедневными уроками.
             </p>
           </div>
         </div>
@@ -990,6 +990,14 @@ section {
 
 .feature-icon {
   font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
   margin-bottom: 1rem;
 }
 
