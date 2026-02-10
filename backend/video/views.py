@@ -160,6 +160,7 @@ class VideoViewSet(viewsets.ModelViewSet):
         try:
             # Build video object using raw SQL
             with connection.cursor() as cursor:
+                # Base columns from request data
                 safe_columns = {
                     'title': request.data.get('title', ''),
                     'description': request.data.get('description', ''),
@@ -169,6 +170,14 @@ class VideoViewSet(viewsets.ModelViewSet):
                     'tags': json.dumps(tags) if tags else '[]',
                     'user_id': request.user.id
                 }
+
+                # Add default values for required columns if they exist
+                if 'views_count' in columns:
+                    safe_columns['views_count'] = 0
+                if 'likes_count' in columns:
+                    safe_columns['likes_count'] = 0
+                if 'comments_count' in columns:
+                    safe_columns['comments_count'] = 0
 
                 insert_columns = {k: v for k, v in safe_columns.items() if k in columns}
 
@@ -435,6 +444,14 @@ def upload_video(request):
                 'tags': json.dumps(tags) if tags else '[]',
                 'user_id': request.user.id
             }
+
+            # Add default values for required columns if they exist
+            if 'views_count' in columns:
+                safe_columns['views_count'] = 0
+            if 'likes_count' in columns:
+                safe_columns['likes_count'] = 0
+            if 'comments_count' in columns:
+                safe_columns['comments_count'] = 0
 
             # Filter to only columns that exist in database
             insert_columns = {k: v for k, v in safe_columns.items() if k in columns}
