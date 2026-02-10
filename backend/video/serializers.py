@@ -39,11 +39,10 @@ class VideoAuthorSerializer(serializers.ModelSerializer):
 class VideoSerializer(serializers.ModelSerializer):
     """Serializer for Video model - matches frontend Video interface"""
     creator = VideoAuthorSerializer(source='user', read_only=True)
-    # Map video_url to both video_file and url for frontend compatibility
-    video_file = serializers.CharField(source='video_url', read_only=True)
-    url = serializers.CharField(source='video_url', read_only=True)
-    # Map thumbnail_url to thumbnail
-    thumbnail = serializers.CharField(source='thumbnail_url', read_only=True)
+    # Handle both URL and uploaded file
+    url = serializers.SerializerMethodField()
+    video_file = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
     # Default values for fields that don't exist in our simplified model
     duration = serializers.IntegerField(default=0)
     category = serializers.SerializerMethodField()
@@ -55,7 +54,7 @@ class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = [
-            'id', 'creator', 'video_file', 'url', 'thumbnail', 'duration',
+            'id', 'title', 'creator', 'video_file', 'url', 'thumbnail', 'duration',
             'description', 'category', 'tags', 'music_title',
             'likes_count', 'comments_count', 'views_count', 'shares_count',
             'is_liked', 'is_saved', 'created_at'
@@ -88,6 +87,24 @@ class VideoSerializer(serializers.ModelSerializer):
         # For now, return False - we can implement bookmarks later
         return False
 
+    def get_url(self, obj):
+        """Get video URL based on type"""
+        if obj.video_type == 'file' and obj.video_file:
+            return obj.video_file.url
+        return obj.video_url or ''
+
+    def get_video_file(self, obj):
+        """Get video file URL based on type"""
+        if obj.video_type == 'file' and obj.video_file:
+            return obj.video_file.url
+        return obj.video_url or ''
+
+    def get_thumbnail(self, obj):
+        """Get thumbnail URL"""
+        if obj.thumbnail:
+            return obj.thumbnail.url
+        return obj.thumbnail_url or ''
+
     def create(self, validated_data):
         """Create video for current user"""
         validated_data['user'] = self.context['request'].user
@@ -98,7 +115,22 @@ class VideoCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating a video"""
     class Meta:
         model = Video
-        fields = ['title', 'description', 'video_url', 'thumbnail_url', 'hsk_level', 'tags']
+        fields = [
+            'title', 'description', 'video_url', 'video_file', 'thumbnail',
+            'thumbnail_url', 'video_type', 'hsk_level', 'tags'
+        ]
+
+    def validate(self, data):
+        """Validate that either video_url or video_file is provided"""
+        video_type = data.get('video_type', 'url')
+
+        if video_type == 'url' and not data.get('video_url'):
+            raise serializers.ValidationError({"video_url": "Обязательно укажите ссылку на видео"})
+
+        if video_type == 'file' and not data.get('video_file'):
+            raise serializers.ValidationError({"video_file": "Загрузите видеофайл"})
+
+        return data
 
 
 class VideoLikeSerializer(serializers.ModelSerializer):

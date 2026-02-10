@@ -15,8 +15,21 @@ class Video(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    video_url = models.URLField(max_length=500)  # YouTube, Vimeo, etc.
+
+    # Video source: either URL (YouTube, Vimeo) or uploaded file
+    video_url = models.URLField(max_length=500, blank=True, help_text="YouTube, Vimeo, etc.")
+    video_file = models.FileField(upload_to='videos/', blank=True, null=True, help_text="Uploaded video file")
+
     thumbnail_url = models.URLField(max_length=500, blank=True)
+    thumbnail = models.ImageField(upload_to='video_thumbnails/', blank=True, null=True)
+
+    # Video type
+    video_type = models.CharField(
+        max_length=20,
+        choices=[('url', 'URL Link'), ('file', 'Uploaded File')],
+        default='url'
+    )
+
     hsk_level = models.IntegerField(default=1, help_text="HSK level (1-6)")
     tags = models.JSONField(default=list, blank=True, help_text="List of tags")
 

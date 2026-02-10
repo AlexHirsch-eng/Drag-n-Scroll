@@ -210,6 +210,13 @@ export const videoAPI = {
     return apiClient.post('/video/videos/', data)
   },
 
+  // Upload video file from device
+  async uploadVideo(formData: FormData): Promise<Video> {
+    return apiClient.post('/video/videos/upload/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
   // Get all videos with filtering (simplified)
   async getAllVideos(params?: {
     hsk_level?: number

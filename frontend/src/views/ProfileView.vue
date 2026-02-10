@@ -165,7 +165,30 @@
                   required
                 >
               </div>
+
+              <!-- Video Type Selector -->
               <div class="form-group">
+                <label class="form-label">Тип источника *</label>
+                <div class="video-type-selector">
+                  <button
+                    type="button"
+                    :class="['type-btn', { active: videoForm.video_type === 'url' }]"
+                    @click="videoForm.video_type = 'url'"
+                  >
+                    🔗 Ссылка (YouTube, Vimeo)
+                  </button>
+                  <button
+                    type="button"
+                    :class="['type-btn', { active: videoForm.video_type === 'file' }]"
+                    @click="videoForm.video_type = 'file'"
+                  >
+                    📁 Загрузить с устройства
+                  </button>
+                </div>
+              </div>
+
+              <!-- URL Input (shown when video_type is 'url') -->
+              <div v-if="videoForm.video_type === 'url'" class="form-group">
                 <label class="form-label">Ссылка на видео *</label>
                 <input
                   v-model="videoForm.video_url"
@@ -176,7 +199,22 @@
                 >
                 <div class="form-hint">Поддерживается: YouTube, Vimeo, и другие платформы</div>
               </div>
-              <div class="form-group">
+
+              <!-- File Upload (shown when video_type is 'file') -->
+              <div v-if="videoForm.video_type === 'file'" class="form-group">
+                <label class="form-label">Видеофайл *</label>
+                <input
+                  @change="(e: any) => videoForm.video_file = e.target.files[0]"
+                  type="file"
+                  accept="video/*"
+                  class="cyber-input"
+                  required
+                >
+                <div class="form-hint">Форматы: MP4, WebM, MOV (макс. 100MB)</div>
+              </div>
+
+              <!-- Thumbnail URL (for URL type) -->
+              <div v-if="videoForm.video_type === 'url'" class="form-group">
                 <label class="form-label">Ссылка на обложку</label>
                 <input
                   v-model="videoForm.thumbnail_url"
@@ -184,6 +222,18 @@
                   class="cyber-input"
                   placeholder="https://img.youtube.com/vi/.../maxresdefault.jpg"
                 >
+              </div>
+
+              <!-- Thumbnail Upload (for file type) -->
+              <div v-if="videoForm.video_type === 'file'" class="form-group">
+                <label class="form-label">Обложка (опционально)</label>
+                <input
+                  @change="(e: any) => videoForm.thumbnail = e.target.files[0]"
+                  type="file"
+                  accept="image/*"
+                  class="cyber-input"
+                >
+                <div class="form-hint">Форматы: JPG, PNG, WebP</div>
               </div>
               <div class="form-group">
                 <label class="form-label">Описание</label>
@@ -309,10 +359,13 @@ const isPosting = ref(false)
 const videoForm = ref({
   title: '',
   video_url: '',
+  video_file: null as File | null,
   thumbnail_url: '',
+  thumbnail: null as File | null,
   description: '',
   hsk_level: 1,
-  tags: ''
+  tags: '',
+  video_type: 'url' // 'url' or 'file'
 })
 
 onMounted(async () => {
@@ -380,8 +433,19 @@ async function loadUserVideos() {
 }
 
 async function postVideo() {
-  if (!videoForm.value.title.trim() || !videoForm.value.video_url.trim()) {
-    alert('Пожалуйста, заполните название и ссылку на видео')
+  // Validate based on video type
+  if (!videoForm.value.title.trim()) {
+    alert('Пожалуйста, введите название видео')
+    return
+  }
+
+  if (videoForm.value.video_type === 'url' && !videoForm.value.video_url.trim()) {
+    alert('Пожалуйста, введите ссылку на видео')
+    return
+  }
+
+  if (videoForm.value.video_type === 'file' && !videoForm.value.video_file) {
+    alert('Пожалуйста, выберите видеофайл')
     return
   }
 
@@ -394,16 +458,29 @@ async function postVideo() {
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0)
 
-    const videoData = {
-      title: videoForm.value.title.trim(),
-      video_url: videoForm.value.video_url.trim(),
-      thumbnail_url: videoForm.value.thumbnail_url.trim() || undefined,
-      description: videoForm.value.description.trim() || '',
-      hsk_level: videoForm.value.hsk_level,
-      tags: tagsArray
+    // Create FormData for file upload
+    const formData = new FormData()
+    formData.append('title', videoForm.value.title.trim())
+    formData.append('description', videoForm.value.description.trim() || '')
+    formData.append('hsk_level', videoForm.value.hsk_level.toString())
+    formData.append('video_type', videoForm.value.video_type)
+    tagsArray.forEach(tag => formData.append('tags', tag))
+
+    if (videoForm.value.video_type === 'url') {
+      formData.append('video_url', videoForm.value.video_url.trim())
+      if (videoForm.value.thumbnail_url.trim()) {
+        formData.append('thumbnail_url', videoForm.value.thumbnail_url.trim())
+      }
+    } else {
+      if (videoForm.value.video_file) {
+        formData.append('video_file', videoForm.value.video_file)
+      }
+      if (videoForm.value.thumbnail) {
+        formData.append('thumbnail', videoForm.value.thumbnail)
+      }
     }
 
-    const newVideo = await videoAPI.postVideo(videoData)
+    const newVideo = await videoAPI.uploadVideo(formData)
 
     // Add to videos list
     userVideos.value.unshift(newVideo)
@@ -413,10 +490,13 @@ async function postVideo() {
     videoForm.value = {
       title: '',
       video_url: '',
+      video_file: null,
       thumbnail_url: '',
+      thumbnail: null,
       description: '',
       hsk_level: 1,
-      tags: ''
+      tags: '',
+      video_type: 'url'
     }
 
     alert('Видео успешно опубликовано!')
@@ -1289,6 +1369,37 @@ function goBack() {
   font-size: 0.75rem;
   color: var(--color-text-muted);
   margin-top: 0.25rem;
+}
+
+.video-type-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.type-btn:hover {
+  border-color: var(--color-neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.1);
+}
+
+.type-btn.active {
+  background: rgba(0, 245, 255, 0.1);
+  border-color: var(--color-neon-cyan);
+  color: var(--color-neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 245, 255, 0.2);
 }
 
 .form-actions {

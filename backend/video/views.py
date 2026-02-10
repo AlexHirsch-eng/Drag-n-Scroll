@@ -199,3 +199,21 @@ def user_feed(request, user_id):
     serializer = VideoSerializer(videos, many=True, context={'request': request})
 
     return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def upload_video(request):
+    """
+    Upload a video file (supports multipart/form-data)
+    Use this for uploading video files from device
+    """
+    serializer = VideoCreateSerializer(data=request.data, context={'request': request})
+
+    if serializer.is_valid():
+        video = serializer.save(user=request.user)
+        # Return full video details
+        response_serializer = VideoSerializer(video, context={'request': request})
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
