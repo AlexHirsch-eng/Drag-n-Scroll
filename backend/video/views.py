@@ -118,6 +118,102 @@ class VideoViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def upload(self, request):
+        """
+        Upload video action
+        Handles video upload from device (multipart/form-data)
+        Uses raw SQL to avoid Django model field validation issues
+        """
+        from django.db import connection
+        import json
+
+        logger.info(f'ViewSet upload called - data keys: {list(request.data.keys())}')
+        logger.info(f'ViewSet upload called - FILES keys: {list(request.FILES.keys())}')
+
+        # Check what columns exist in video_video table
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'video_video'
+                ORDER BY column_name;
+            """)
+            columns = [row[0] for row in cursor.fetchall()]
+            logger.info(f"Available columns in video_video: {columns}")
+
+        # Validate title is present
+        title = request.data.get('title', '').strip()
+        if not title:
+            return Response(
+                {'title': ['Название обязательно']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Parse tags
+        tags_str = request.data.get('tags', '[]')
+        try:
+            tags = json.loads(tags_str) if isinstance(tags_str, str) else tags_str
+        except:
+            tags = []
+
+        try:
+            # Build video object using raw SQL
+            with connection.cursor() as cursor:
+                safe_columns = {
+                    'title': request.data.get('title', ''),
+                    'description': request.data.get('description', ''),
+                    'video_url': request.data.get('video_url', ''),
+                    'thumbnail_url': request.data.get('thumbnail_url', ''),
+                    'hsk_level': request.data.get('hsk_level', 1),
+                    'tags': json.dumps(tags) if tags else '[]',
+                    'user_id': request.user.id
+                }
+
+                insert_columns = {k: v for k, v in safe_columns.items() if k in columns}
+
+                col_names = list(insert_columns.keys())
+                col_values = list(insert_columns.values())
+                placeholders = ', '.join(['%s'] * len(col_values))
+
+                query = f"""
+                    INSERT INTO video_video ({', '.join(col_names)})
+                    VALUES ({placeholders})
+                    RETURNING id, created_at;
+                """
+
+                cursor.execute(query, col_values)
+                result = cursor.fetchone()
+                video_id = result[0]
+                created_at = result[1]
+                logger.info(f"Created video with ID: {video_id}")
+
+            response_data = {
+                'id': video_id,
+                'title': insert_columns.get('title', ''),
+                'description': insert_columns.get('description', ''),
+                'video_url': insert_columns.get('video_url', ''),
+                'thumbnail_url': insert_columns.get('thumbnail_url', ''),
+                'views_count': 0,
+                'likes_count': 0,
+                'comments_count': 0,
+                'created_at': created_at.isoformat() if created_at else None,
+                'creator': {
+                    'id': request.user.id,
+                    'username': request.user.username,
+                    'email': getattr(request.user, 'email', '')
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logger.error(f'Error in ViewSet upload: {e}', exc_info=True)
+            return Response(
+                {'error': f'Error uploading video: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
