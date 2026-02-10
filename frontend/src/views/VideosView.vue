@@ -950,7 +950,9 @@ function getYouTubeEmbedUrl(url: string): string {
   }
 
   if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}`
+    // Use mute=1 for autoplay to work (browser policy blocks autoplay with sound)
+    // Users can unmute in the YouTube player
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&playsinline=1&enablejsapi=1`
   }
 
   return url
