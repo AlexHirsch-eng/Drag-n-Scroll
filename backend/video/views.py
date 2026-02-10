@@ -123,10 +123,13 @@ class VideoViewSet(viewsets.ModelViewSet):
         """
         Upload video action
         Uses Django ORM for simplicity and reliability
+        Supports both URL and file upload
         """
         import json
 
         logger.info(f'ViewSet upload action called')
+        logger.info(f'Request FILES: {request.FILES}')
+        logger.info(f'Request DATA keys: {request.data.keys()}')
 
         try:
             # Parse tags
@@ -136,29 +139,60 @@ class VideoViewSet(viewsets.ModelViewSet):
             except:
                 tags = []
 
-            # Create video using Django ORM
-            video = Video.objects.create(
-                user=request.user,
-                title=request.data.get('title', '').strip(),
-                description=request.data.get('description', ''),
-                video_url=request.data.get('video_url', ''),
-                thumbnail_url=request.data.get('thumbnail_url', ''),
-                hsk_level=request.data.get('hsk_level', 1),
-                tags=tags,
-                views_count=0,
-                likes_count=0,
-                comments_count=0
-            )
+            # Check if file upload or URL
+            video_file = request.FILES.get('video_file') if 'video_file' in request.FILES else None
+            video_url = request.data.get('video_url', '')
 
-            logger.info(f"Created video with ID: {video.id}")
+            logger.info(f'video_file: {video_file}, video_url: {video_url}')
+
+            # Determine video source
+            if video_file:
+                # File upload - create video with file
+                video = Video.objects.create(
+                    user=request.user,
+                    title=request.data.get('title', 'Uploaded Video').strip(),
+                    description=request.data.get('description', ''),
+                    video_file=video_file,
+                    hsk_level=request.data.get('hsk_level', 1),
+                    tags=tags,
+                    views_count=0,
+                    likes_count=0,
+                    comments_count=0,
+                    video_type='file'
+                )
+                # Use the video file URL
+                final_url = video.video_file.url if video.video_file else ''
+            elif video_url:
+                # URL upload - create video with URL
+                video = Video.objects.create(
+                    user=request.user,
+                    title=request.data.get('title', '').strip(),
+                    description=request.data.get('description', ''),
+                    video_url=video_url,
+                    thumbnail_url=request.data.get('thumbnail_url', ''),
+                    hsk_level=request.data.get('hsk_level', 1),
+                    tags=tags,
+                    views_count=0,
+                    likes_count=0,
+                    comments_count=0,
+                    video_type='url'
+                )
+                final_url = video.video_url
+            else:
+                return Response(
+                    {'error': 'Either video_url or video_file is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            logger.info(f"Created video with ID: {video.id}, type: {video.video_type}, url: {final_url}")
 
             response_data = {
                 'id': video.id,
                 'title': video.title,
                 'description': video.description or '',
                 'video_url': video.video_url or '',
-                'url': video.video_url or '',  # Frontend expects 'url' field
-                'video_file': video.video_url or '',  # Same as url for URL-based videos
+                'url': final_url,  # Frontend expects 'url' field
+                'video_file': final_url,  # Same as url for consistency
                 'thumbnail_url': video.thumbnail_url or '',
                 'thumbnail': video.thumbnail_url or '',  # Frontend expects 'thumbnail' field
                 'duration': 0,  # Default duration
@@ -304,7 +338,7 @@ def user_feed(request, user_id):
             logger.info(f"Available columns in video_video: {columns}")
 
             # Build SELECT query based on available columns
-            safe_columns = ['id', 'title', 'description', 'video_url', 'thumbnail_url',
+            safe_columns = ['id', 'title', 'description', 'video_url', 'video_file', 'thumbnail_url',
                           'views_count', 'likes_count', 'comments_count', 'created_at', 'user_id']
             select_columns = [col for col in safe_columns if col in columns]
 
@@ -327,11 +361,18 @@ def user_feed(request, user_id):
             for row in rows:
                 try:
                     row_dict = dict(zip(select_columns, row))
+                    # Use video_file if available, otherwise use video_url
+                    video_url_val = row_dict.get('video_url', '')
+                    video_file_val = row_dict.get('video_file', '') if 'video_file' in row_dict else ''
+                    final_video_url = video_file_val if video_file_val else video_url_val
+
                     video_data = {
                         'id': row_dict.get('id'),
                         'title': row_dict.get('title', ''),
                         'description': row_dict.get('description', ''),
-                        'video_url': row_dict.get('video_url', ''),
+                        'video_url': video_url_val,
+                        'url': final_video_url,  # Frontend expects 'url' field
+                        'video_file': final_video_url,  # Use actual video source
                         'thumbnail_url': row_dict.get('thumbnail_url', ''),
                         'views_count': row_dict.get('views_count', 0),
                         'likes_count': row_dict.get('likes_count', 0),
@@ -369,6 +410,8 @@ def upload_video(request):
     import json
 
     logger.info(f'Standalone upload_video called')
+    logger.info(f'Request FILES: {request.FILES}')
+    logger.info(f'Request DATA keys: {request.data.keys()}')
 
     try:
         # Parse tags
@@ -378,21 +421,52 @@ def upload_video(request):
         except:
             tags = []
 
-        # Create video using Django ORM
-        video = Video.objects.create(
-            user=request.user,
-            title=request.data.get('title', '').strip(),
-            description=request.data.get('description', ''),
-            video_url=request.data.get('video_url', ''),
-            thumbnail_url=request.data.get('thumbnail_url', ''),
-            hsk_level=request.data.get('hsk_level', 1),
-            tags=tags,
-            views_count=0,
-            likes_count=0,
-            comments_count=0
-        )
+        # Check if file upload or URL
+        video_file = request.FILES.get('video_file') if 'video_file' in request.FILES else None
+        video_url = request.data.get('video_url', '')
 
-        logger.info(f"Created video with ID: {video.id}")
+        logger.info(f'video_file: {video_file}, video_url: {video_url}')
+
+        # Determine video source
+        if video_file:
+            # File upload - create video with file
+            video = Video.objects.create(
+                user=request.user,
+                title=request.data.get('title', 'Uploaded Video').strip(),
+                description=request.data.get('description', ''),
+                video_file=video_file,
+                hsk_level=request.data.get('hsk_level', 1),
+                tags=tags,
+                views_count=0,
+                likes_count=0,
+                comments_count=0,
+                video_type='file'
+            )
+            # Use the video file URL
+            final_url = video.video_file.url if video.video_file else ''
+        elif video_url:
+            # URL upload - create video with URL
+            video = Video.objects.create(
+                user=request.user,
+                title=request.data.get('title', '').strip(),
+                description=request.data.get('description', ''),
+                video_url=video_url,
+                thumbnail_url=request.data.get('thumbnail_url', ''),
+                hsk_level=request.data.get('hsk_level', 1),
+                tags=tags,
+                views_count=0,
+                likes_count=0,
+                comments_count=0,
+                video_type='url'
+            )
+            final_url = video.video_url
+        else:
+            return Response(
+                {'error': 'Either video_url or video_file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        logger.info(f"Created video with ID: {video.id}, type: {video.video_type}, url: {final_url}")
 
         # Return response - include all fields frontend expects
         response_data = {
@@ -400,8 +474,8 @@ def upload_video(request):
             'title': video.title,
             'description': video.description or '',
             'video_url': video.video_url or '',
-            'url': video.video_url or '',  # Frontend expects 'url' field
-            'video_file': video.video_url or '',  # Same as url for URL-based videos
+            'url': final_url,  # Frontend expects 'url' field
+            'video_file': final_url,  # Same as url for consistency
             'thumbnail_url': video.thumbnail_url or '',
             'thumbnail': video.thumbnail_url or '',  # Frontend expects 'thumbnail' field
             'duration': 0,  # Default duration
@@ -461,7 +535,7 @@ def video_feed(request):
             # Get paginated videos with user info
             offset = (page - 1) * page_size
             cursor.execute("""
-                SELECT v.id, v.title, v.description, v.video_url, v.thumbnail_url,
+                SELECT v.id, v.title, v.description, v.video_url, v.video_file, v.thumbnail_url,
                        v.views_count, v.likes_count, v.comments_count, v.created_at, v.user_id,
                        u.username, u.email
                 FROM video_video v
@@ -474,15 +548,22 @@ def video_feed(request):
             # Build response - include all fields frontend expects
             videos = []
             for row in rows:
+                # Determine the correct video URL to use
+                # row[3] = video_url, row[4] = video_file
+                video_url_val = row[3] or ''
+                video_file_val = row[4] or ''
+                # Use video_file if available (uploaded file), otherwise use video_url
+                final_video_url = video_file_val if video_file_val else video_url_val
+
                 videos.append({
                     'id': row[0],
                     'title': row[1],
                     'description': row[2] or '',
-                    'video_url': row[3] or '',
-                    'url': row[3] or '',  # Frontend expects 'url' field
-                    'video_file': row[3] or '',  # Same as url for URL-based videos
-                    'thumbnail_url': row[4] or '',
-                    'thumbnail': row[4] or '',  # Frontend expects 'thumbnail' field
+                    'video_url': video_url_val,
+                    'url': final_video_url,  # Frontend expects 'url' field
+                    'video_file': final_video_url,  # Use the actual video source
+                    'thumbnail_url': row[5] or '',
+                    'thumbnail': row[5] or '',  # Frontend expects 'thumbnail' field
                     'duration': 0,  # Default duration
                     'category': {  # Default category
                         'id': 1,
@@ -494,14 +575,14 @@ def video_feed(request):
                     'shares_count': 0,
                     'is_saved': False,
                     'is_liked': False,
-                    'views_count': row[5],
-                    'likes_count': row[6],
-                    'comments_count': row[7],
-                    'created_at': row[8].isoformat() if row[8] else None,
+                    'views_count': row[6],
+                    'likes_count': row[7],
+                    'comments_count': row[8],
+                    'created_at': row[9].isoformat() if row[9] else None,
                     'creator': {
-                        'id': row[9],
-                        'username': row[10] or '',
-                        'email': row[11] or '',
+                        'id': row[10],
+                        'username': row[11] or '',
+                        'email': row[12] or '',
                         'profile': {},
                         'followers_count': 0,
                         'following_count': 0,
