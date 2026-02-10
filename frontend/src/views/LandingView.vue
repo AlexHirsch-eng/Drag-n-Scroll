@@ -70,42 +70,42 @@
         <h2 class="section-title">Why Drag'n'Scroll?</h2>
         <div class="features-grid">
           <div class="feature-card glass-card">
-            <img :src="l4" alt="Видео" class="feature-image">
+            <img :src="l6" alt="Видео" class="feature-image">
             <h3 class="feature-title">Видео уроки</h3>
             <p class="feature-description">
               Листайте видео вертикально как в TikTok. Интуитивно, увлекательно и эффективно.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <img :src="l2" alt="Уроки" class="feature-image">
+            <img :src="l1" alt="Главная" class="feature-image">
             <h3 class="feature-title">Умные повторы</h3>
             <p class="feature-description">
               Система SRS запоминает ваши слабые места и планирует повторы в идеальное время для лучшего запоминания.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <img :src="l5" alt="AI Чат" class="feature-image">
+            <img :src="l2" alt="Уроки" class="feature-image">
             <h3 class="feature-title">AI Чат</h3>
             <p class="feature-description">
               Тренируйте реальные разговоры с AI-чатом. Получайте мгновенную обратную связь и улучшайте навыки разговора.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <img :src="l1" alt="Главная" class="feature-image">
+            <img :src="l4" alt="Видео" class="feature-image">
             <h3 class="feature-title">Сообщество</h3>
             <p class="feature-description">
               Делитесь своим прогрессом, смотрите видео других учеников и общайтесь с изучающими китайский со всего мира.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <img :src="l3" alt="Профиль" class="feature-image">
+            <img :src="l5" alt="AI Чат" class="feature-image">
             <h3 class="feature-title">Геймификация</h3>
             <p class="feature-description">
               Зарабатывайте свитки, открывайте достижения, поддерживайте серию побед и соревнуйтесь с друзьями.
             </p>
           </div>
           <div class="feature-card glass-card">
-            <img :src="l6" alt="Словарь" class="feature-image">
+            <img :src="l3" alt="Профиль" class="feature-image">
             <h3 class="feature-title">Словарь</h3>
             <p class="feature-description">
               Структурированная программа от HSK 1 до HSK 6. Расширяйте словарный запас шаг за шагом с ежедневными уроками.
