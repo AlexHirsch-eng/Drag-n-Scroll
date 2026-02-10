@@ -49,16 +49,16 @@
         </div>
         <div class="hero-visual">
           <div class="visual-card card-1">
-            <div class="card-icon">📱</div>
-            <div class="card-label">TikTok Interface</div>
+            <img :src="l1" alt="Главная" class="card-image">
+            <div class="card-label">Главная</div>
           </div>
           <div class="visual-card card-2">
-            <div class="card-icon">🧠</div>
-            <div class="card-label">AI SRS</div>
+            <img :src="l2" alt="Уроки" class="card-image">
+            <div class="card-label">Уроки</div>
           </div>
           <div class="visual-card card-3">
-            <div class="card-icon">💬</div>
-            <div class="card-label">AI Chat</div>
+            <img :src="l5" alt="AI Чат" class="card-image">
+            <div class="card-label">AI Чат</div>
           </div>
         </div>
       </div>
@@ -891,7 +891,7 @@ section {
 .visual-card {
   position: absolute;
   width: 200px;
-  height: 280px;
+  height: 380px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -899,9 +899,20 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 1rem;
+  overflow: hidden;
   animation: floatCard 6s ease-in-out infinite;
+}
+
+.card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
 }
 
 .card-1 {
@@ -931,15 +942,18 @@ section {
   }
 }
 
-.card-icon {
-  font-size: 4rem;
-}
-
 .card-label {
   font-size: 1rem;
   font-weight: 600;
   color: white;
   text-align: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1rem;
 }
 
 /* ============================================
