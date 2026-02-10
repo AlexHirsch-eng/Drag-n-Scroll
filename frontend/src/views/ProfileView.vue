@@ -463,12 +463,14 @@ async function postVideo() {
     formData.append('title', videoForm.value.title.trim())
     formData.append('description', videoForm.value.description.trim() || '')
     formData.append('hsk_level', videoForm.value.hsk_level.toString())
-    formData.append('video_type', videoForm.value.video_type || 'url')
     // Send tags as JSON string for Django JSONField
     formData.append('tags', JSON.stringify(tagsArray))
 
+    // Add video source based on type
     if (videoForm.value.video_type === 'url') {
-      formData.append('video_url', videoForm.value.video_url.trim())
+      if (videoForm.value.video_url.trim()) {
+        formData.append('video_url', videoForm.value.video_url.trim())
+      }
       if (videoForm.value.thumbnail_url.trim()) {
         formData.append('thumbnail_url', videoForm.value.thumbnail_url.trim())
       }

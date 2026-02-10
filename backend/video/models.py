@@ -23,14 +23,6 @@ class Video(models.Model):
     thumbnail_url = models.URLField(max_length=500, blank=True)
     thumbnail = models.ImageField(upload_to='video_thumbnails/', blank=True, null=True)
 
-    # Video type - nullable for backward compatibility
-    video_type = models.CharField(
-        max_length=20,
-        choices=[('url', 'URL Link'), ('file', 'Uploaded File')],
-        blank=True,
-        null=True
-    )
-
     hsk_level = models.IntegerField(default=1, help_text="HSK level (1-6)")
     tags = models.JSONField(default=list, blank=True, help_text="List of tags")
 

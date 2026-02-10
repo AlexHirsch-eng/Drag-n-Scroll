@@ -119,18 +119,17 @@ class VideoCreateSerializer(serializers.ModelSerializer):
         model = Video
         fields = [
             'title', 'description', 'video_url', 'video_file', 'thumbnail',
-            'thumbnail_url', 'video_type', 'hsk_level', 'tags'
+            'thumbnail_url', 'hsk_level', 'tags'
         ]
 
     def validate(self, data):
         """Validate that either video_url or video_file is provided"""
-        video_type = data.get('video_type') or 'url'
-
-        if video_type == 'url' and not data.get('video_url'):
-            raise serializers.ValidationError({"video_url": "Обязательно укажите ссылку на видео"})
-
-        if video_type == 'file' and not data.get('video_file'):
-            raise serializers.ValidationError({"video_file": "Загрузите видеофайл"})
+        # Check if at least one video source is provided
+        if not data.get('video_url') and not data.get('video_file'):
+            raise serializers.ValidationError({
+                "video_url": "Укажите ссылку на видео или загрузите файл",
+                "video_file": "Укажите ссылку на видео или загрузите файл"
+            })
 
         return data
 
