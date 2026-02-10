@@ -994,11 +994,12 @@ section {
 }
 
 .feature-image {
-  width: 70%;
-  height: 140px;
-  object-fit: cover;
+  width: 50%;
+  height: 120px;
+  object-fit: contain;
   border-radius: 12px;
   margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .feature-title {
