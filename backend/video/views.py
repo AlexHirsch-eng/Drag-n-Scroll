@@ -211,6 +211,12 @@ def upload_video(request):
     Use this for uploading video files from device
     CSRF exempt because multipart/form-data doesn't work well with CSRF headers
     """
+    # Debug logging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f'Upload video request data keys: {request.data.keys()}')
+    logger.info(f'Upload video request FILES keys: {request.FILES.keys()}')
+
     serializer = VideoCreateSerializer(data=request.data, context={'request': request})
 
     if serializer.is_valid():
@@ -219,4 +225,5 @@ def upload_video(request):
         response_serializer = VideoSerializer(video, context={'request': request})
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
+    logger.error(f'Upload video validation errors: {serializer.errors}')
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
