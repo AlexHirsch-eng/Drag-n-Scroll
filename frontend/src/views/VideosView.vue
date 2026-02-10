@@ -31,7 +31,20 @@
       >
         <!-- Video Player - Keep video element always in DOM -->
         <div class="video-player">
+          <!-- YouTube Embed -->
+          <iframe
+            v-if="isYouTubeVideo(video.url)"
+            :src="getYouTubeEmbedUrl(video.url)"
+            class="video-element video-iframe"
+            :class="{ 'video-hidden': currentVideoIndex !== index }"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+
+          <!-- HTML5 Video -->
           <video
+            v-else-if="video.url"
             :ref="(el) => { if(el) videoPlayers[index] = el as HTMLVideoElement }"
             :src="video.url"
             :poster="video.thumbnail"
@@ -47,6 +60,13 @@
             :class="{ 'video-hidden': currentVideoIndex !== index }"
             @error="onVideoError"
           ></video>
+
+          <!-- No Video Available -->
+          <div v-else class="no-video-placeholder">
+            <div class="no-video-icon">🎬</div>
+            <p class="no-video-text">Видео не доступно</p>
+            <p class="no-video-subtitle">У этого видео нет источника</p>
+          </div>
 
           <!-- Loading indicator for current video -->
           <div v-if="videoLoading && currentVideoIndex === index" class="video-loading-overlay">
@@ -871,6 +891,47 @@ function goToUserProfile(userId: number | undefined) {
     console.error('[Profile Click] Navigation error:', error)
   }
 }
+
+// YouTube video helpers
+function isYouTubeVideo(url: string | undefined): boolean {
+  if (!url) return false
+  const youtubePatterns = [
+    /youtube\.com\/watch\?v=/,
+    /youtu\.be\//,
+    /youtube\.com\/embed\//
+  ]
+  return youtubePatterns.some(pattern => pattern.test(url))
+}
+
+function getYouTubeEmbedUrl(url: string): string {
+  if (!url) return ''
+
+  // Already an embed URL
+  if (url.includes('youtube.com/embed/')) {
+    return url
+  }
+
+  // Extract video ID from various YouTube URL formats
+  let videoId = ''
+
+  // youtu.be/VIDEO_ID format
+  const shortMatch = url.match(/youtu\.be\/([^?&]+)/)
+  if (shortMatch) {
+    videoId = shortMatch[1]
+  }
+
+  // youtube.com/watch?v=VIDEO_ID format
+  const watchMatch = url.match(/[?&]v=([^&]+)/)
+  if (watchMatch) {
+    videoId = watchMatch[1]
+  }
+
+  if (videoId) {
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}`
+  }
+
+  return url
+}
 </script>
 
 <style scoped>
@@ -912,6 +973,20 @@ function goToUserProfile(userId: number | undefined) {
   width: 100%;
   object-fit: cover;
   background: #000;
+}
+
+.video-iframe {
+  border: none;
+}
+
+.no-video-placeholder {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
 }
 
 .video-hidden {
@@ -1729,5 +1804,23 @@ function goToUserProfile(userId: number | undefined) {
 .retry-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+}
+
+.no-video-icon {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-video-text {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.no-video-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
 }
 </style>

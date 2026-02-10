@@ -28,3 +28,4 @@ __pycache__/
 # Windows null device artifacts
 nul
 frontend/nul
+.vercel
