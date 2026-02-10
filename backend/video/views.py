@@ -179,7 +179,13 @@ class VideoViewSet(viewsets.ModelViewSet):
                 if 'comments_count' in columns:
                     safe_columns['comments_count'] = 0
 
-                insert_columns = {k: v for k, v in safe_columns.items() if k in columns}
+                # Exclude auto-managed columns (created_at, updated_at) - database handles these
+                columns_to_exclude = ['created_at', 'updated_at', 'id']
+
+                insert_columns = {
+                    k: v for k, v in safe_columns.items()
+                    if k in columns and k not in columns_to_exclude
+                }
 
                 col_names = list(insert_columns.keys())
                 col_values = list(insert_columns.values())
@@ -453,8 +459,14 @@ def upload_video(request):
             if 'comments_count' in columns:
                 safe_columns['comments_count'] = 0
 
-            # Filter to only columns that exist in database
-            insert_columns = {k: v for k, v in safe_columns.items() if k in columns}
+            # Exclude auto-managed columns (created_at, updated_at) - database handles these
+            columns_to_exclude = ['created_at', 'updated_at', 'id']
+
+            # Filter to only columns that exist in database and are not auto-managed
+            insert_columns = {
+                k: v for k, v in safe_columns.items()
+                if k in columns and k not in columns_to_exclude
+            }
 
             # Build INSERT query
             col_names = list(insert_columns.keys())
