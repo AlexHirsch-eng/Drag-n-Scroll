@@ -89,23 +89,24 @@ class VideoSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         """Get video URL based on type"""
-        # Check if video has file, otherwise return URL
-        if obj.video_file:
+        # Check if video has file, otherwise return URL (safe for old databases)
+        if hasattr(obj, 'video_file') and obj.video_file:
             return obj.video_file.url
         return obj.video_url or ''
 
     def get_video_file(self, obj):
         """Get video file URL based on type"""
-        # Check if video has file, otherwise return URL
-        if obj.video_file:
+        # Check if video has file, otherwise return URL (safe for old databases)
+        if hasattr(obj, 'video_file') and obj.video_file:
             return obj.video_file.url
         return obj.video_url or ''
 
     def get_thumbnail(self, obj):
         """Get thumbnail URL"""
-        if obj.thumbnail:
+        # Check if thumbnail exists, otherwise use thumbnail_url (safe for old databases)
+        if hasattr(obj, 'thumbnail') and obj.thumbnail:
             return obj.thumbnail.url
-        return obj.thumbnail_url or ''
+        return getattr(obj, 'thumbnail_url', '') or ''
 
     def create(self, validated_data):
         """Create video for current user"""
