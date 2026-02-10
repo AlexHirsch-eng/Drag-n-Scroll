@@ -2,11 +2,10 @@
 URL configuration for Drag'n'Scroll project.
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
-from django.conf.urls import url
 from core.views import health_check
 import os
 import mimetypes
@@ -59,5 +58,5 @@ if settings.DEBUG:
 else:
     # Serve media files in production
     urlpatterns += [
-        url(r'^media/(?P<path>.*)$', serve_media_file, name='serve_media'),
+        re_path(r'^media/(?P<path>.*)$', serve_media_file, name='serve_media'),
     ]
