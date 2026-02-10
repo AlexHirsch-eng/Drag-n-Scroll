@@ -22,12 +22,15 @@
     </div>
 
     <!-- TikTok-style Video Feed -->
-    <div v-else class="video-feed" @wheel="handleWheel" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+    <div v-else class="video-feed">
       <div
         v-for="(video, index) in videos"
         :key="video.id"
         class="video-container"
         :class="{ active: currentVideoIndex === index }"
+        @wheel.prevent="handleWheel"
+        @touchstart.passive="handleTouchStart"
+        @touchend.passive="handleTouchEnd"
       >
         <!-- Video Player - Keep video element always in DOM -->
         <div class="video-player">
@@ -92,6 +95,7 @@
           <div class="top-bar">
             <button @click="goBack" class="back-btn">←</button>
             <h3 class="section-title">ВИДЕО</h3>
+            <div class="video-counter">{{ currentVideoIndex + 1 }} / {{ videos.length }}</div>
             <div class="top-bar-actions">
               <button
                 @click="translationLanguage = translationLanguage === 'ru' ? 'en' : 'ru'"
@@ -109,6 +113,11 @@
                 {{ isImporting ? '⏳' : '📥' }}
               </button>
               <button @click="toggleSearch" class="search-btn">🔍</button>
+              <!-- Navigation arrows -->
+              <div class="nav-arrows">
+                <button @click="previousVideo" class="nav-arrow" :disabled="currentVideoIndex === 0">▲</button>
+                <button @click="nextVideo" class="nav-arrow" :disabled="currentVideoIndex === videos.length - 1">▼</button>
+              </div>
             </div>
           </div>
 
@@ -344,6 +353,9 @@ onMounted(async () => {
   await loadCategories()
   await loadVideos()
 
+  // Add keyboard navigation
+  window.addEventListener('keydown', handleKeydown)
+
   // Wait for DOM to update with video elements
   await nextTick()
 
@@ -424,6 +436,9 @@ async function loadVideos(page = 1) {
 }
 
 onUnmounted(() => {
+  // Remove keyboard navigation listener
+  window.removeEventListener('keydown', handleKeydown)
+
   // Pause all videos
   videoPlayers.value.forEach(player => {
     if (player && typeof player.pause === 'function') {
@@ -585,10 +600,12 @@ function onVideoCanPlay() {
 }
 
 function handleWheel(event: WheelEvent) {
-  event.preventDefault()
-  if (event.deltaY > 0 && currentVideoIndex.value < videos.value.length - 1) {
+  // Make scrolling more responsive - reduce threshold
+  const deltaThreshold = 100
+
+  if (event.deltaY > deltaThreshold && currentVideoIndex.value < videos.value.length - 1) {
     currentVideoIndex.value++
-  } else if (event.deltaY < 0 && currentVideoIndex.value > 0) {
+  } else if (event.deltaY < -deltaThreshold && currentVideoIndex.value > 0) {
     currentVideoIndex.value--
   }
 }
@@ -602,12 +619,29 @@ function handleTouchEnd(event: TouchEvent) {
   const touchEndY = event.changedTouches[0].clientY
   const diff = touchStartY - touchEndY
 
-  if (Math.abs(diff) > 50) {
+  // Reduced threshold for more responsive swiping
+  if (Math.abs(diff) > 30) {
     if (diff > 0 && currentVideoIndex.value < videos.value.length - 1) {
       currentVideoIndex.value++
     } else if (diff < 0 && currentVideoIndex.value > 0) {
       currentVideoIndex.value--
     }
+  }
+}
+
+// Add keyboard navigation
+function handleKeydown(event: KeyboardEvent) {
+  // Arrow keys for navigation
+  if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+    if (currentVideoIndex.value < videos.value.length - 1) {
+      currentVideoIndex.value++
+    }
+    event.preventDefault()
+  } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+    if (currentVideoIndex.value > 0) {
+      currentVideoIndex.value--
+    }
+    event.preventDefault()
   }
 }
 
@@ -955,6 +989,19 @@ function getYouTubeEmbedUrl(url: string): string {
   }
 
   return url
+}
+
+// Navigation functions
+function previousVideo() {
+  if (currentVideoIndex.value > 0) {
+    currentVideoIndex.value--
+  }
+}
+
+function nextVideo() {
+  if (currentVideoIndex.value < videos.value.length - 1) {
+    currentVideoIndex.value++
+  }
 }
 </script>
 
@@ -1846,5 +1893,51 @@ function getYouTubeEmbedUrl(url: string): string {
 .no-video-subtitle {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
+}
+
+/* Video Counter */
+.video-counter {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 15px;
+}
+
+/* Navigation Arrows */
+.nav-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.nav-arrow {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 0.8rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  pointer-events: all;
+}
+
+.nav-arrow:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.3);
+  border-color: #00e5ff;
+  transform: scale(1.1);
+}
+
+.nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 </style>
