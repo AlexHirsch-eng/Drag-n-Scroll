@@ -195,16 +195,24 @@ def user_feed(request, user_id):
 
     User = get_user_model()
 
+    logger.info(f"user_feed called for user_id={user_id}")
+
     # Get user or return 404
     try:
         user = User.objects.get(id=user_id)
+        logger.info(f"Found user: {user.username}")
     except User.DoesNotExist:
+        logger.warning(f"User not found: {user_id}")
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Error fetching user {user_id}: {e}", exc_info=True)
+        return Response({'error': f'Error fetching user: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Get all videos by this user - SAFE approach without VideoSerializer
     try:
         # Query videos without select_related to avoid field access issues
         videos = Video.objects.filter(user=user).order_by('-created_at')
+        logger.info(f"Found {videos.count()} videos for user {user_id}")
 
         # Manually serialize to avoid field errors
         data = []
@@ -229,10 +237,11 @@ def user_feed(request, user_id):
                 }
                 data.append(video_data)
             except Exception as e:
-                logger.error(f"Error serializing video {video.id}: {e}")
+                logger.error(f"Error serializing video {video.id}: {e}", exc_info=True)
                 # Continue with other videos
                 continue
 
+        logger.info(f"Successfully serialized {len(data)} videos")
         return Response(data)
 
     except Exception as e:
