@@ -160,35 +160,41 @@ class VideoViewSet(viewsets.ModelViewSet):
         try:
             # Build video object using raw SQL
             with connection.cursor() as cursor:
-                # Base columns from request data
-                safe_columns = {
-                    'title': request.data.get('title', ''),
-                    'description': request.data.get('description', ''),
-                    'video_url': request.data.get('video_url', ''),
-                    'thumbnail_url': request.data.get('thumbnail_url', ''),
-                    'hsk_level': request.data.get('hsk_level', 1),
-                    'tags': json.dumps(tags) if tags else '[]',
-                    'user_id': request.user.id
-                }
+                # Define columns in FIXED ORDER to match values
+                # Order matters! Must match the col_values order exactly
+                col_order = [
+                    'title', 'description', 'video_url', 'thumbnail_url',
+                    'hsk_level', 'tags', 'user_id',
+                    'views_count', 'likes_count', 'comments_count'
+                ]
 
-                # Add default values for required columns if they exist
-                if 'views_count' in columns:
-                    safe_columns['views_count'] = 0
-                if 'likes_count' in columns:
-                    safe_columns['likes_count'] = 0
-                if 'comments_count' in columns:
-                    safe_columns['comments_count'] = 0
+                # Build values in the same order as col_order
+                col_values = []
+                col_names = []
 
-                # Exclude auto-managed columns (created_at, updated_at) - database handles these
-                columns_to_exclude = ['created_at', 'updated_at', 'id']
+                for col in col_order:
+                    if col in columns and col not in ['created_at', 'updated_at', 'id']:
+                        col_names.append(col)
+                        if col == 'title':
+                            col_values.append(request.data.get('title', ''))
+                        elif col == 'description':
+                            col_values.append(request.data.get('description', ''))
+                        elif col == 'video_url':
+                            col_values.append(request.data.get('video_url', ''))
+                        elif col == 'thumbnail_url':
+                            col_values.append(request.data.get('thumbnail_url', ''))
+                        elif col == 'hsk_level':
+                            col_values.append(request.data.get('hsk_level', 1))
+                        elif col == 'tags':
+                            col_values.append(json.dumps(tags) if tags else '[]')
+                        elif col == 'user_id':
+                            col_values.append(request.user.id)
+                        elif col in ['views_count', 'likes_count', 'comments_count']:
+                            col_values.append(0)
 
-                insert_columns = {
-                    k: v for k, v in safe_columns.items()
-                    if k in columns and k not in columns_to_exclude
-                }
+                logger.info(f"Inserting columns: {col_names}")
+                logger.info(f"Inserting values: {col_values}")
 
-                col_names = list(insert_columns.keys())
-                col_values = list(insert_columns.values())
                 placeholders = ', '.join(['%s'] * len(col_values))
 
                 query = f"""
@@ -205,10 +211,10 @@ class VideoViewSet(viewsets.ModelViewSet):
 
             response_data = {
                 'id': video_id,
-                'title': insert_columns.get('title', ''),
-                'description': insert_columns.get('description', ''),
-                'video_url': insert_columns.get('video_url', ''),
-                'thumbnail_url': insert_columns.get('thumbnail_url', ''),
+                'title': request.data.get('title', ''),
+                'description': request.data.get('description', ''),
+                'video_url': request.data.get('video_url', ''),
+                'thumbnail_url': request.data.get('thumbnail_url', ''),
                 'views_count': 0,
                 'likes_count': 0,
                 'comments_count': 0,
@@ -440,37 +446,41 @@ def upload_video(request):
         # Build video object using raw SQL to avoid model field validation
         with connection.cursor() as cursor:
 
-            # Build column list based on what's available and what was provided
-            safe_columns = {
-                'title': request.data.get('title', ''),
-                'description': request.data.get('description', ''),
-                'video_url': request.data.get('video_url', ''),
-                'thumbnail_url': request.data.get('thumbnail_url', ''),
-                'hsk_level': request.data.get('hsk_level', 1),
-                'tags': json.dumps(tags) if tags else '[]',
-                'user_id': request.user.id
-            }
+            # Define columns in FIXED ORDER to match values
+            # Order matters! Must match the col_values order exactly
+            col_order = [
+                'title', 'description', 'video_url', 'thumbnail_url',
+                'hsk_level', 'tags', 'user_id',
+                'views_count', 'likes_count', 'comments_count'
+            ]
 
-            # Add default values for required columns if they exist
-            if 'views_count' in columns:
-                safe_columns['views_count'] = 0
-            if 'likes_count' in columns:
-                safe_columns['likes_count'] = 0
-            if 'comments_count' in columns:
-                safe_columns['comments_count'] = 0
+            # Build values in the same order as col_order
+            col_values = []
+            col_names = []
 
-            # Exclude auto-managed columns (created_at, updated_at) - database handles these
-            columns_to_exclude = ['created_at', 'updated_at', 'id']
+            for col in col_order:
+                if col in columns and col not in ['created_at', 'updated_at', 'id']:
+                    col_names.append(col)
+                    if col == 'title':
+                        col_values.append(request.data.get('title', ''))
+                    elif col == 'description':
+                        col_values.append(request.data.get('description', ''))
+                    elif col == 'video_url':
+                        col_values.append(request.data.get('video_url', ''))
+                    elif col == 'thumbnail_url':
+                        col_values.append(request.data.get('thumbnail_url', ''))
+                    elif col == 'hsk_level':
+                        col_values.append(request.data.get('hsk_level', 1))
+                    elif col == 'tags':
+                        col_values.append(json.dumps(tags) if tags else '[]')
+                    elif col == 'user_id':
+                        col_values.append(request.user.id)
+                    elif col in ['views_count', 'likes_count', 'comments_count']:
+                        col_values.append(0)
 
-            # Filter to only columns that exist in database and are not auto-managed
-            insert_columns = {
-                k: v for k, v in safe_columns.items()
-                if k in columns and k not in columns_to_exclude
-            }
+            logger.info(f"Inserting columns: {col_names}")
+            logger.info(f"Inserting values: {col_values}")
 
-            # Build INSERT query
-            col_names = list(insert_columns.keys())
-            col_values = list(insert_columns.values())
             placeholders = ', '.join(['%s'] * len(col_values))
 
             query = f"""
@@ -488,10 +498,10 @@ def upload_video(request):
         # Return response
         response_data = {
             'id': video_id,
-            'title': insert_columns.get('title', ''),
-            'description': insert_columns.get('description', ''),
-            'video_url': insert_columns.get('video_url', ''),
-            'thumbnail_url': insert_columns.get('thumbnail_url', ''),
+            'title': request.data.get('title', ''),
+            'description': request.data.get('description', ''),
+            'video_url': request.data.get('video_url', ''),
+            'thumbnail_url': request.data.get('thumbnail_url', ''),
             'views_count': 0,
             'likes_count': 0,
             'comments_count': 0,
