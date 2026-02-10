@@ -386,3 +386,120 @@ def upload_video(request):
             {'error': f'Error uploading video: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def video_feed(request):
+    """
+    Get video feed with pagination
+    Matches frontend's getFeed API call
+    """
+    from django.db import connection
+
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 20))
+
+    try:
+        with connection.cursor() as cursor:
+            # Get total count
+            cursor.execute("SELECT COUNT(*) FROM video_video;")
+            total = cursor.fetchone()[0]
+
+            # Get paginated videos
+            offset = (page - 1) * page_size
+            cursor.execute("""
+                SELECT id, title, description, video_url, thumbnail_url,
+                       views_count, likes_count, comments_count, created_at, user_id
+                FROM video_video
+                ORDER BY created_at DESC
+                LIMIT %s OFFSET %s;
+            """, [page_size, offset])
+            rows = cursor.fetchall()
+
+            # Build response
+            videos = []
+            for row in rows:
+                videos.append({
+                    'id': row[0],
+                    'title': row[1],
+                    'description': row[2] or '',
+                    'video_url': row[3] or '',
+                    'thumbnail_url': row[4] or '',
+                    'views_count': row[5],
+                    'likes_count': row[6],
+                    'comments_count': row[7],
+                    'created_at': row[8].isoformat() if row[8] else None,
+                    'creator': {'id': row[9], 'username': '', 'email': ''}
+                })
+
+        return Response({
+            'videos': videos,
+            'page': page,
+            'page_size': page_size,
+            'total': total,
+            'has_more': offset + len(rows) < total
+        })
+
+    except Exception as e:
+        logger.error(f'Error in video_feed: {e}', exc_info=True)
+        return Response({
+            'videos': [],
+            'page': page,
+            'page_size': page_size,
+            'total': 0,
+            'has_more': False
+        })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def categories_list(request):
+    """
+    Get video categories
+    Returns a default category for now
+    """
+    categories = [
+        {
+            'id': 1,
+            'name': 'Общее',
+            'description': 'Обучающие видео'
+        },
+        {
+            'id': 2,
+            'name': 'Грамматика',
+            'description': 'Уроки по грамматике'
+        },
+        {
+            'id': 3,
+            'name': 'Лексика',
+            'description': 'Уроки по лексике'
+        },
+        {
+            'id': 4,
+            'name': 'Аудирование',
+            'description': 'Практика аудирования'
+        },
+        {
+            'id': 5,
+            'name': 'Разговорный',
+            'description': 'Разговорная практика'
+        },
+        {
+            'id': 6,
+            'name': 'HSK 1-2',
+            'description': 'Уровень HSK 1-2'
+        },
+        {
+            'id': 7,
+            'name': 'HSK 3-4',
+            'description': 'Уровень HSK 3-4'
+        },
+        {
+            'id': 8,
+            'name': 'HSK 5-6',
+            'description': 'Уровень HSK 5-6'
+        }
+    ]
+
+    return Response(categories)
