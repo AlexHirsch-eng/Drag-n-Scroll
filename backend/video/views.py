@@ -157,7 +157,21 @@ class VideoViewSet(viewsets.ModelViewSet):
                 'title': video.title,
                 'description': video.description or '',
                 'video_url': video.video_url or '',
+                'url': video.video_url or '',  # Frontend expects 'url' field
+                'video_file': video.video_url or '',  # Same as url for URL-based videos
                 'thumbnail_url': video.thumbnail_url or '',
+                'thumbnail': video.thumbnail_url or '',  # Frontend expects 'thumbnail' field
+                'duration': 0,  # Default duration
+                'category': {  # Default category
+                    'id': 1,
+                    'name': 'Общее',
+                    'description': 'Обучающие видео'
+                },
+                'tags': video.tags or [],
+                'music_title': 'Оригинальный звук',
+                'shares_count': 0,
+                'is_saved': False,
+                'is_liked': False,
                 'views_count': video.views_count,
                 'likes_count': video.likes_count,
                 'comments_count': video.comments_count,
@@ -165,7 +179,11 @@ class VideoViewSet(viewsets.ModelViewSet):
                 'creator': {
                     'id': request.user.id,
                     'username': request.user.username,
-                    'email': getattr(request.user, 'email', '')
+                    'email': getattr(request.user, 'email', ''),
+                    'profile': {},
+                    'followers_count': 0,
+                    'following_count': 0,
+                    'is_following': False
                 }
             }
 
@@ -376,13 +394,27 @@ def upload_video(request):
 
         logger.info(f"Created video with ID: {video.id}")
 
-        # Return response
+        # Return response - include all fields frontend expects
         response_data = {
             'id': video.id,
             'title': video.title,
             'description': video.description or '',
             'video_url': video.video_url or '',
+            'url': video.video_url or '',  # Frontend expects 'url' field
+            'video_file': video.video_url or '',  # Same as url for URL-based videos
             'thumbnail_url': video.thumbnail_url or '',
+            'thumbnail': video.thumbnail_url or '',  # Frontend expects 'thumbnail' field
+            'duration': 0,  # Default duration
+            'category': {  # Default category
+                'id': 1,
+                'name': 'Общее',
+                'description': 'Обучающие видео'
+            },
+            'tags': video.tags or [],
+            'music_title': 'Оригинальный звук',
+            'shares_count': 0,
+            'is_saved': False,
+            'is_liked': False,
             'views_count': video.views_count,
             'likes_count': video.likes_count,
             'comments_count': video.comments_count,
@@ -390,7 +422,11 @@ def upload_video(request):
             'creator': {
                 'id': request.user.id,
                 'username': request.user.username,
-                'email': getattr(request.user, 'email', '')
+                'email': getattr(request.user, 'email', ''),
+                'profile': {},
+                'followers_count': 0,
+                'following_count': 0,
+                'is_following': False
             }
         }
 
@@ -422,18 +458,20 @@ def video_feed(request):
             cursor.execute("SELECT COUNT(*) FROM video_video;")
             total = cursor.fetchone()[0]
 
-            # Get paginated videos
+            # Get paginated videos with user info
             offset = (page - 1) * page_size
             cursor.execute("""
-                SELECT id, title, description, video_url, thumbnail_url,
-                       views_count, likes_count, comments_count, created_at, user_id
-                FROM video_video
-                ORDER BY created_at DESC
+                SELECT v.id, v.title, v.description, v.video_url, v.thumbnail_url,
+                       v.views_count, v.likes_count, v.comments_count, v.created_at, v.user_id,
+                       u.username, u.email
+                FROM video_video v
+                LEFT JOIN core_user u ON v.user_id = u.id
+                ORDER BY v.created_at DESC
                 LIMIT %s OFFSET %s;
             """, [page_size, offset])
             rows = cursor.fetchall()
 
-            # Build response
+            # Build response - include all fields frontend expects
             videos = []
             for row in rows:
                 videos.append({
@@ -441,12 +479,34 @@ def video_feed(request):
                     'title': row[1],
                     'description': row[2] or '',
                     'video_url': row[3] or '',
+                    'url': row[3] or '',  # Frontend expects 'url' field
+                    'video_file': row[3] or '',  # Same as url for URL-based videos
                     'thumbnail_url': row[4] or '',
+                    'thumbnail': row[4] or '',  # Frontend expects 'thumbnail' field
+                    'duration': 0,  # Default duration
+                    'category': {  # Default category
+                        'id': 1,
+                        'name': 'Общее',
+                        'description': 'Обучающие видео'
+                    },
+                    'tags': [],  # Would need to parse JSON if stored
+                    'music_title': 'Оригинальный звук',
+                    'shares_count': 0,
+                    'is_saved': False,
+                    'is_liked': False,
                     'views_count': row[5],
                     'likes_count': row[6],
                     'comments_count': row[7],
                     'created_at': row[8].isoformat() if row[8] else None,
-                    'creator': {'id': row[9], 'username': '', 'email': ''}
+                    'creator': {
+                        'id': row[9],
+                        'username': row[10] or '',
+                        'email': row[11] or '',
+                        'profile': {},
+                        'followers_count': 0,
+                        'following_count': 0,
+                        'is_following': False
+                    }
                 })
 
         return Response({
