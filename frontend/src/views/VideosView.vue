@@ -113,12 +113,19 @@
                 {{ isImporting ? '⏳' : '📥' }}
               </button>
               <button @click="toggleSearch" class="search-btn">🔍</button>
-              <!-- Navigation arrows -->
-              <div class="nav-arrows">
-                <button @click="previousVideo" class="nav-arrow" :disabled="currentVideoIndex === 0">▲</button>
-                <button @click="nextVideo" class="nav-arrow" :disabled="currentVideoIndex === videos.length - 1">▼</button>
-              </div>
             </div>
+          </div>
+
+          <!-- Video Navigation Overlay (Right Side) -->
+          <div class="video-nav-overlay">
+            <button @click="previousVideo" class="nav-btn-large nav-up" :disabled="currentVideoIndex === 0">
+              <span class="nav-icon">▲</span>
+              <span class="nav-hint">Пред.</span>
+            </button>
+            <button @click="nextVideo" class="nav-btn-large nav-down" :disabled="currentVideoIndex === videos.length - 1">
+              <span class="nav-icon">▼</span>
+              <span class="nav-hint">След.</span>
+            </button>
           </div>
 
           <!-- Search Bar -->
@@ -1950,5 +1957,63 @@ function nextVideo() {
 .nav-arrow:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Video Navigation Overlay (Right Side) */
+.video-nav-overlay {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 1000;
+  pointer-events: all;
+}
+
+.nav-btn-large {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(0, 229, 255, 0.5);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  pointer-events: all;
+  backdrop-filter: blur(10px);
+}
+
+.nav-btn-large:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.3);
+  border-color: #00e5ff;
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+}
+
+.nav-btn-large:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.nav-btn-large:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+  color: white;
+  line-height: 1;
+}
+
+.nav-hint {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+  line-height: 1;
 }
 </style>
