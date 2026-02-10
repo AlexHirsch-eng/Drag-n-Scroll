@@ -361,6 +361,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import l1 from '@/images/l1.png'
+import l2 from '@/images/l2.png'
+import l3 from '@/images/l3.png'
+import l4 from '@/images/l4.png'
+import l5 from '@/images/l5.png'
+import l6 from '@/images/l6.png'
 
 const router = useRouter()
 
@@ -374,19 +380,34 @@ const progressWidth = computed(() => `${(activeStep.value / 2) * 100}%`)
 // Asset loading state
 const screenshots = ref([
   {
-    src: '/src/assets/screens/screen-1.png',
-    alt: 'Home Screen',
-    loaded: false
+    src: l1,
+    alt: 'Главная',
+    loaded: true
   },
   {
-    src: '/src/assets/screens/screen-2.png',
-    alt: 'Learning Screen',
-    loaded: false
+    src: l2,
+    alt: 'Уроки',
+    loaded: true
   },
   {
-    src: '/src/assets/screens/screen-3.png',
-    alt: 'Profile Screen',
-    loaded: false
+    src: l3,
+    alt: 'Профиль',
+    loaded: true
+  },
+  {
+    src: l4,
+    alt: 'Видео',
+    loaded: true
+  },
+  {
+    src: l5,
+    alt: 'AI Чат',
+    loaded: true
+  },
+  {
+    src: l6,
+    alt: 'Словарь',
+    loaded: true
   }
 ])
 
