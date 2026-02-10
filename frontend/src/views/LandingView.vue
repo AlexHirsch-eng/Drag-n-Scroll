@@ -533,19 +533,13 @@ function setupRevealAnimations() {
   return observer
 }
 
-// Load assets
+// Load assets - images are already imported, no need to fetch
 async function loadAssets() {
-  // Try to load screenshots
-  for (const screenshot of screenshots.value) {
-    try {
-      const response = await fetch(screenshot.src)
-      if (response.ok) {
-        screenshot.loaded = true
-      }
-    } catch {
-      // Keep placeholder
-    }
-  }
+  // Screenshots are already imported and ready to use
+  // Just set them as loaded
+  screenshots.value.forEach(screenshot => {
+    screenshot.loaded = true
+  })
 
   // Try to load video
   try {
