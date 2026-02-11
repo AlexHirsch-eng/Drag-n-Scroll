@@ -999,7 +999,6 @@ section {
   object-fit: contain;
   border-radius: 12px;
   margin: 0 auto 1rem auto;
-  background: rgba(255, 255, 255, 0.05);
   display: block;
 }
 
