@@ -141,19 +141,14 @@
         <!-- Video Placeholder -->
         <div class="showcase-section">
           <h3 class="showcase-title">See It In Action</h3>
-          <div class="video-placeholder">
-            <video
-              v-if="demoVideoLoaded"
-              :src="demoVideoSrc"
+          <div class="video-wrapper">
+            <iframe
+              src="https://www.youtube.com/embed/VKsnJJRQRUU"
               class="demo-video"
-              controls
-            />
-            <div v-else class="video-placeholder-frame">
-              <div class="play-button">
-                <div class="play-icon">▶</div>
-              </div>
-              <div class="video-caption">Demo Video Coming Soon</div>
-            </div>
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
           </div>
         </div>
       </div>
@@ -1083,6 +1078,15 @@ section {
   aspect-ratio: 16 / 9;
   border-radius: 20px;
   overflow: hidden;
+}
+
+.video-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .demo-video {
