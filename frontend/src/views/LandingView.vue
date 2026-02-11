@@ -994,12 +994,13 @@ section {
 }
 
 .feature-image {
-  width: 50%;
+  width: 35%;
   aspect-ratio: 9/16;
   object-fit: contain;
   border-radius: 12px;
   margin: 0 auto 1rem auto;
   display: block;
+  max-height: 250px;
 }
 
 .feature-title {
