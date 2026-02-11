@@ -49,16 +49,16 @@
         </div>
         <div class="hero-visual">
           <div class="visual-card card-1">
-            <img :src="l1" alt="Главная" class="card-image">
-            <div class="card-label">Главная</div>
+            <img :src="l1" alt="Home" class="card-image">
+            <div class="card-label">Home</div>
           </div>
           <div class="visual-card card-2">
-            <img :src="l2" alt="Уроки" class="card-image">
-            <div class="card-label">Уроки</div>
+            <img :src="l2" alt="Lessons" class="card-image">
+            <div class="card-label">Lessons</div>
           </div>
           <div class="visual-card card-3">
-            <img :src="l5" alt="AI Чат" class="card-image">
-            <div class="card-label">AI Чат</div>
+            <img :src="l5" alt="AI Chat" class="card-image">
+            <div class="card-label">AI Chat</div>
           </div>
         </div>
       </div>
@@ -890,8 +890,8 @@ section {
 
 .visual-card {
   position: absolute;
-  width: 200px;
-  height: 380px;
+  width: 140px;
+  height: 266px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   border: 2px solid rgba(255, 255, 255, 0.1);
