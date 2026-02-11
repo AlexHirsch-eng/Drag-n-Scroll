@@ -113,7 +113,7 @@
           </div>
         </div>
 
-        <!-- Screenshot Gallery Placeholder -->
+        <!-- Screenshot Gallery Placeholder
         <div class="showcase-section">
           <h3 class="showcase-title">App Screenshots</h3>
           <div class="screenshots-grid">
@@ -136,7 +136,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <!-- Video Placeholder -->
         <div class="showcase-section">
@@ -995,11 +995,12 @@ section {
 
 .feature-image {
   width: 50%;
-  height: 120px;
+  aspect-ratio: 9/16;
   object-fit: contain;
   border-radius: 12px;
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto;
   background: rgba(255, 255, 255, 0.05);
+  display: block;
 }
 
 .feature-title {
