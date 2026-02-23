@@ -118,7 +118,6 @@ The project includes management commands to populate the database with realistic
 ```bash
 python manage.py populate_chats
 ```
-
 Creates:
 - **6 users** with learning profiles
 - **7 chat rooms** (DMs + group chats)
