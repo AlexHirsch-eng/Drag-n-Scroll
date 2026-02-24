@@ -28,7 +28,6 @@ A modern Chinese language learning application with a TikTok-style interface and
 
 ## 📁 Project Structure
 
-```
 Drag'n'Scroll/
 ├── backend/                 # Django REST API
 │   ├── config/             # Django settings
