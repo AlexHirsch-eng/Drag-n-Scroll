@@ -34,7 +34,7 @@ Drag'n'Scroll/
 │   ├── core/               # User & Profile models
 │   ├── course/             # Course structure
 │   ├── vocab/              # Vocabulary & Grammar
-│   ├── learning/           # Sessions & SRS
+│   ├── learning            # Sessions & SRS
 │   ├── manage.py
 │   └── requirements.txt
 ├── frontend/               # Vue 3 Application
