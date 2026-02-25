@@ -2,7 +2,6 @@
 A modern Chinese language learning application with a TikTok-style interface and Spaced Repetition System (SRS).
 
 ## 🎯 Features
-
 - **TikTok-Style Interface**: Vertical swipe navigation for an immersive learning experience
 - **SuperMemo SM-2 Algorithm**: Proven spaced repetition system for effective vocabulary retention
 - **Multi-language Support**: Learn with Russian or Kazakh translations
