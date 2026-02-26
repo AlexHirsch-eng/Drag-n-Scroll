@@ -27,8 +27,8 @@ class UserCourseProgressSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(BaseUserSerializer):
-    profile = UserProfileSerializer(read_only=True)
-    progress = UserCourseProgressSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     likes_received = serializers.SerializerMethodField()
@@ -41,6 +41,39 @@ class UserSerializer(BaseUserSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_profile(self, obj):
+        """Safely get user profile"""
+        try:
+            if hasattr(obj, 'profile') and obj.profile:
+                return UserProfileSerializer(obj.profile).data
+        except Exception:
+            pass
+        return {
+            'learning_language': 'RU',
+            'current_hsk_level': 1,
+            'created_at': None,
+            'updated_at': None
+        }
+
+    def get_progress(self, obj):
+        """Safely get user progress"""
+        try:
+            if hasattr(obj, 'progress') and obj.progress:
+                return UserCourseProgressSerializer(obj.progress).data
+        except Exception:
+            pass
+        return {
+            'current_day': 1,
+            'current_lesson': 1,
+            'current_step': 1,
+            'total_xp': 0,
+            'streak_days': 0,
+            'last_study_date': None,
+            'completed_days': [],
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""
@@ -110,8 +143,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
     """
     Detailed user serializer for profile endpoint
     """
-    profile = UserProfileSerializer(read_only=True)
-    progress = UserCourseProgressSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     likes_received = serializers.SerializerMethodField()
@@ -124,6 +157,39 @@ class UserDetailSerializer(serializers.ModelSerializer):
             'likes_received', 'date_joined'
         ]
         read_only_fields = ['date_joined']
+
+    def get_profile(self, obj):
+        """Safely get user profile"""
+        try:
+            if hasattr(obj, 'profile') and obj.profile:
+                return UserProfileSerializer(obj.profile).data
+        except Exception:
+            pass
+        return {
+            'learning_language': 'RU',
+            'current_hsk_level': 1,
+            'created_at': None,
+            'updated_at': None
+        }
+
+    def get_progress(self, obj):
+        """Safely get user progress"""
+        try:
+            if hasattr(obj, 'progress') and obj.progress:
+                return UserCourseProgressSerializer(obj.progress).data
+        except Exception:
+            pass
+        return {
+            'current_day': 1,
+            'current_lesson': 1,
+            'current_step': 1,
+            'total_xp': 0,
+            'streak_days': 0,
+            'last_study_date': None,
+            'completed_days': [],
+            'created_at': None,
+            'updated_at': None
+        }
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""
