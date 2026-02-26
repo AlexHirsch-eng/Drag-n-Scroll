@@ -2,7 +2,7 @@
 URL configuration for core app
 """
 from django.urls import path
-from .views import UserProfileView, UserDetailView, UserByIdView, health_check
+from .views import UserProfileView, UserDetailView, UserByIdView, health_check, run_migrations
 
 urlpatterns = [
     path('profile/', UserProfileView.as_view(), name='user-profile'),

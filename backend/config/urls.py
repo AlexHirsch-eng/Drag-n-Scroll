@@ -6,7 +6,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
-from core.views import health_check
+from core.views import health_check, run_migrations
 import os
 import mimetypes
 from pathlib import Path
@@ -41,6 +41,7 @@ def serve_media_file(request, file_path):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health-check'),
+    path('api/migrate/', run_migrations, name='run-migrations'),
     path('api/auth/', include('djoser.urls.jwt')),
     path('api/auth/', include('djoser.urls')),
     path('api/user/', include('core.urls')),

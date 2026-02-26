@@ -7,7 +7,6 @@ services:
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
     startCommand: |
-      python manage.py migrate --run-syncdb || true
       gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
@@ -19,15 +18,17 @@ services:
       - key: SECRET_KEY
         generate: true
       - key: ALLOWED_HOSTS
-        value: drag-n-scroll.onrender.com
+        value: drag-n-scroll.onrender.com,localhost,127.0.0.1
       - key: CORS_ALLOWED_ORIGINS
-        value: https://drag-n-scroll.vercel.app,https://frontend-nine-iota-48.vercel.app,https://drag-n-scroll.onrender.com
+        value: https://drag-n-scroll.vercel.app,https://drag-n-scroll.onrender.com
       - key: CORS_ALLOW_ALL_ORIGINS
         value: False
       - key: PYTHON_VERSION
         value: 3.13.0
       - key: GROQ_API_KEY
         sync: false
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings
 
   # PostgreSQL Database
   - type: pserv
@@ -36,3 +37,4 @@ services:
     user: drag_n_scroll_user
     plan: free
     region: oregon
+    ipAllowList: []

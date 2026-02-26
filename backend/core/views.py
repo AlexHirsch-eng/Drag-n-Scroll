@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import connections
+from django.core.management import call_command
 from .models import User, UserProfile
 from .serializers import UserProfileSerializer, UserDetailSerializer, UserSerializer
 
@@ -69,3 +70,23 @@ def health_check(request):
             'service': 'drag-n-scroll-api',
             'error': str(e)
         }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+@api_view(['POST'])
+@permission_classes([])  # Allow unauthenticated for initial setup
+def run_migrations(request):
+    """
+    Run database migrations manually
+    Call this endpoint to apply migrations when you can't access shell
+    """
+    try:
+        call_command('migrate', '--run-syncdb', verbosity=2)
+        return Response({
+            'status': 'success',
+            'message': 'Migrations completed successfully'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
