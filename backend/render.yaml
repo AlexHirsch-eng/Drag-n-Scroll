@@ -27,6 +27,8 @@ services:
         value: False
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: GROQ_API_KEY
+        sync: false
 
   # PostgreSQL Database
   - type: pserv
@@ -34,3 +36,4 @@ services:
     databaseName: drag_n_scroll
     user: drag_n_scroll_user
     plan: free
+    region: oregon
