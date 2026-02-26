@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import connections
 from django.core.management import call_command
+from django.conf import settings
+import re
 from .models import User, UserProfile
 from .serializers import UserProfileSerializer, UserDetailSerializer, UserSerializer
 
@@ -46,6 +48,14 @@ class UserByIdView(generics.RetrieveAPIView):
         return get_object_or_404(User, id=user_id)
 
 
+def mask_database_url(url):
+    """Mask password in database URL for safe display"""
+    if not url:
+        return None
+    # Replace password in postgres://user:password@host with postgres://user:****@host
+    return re.sub(r'(://[^:]+:)[^@]+(@)', r'\1****\2', url)
+
+
 @api_view(['GET'])
 @permission_classes([])  # Allow unauthenticated access
 def health_check(request):
@@ -58,16 +68,25 @@ def health_check(request):
         db_conn = connections['default']
         db_conn.cursor()
 
+        # Get database info for diagnostics
+        db_url = getattr(settings, 'DATABASE_URL', 'not set')
+        masked_url = mask_database_url(db_url)
+
         return Response({
             'status': 'healthy',
             'database': 'connected',
-            'service': 'drag-n-scroll-api'
+            'service': 'drag-n-scroll-api',
+            'database_url': masked_url
         }, status=status.HTTP_200_OK)
     except Exception as e:
+        db_url = getattr(settings, 'DATABASE_URL', 'not set')
+        masked_url = mask_database_url(db_url)
+
         return Response({
             'status': 'unhealthy',
             'database': 'disconnected',
             'service': 'drag-n-scroll-api',
+            'database_url': masked_url,
             'error': str(e)
         }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
