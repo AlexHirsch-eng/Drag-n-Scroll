@@ -44,19 +44,24 @@ class UserSerializer(BaseUserSerializer):
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""
-        return obj.followers.count()
+        # TODO: Implement following system
+        return 0
 
     def get_following_count(self, obj):
         """Get count of users this user is following"""
-        return obj.following.count()
+        # TODO: Implement following system
+        return 0
 
     def get_likes_received(self, obj):
         """Get total likes received on user's videos"""
-        from video_app.models import Video
-        total_likes = Video.objects.filter(creator=obj).aggregate(
-            total=models.Sum('likes_count')
-        )['total'] or 0
-        return total_likes
+        from video.models import Video
+        try:
+            total_likes = Video.objects.filter(user=obj).aggregate(
+                total=models.Sum('likes_count')
+            )['total'] or 0
+            return total_likes
+        except Exception:
+            return 0
 
 
 class UserCreateSerializer(BaseUserCreateSerializer):
@@ -122,16 +127,21 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     def get_followers_count(self, obj):
         """Get count of users following this user"""
-        return obj.followers.count()
+        # TODO: Implement following system
+        return 0
 
     def get_following_count(self, obj):
         """Get count of users this user is following"""
-        return obj.following.count()
+        # TODO: Implement following system
+        return 0
 
     def get_likes_received(self, obj):
         """Get total likes received on user's videos"""
-        from video_app.models import Video
-        total_likes = Video.objects.filter(creator=obj).aggregate(
-            total=models.Sum('likes_count')
-        )['total'] or 0
-        return total_likes
+        from video.models import Video
+        try:
+            total_likes = Video.objects.filter(user=obj).aggregate(
+                total=models.Sum('likes_count')
+            )['total'] or 0
+            return total_likes
+        except Exception:
+            return 0
