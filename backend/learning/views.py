@@ -366,6 +366,16 @@ def _get_step_1_data(session):
             )
             cards.append(card)
 
+    # If no cards available, auto-complete step 1 and move to step 2
+    if len(cards) == 0:
+        # Mark step 1 as completed
+        session.step_1_completed_at = timezone.now()
+        session.current_step = 2
+        session.step_2_started_at = timezone.now()
+        session.save()
+        # Auto-move to step 2
+        return _get_step_2_data(session)
+
     response_data = {
         'step': 1,
         'step_type': 'SRS_REVIEW',

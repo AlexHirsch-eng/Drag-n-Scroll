@@ -27,4 +27,5 @@ urlpatterns = [
 
     # Admin: Create Demo Users
     path('create-demo-users/', views.create_demo_chat_users, name='create_demo_chat_users'),
+    path('fix-demo-users-hsk/', views.fix_demo_users_hsk, name='fix_demo_users_hsk'),
 ]

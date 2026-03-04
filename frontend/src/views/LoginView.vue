@@ -33,6 +33,40 @@
             {{ error }}
           </div>
 
+          <!-- Demo User Quick Fill -->
+          <div class="demo-users-section">
+            <div class="demo-label">DEMO USERS:</div>
+            <div class="demo-users-list">
+              <button
+                type="button"
+                @click="fillDemoUser('Li_Mei')"
+                class="demo-user-btn"
+                :class="{ active: form.username === 'Li_Mei' }"
+              >
+                <span class="demo-username">Li_Mei</span>
+                <span class="demo-bio">👩‍🏫 Teacher</span>
+              </button>
+              <button
+                type="button"
+                @click="fillDemoUser('Wang_Wei')"
+                class="demo-user-btn"
+                :class="{ active: form.username === 'Wang_Wei' }"
+              >
+                <span class="demo-username">Wang_Wei</span>
+                <span class="demo-bio">📚 Student</span>
+              </button>
+              <button
+                type="button"
+                @click="fillDemoUser('Chen_Yu')"
+                class="demo-user-btn"
+                :class="{ active: form.username === 'Chen_Yu' }"
+              >
+                <span class="demo-username">Chen_Yu</span>
+                <span class="demo-bio">🎓 Helper</span>
+              </button>
+            </div>
+          </div>
+
           <div class="form-group">
             <label>ПОЛЬЗОВАТЕЛЬ</label>
             <input
@@ -102,14 +136,28 @@ async function handleLogin() {
   isLoading.value = true
   error.value = ''
 
+  // Debug logging
+  console.log('[Login] Attempting login with:', {
+    username: form.value.username,
+    passwordLength: form.value.password.length
+  })
+
   try {
     await authStore.login(form.value)
     router.push('/app')
   } catch (err: any) {
+    console.error('[Login] Login failed with error:', err.response?.data)
     error.value = err.response?.data?.detail || 'Вход не удался. Попробуйте снова.'
   } finally {
     isLoading.value = false
   }
+}
+
+function fillDemoUser(username: string) {
+  form.value.username = username
+  form.value.password = 'DemoUser123'
+  error.value = ''
+  console.log('[Login] Filled demo user:', username)
 }
 </script>
 
@@ -391,5 +439,72 @@ async function handleLogin() {
 .footer-link .link:hover {
   text-shadow: 0 0 15px rgba(0, 245, 255, 0.8);
   color: #FFFFFF;
+}
+
+/* Demo Users Section */
+.demo-users-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.demo-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-accent-cyan);
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+
+.demo-users-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.demo-user-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.demo-user-btn:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: var(--color-accent-cyan);
+  color: var(--color-neon-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 229, 255, 0.2);
+}
+
+.demo-user-btn.active {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: var(--color-accent-cyan);
+  color: #FFFFFF;
+  box-shadow:
+    0 0 10px rgba(0, 229, 255, 0.3),
+    inset 0 0 10px rgba(0, 229, 255, 0.1);
+}
+
+.demo-username {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #FFFFFF;
+}
+
+.demo-bio {
+  font-size: 0.7rem;
+  opacity: 0.8;
 }
 </style>

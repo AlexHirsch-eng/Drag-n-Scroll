@@ -496,11 +496,11 @@ def ai_chat(request):
 def create_demo_chat_users(request):
     """Create demo chat users for testing"""
     from django.core.management import call_command
-    
+
     try:
         # Call the management command
         call_command('create_demo_chat_users')
-        
+
         return Response({
             'status': 'success',
             'message': 'Demo chat users created successfully'
@@ -510,3 +510,36 @@ def create_demo_chat_users(request):
             'status': 'error',
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def fix_demo_users_hsk(request):
+    """Quick fix: Update demo users to HSK 1 and clear old sessions"""
+    from core.models import UserProfile, UserCourseProgress
+    from learning.models import LearningSession
+
+    demo_usernames = ['Li_Mei', 'Wang_Wei', 'Chen_Yu']
+    updated = []
+
+    for username in demo_usernames:
+        try:
+            user = User.objects.get(username=username)
+
+            # Update profile HSK level
+            profile = user.profile
+            profile.current_hsk_level = 1
+            profile.save()
+
+            # Delete old learning sessions
+            LearningSession.objects.filter(user=user).delete()
+
+            updated.append(username)
+        except User.DoesNotExist:
+            pass
+
+    return Response({
+        'status': 'success',
+        'updated': updated,
+        'message': f'Updated {len(updated)} demo users to HSK 1'
+    }, status=status.HTTP_200_OK)

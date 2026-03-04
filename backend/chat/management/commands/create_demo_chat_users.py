@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from core.models import UserProfile, UserCourseProgress
 from course.models import Course, CourseDay
+from learning.models import LearningSession
 
 
 class Command(BaseCommand):
@@ -16,14 +17,14 @@ class Command(BaseCommand):
                 'email': 'li.mei@example.com',
                 'password': 'DemoUser123',
                 'bio': 'Преподаватель китайского языка из Пекина 🇨🇳',
-                'hsk_level': 3
+                'hsk_level': 1
             },
             {
                 'username': 'Wang_Wei',
                 'email': 'wang.wei@example.com',
                 'password': 'DemoUser123',
                 'bio': 'Изучает русский язык, любит общаться 📚',
-                'hsk_level': 2
+                'hsk_level': 1
             },
             {
                 'username': 'Chen_Yu',
@@ -51,7 +52,11 @@ class Command(BaseCommand):
                 # Update password to make sure it works
                 user.set_password(password)
                 user.save()
-                self.stdout.write(self.style.WARNING(f'✓ User {username} already exists, updated password...'))
+
+                # Delete old learning sessions to force fresh start with new HSK level
+                LearningSession.objects.filter(user=user).delete()
+
+                self.stdout.write(self.style.WARNING(f'✓ User {username} already exists, updated password and cleared sessions...'))
                 updated_count += 1
             else:
                 # Create user
