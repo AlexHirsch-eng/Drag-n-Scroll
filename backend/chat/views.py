@@ -489,3 +489,24 @@ def ai_chat(request):
             return Response({
                 'error': f'AI chat failed: {str(e)}'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def create_demo_chat_users(request):
+    """Create demo chat users for testing"""
+    from django.core.management import call_command
+    
+    try:
+        # Call the management command
+        call_command('create_demo_chat_users')
+        
+        return Response({
+            'status': 'success',
+            'message': 'Demo chat users created successfully'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

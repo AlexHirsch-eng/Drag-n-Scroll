@@ -24,4 +24,7 @@ urlpatterns = [
 
     # AI Chat
     path('ai/', views.ai_chat, name='ai_chat'),
+
+    # Admin: Create Demo Users
+    path('create-demo-users/', views.create_demo_chat_users, name='create_demo_chat_users'),
 ]
