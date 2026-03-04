@@ -1424,3 +1424,32 @@ def create_full_demo_course(request):
             'message': str(e),
             'traceback': traceback.format_exc()
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def refresh_demo_course_content(request):
+    """Delete and recreate HSK 1 course with full content"""
+    from course.models import Course, CourseDay
+    from learning.models import LearningSession
+
+    try:
+        # Delete old empty course days and their sessions
+        CourseDay.objects.filter(course__hsk_level=1).delete()
+        LearningSession.objects.filter(course_day__course__hsk_level=1).delete()
+
+        # Create fresh course with content
+        from django.core.management import call_command
+        call_command('create_full_demo_course')
+
+        return Response({
+            'status': 'success',
+            'message': 'HSK 1 course refreshed with full content'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        import traceback
+        return Response({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
