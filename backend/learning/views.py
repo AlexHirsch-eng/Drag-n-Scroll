@@ -632,8 +632,19 @@ def _get_step_5_data(session):
         session.completed_at = timezone.now()
         session.current_step = 6
         session.save()
+
         # Return session completion data
-        return _get_session_summary(session)
+        response_data = {
+            'session': LearningSessionSerializer(session).data,
+            'words_learned': session.words_learned,
+            'accuracy_percentage': session.accuracy_percentage,
+            'problematic_words_count': len(session.problematic_words),
+            'problematic_words': [],
+            'time_spent_minutes': session.total_time_minutes,
+            'xp_earned': session.xp_earned,
+            'is_day_completed': False
+        }
+        return Response(response_data)
 
     response_data = {
         'step': 5,
