@@ -633,8 +633,11 @@ def _get_step_5_data(session):
         session.current_step = 6
         session.save()
 
-        # Return session completion data
+        # Return session completion data with step info for frontend
         response_data = {
+            'step': 6,  # 6 = completed
+            'step_type': 'COMPLETED',
+            'data': None,
             'session': LearningSessionSerializer(session).data,
             'words_learned': session.words_learned,
             'accuracy_percentage': session.accuracy_percentage,
