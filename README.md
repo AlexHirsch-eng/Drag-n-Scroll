@@ -153,9 +153,9 @@ Creates:
 - `GET /api/vocab/grammar/` - List grammar rules
 
 ### SRS (Spaced Repetition)
-- `GET /api/learning/srs/review-batch/` - Get words for review
-- `POST /api/learning/srs/submit-review/` - Submit review results
-- `GET /api/learning/srs/stats/` - Get SRS statistics
+- GET /api/learning/srs/review-batch/` - Get words for review
+- POST /api/learning/srs/submit-review/` - Submit review results
+- GET /api/learning/srs/stats/` - Get SRS statistics
 
 See [backend/README.md](./backend/README.md) for complete API documentation.
 
