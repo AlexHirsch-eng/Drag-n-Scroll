@@ -12,7 +12,7 @@ import uuid
 
 from core.models import UserCourseProgress, UserProfile
 from course.models import Course, CourseDay
-from vocab.models import Word, WordProgress, GrammarRule
+from vocab.models import Word, WordProgress, GrammarRule, GrammarExample
 from .models import (
     LearningSession, Dialogue, WordArrangementExercise, GrammarTask,
     NewWordLearningProgress, StepProgress, SRSReviewCard
@@ -242,6 +242,44 @@ def initialize_demo_course(request):
             hint_kz=''
         )
 
+        # Create grammar rule and task for Step 3
+        grammar_rule_data = _get_grammar_rule_data(lesson['day'])
+        grammar_rule, _ = GrammarRule.objects.get_or_create(
+            title=grammar_rule_data['title'],
+            pattern=grammar_rule_data['pattern'],
+            defaults={
+                'explanation_ru': grammar_rule_data['explanation_ru'],
+                'explanation_kz': grammar_rule_data['explanation_kz'],
+                'hsk_level': hsk_level
+            }
+        )
+
+        # Create grammar examples if they don't exist
+        if not grammar_rule.examples.exists():
+            for example in grammar_rule_data['examples']:
+                GrammarExample.objects.create(
+                    grammar_rule=grammar_rule,
+                    sentence_hanzi=example['hanzi'],
+                    sentence_pinyin=example['pinyin'],
+                    translation_ru=example['translation_ru'],
+                    translation_kz=example['translation_kz']
+                )
+
+        # Create grammar task for Session A
+        grammar_task_data = _get_grammar_task_data(lesson['day'])
+        GrammarTask.objects.create(
+            course_day=course_day,
+            session_type='A',
+            grammar_rule=grammar_rule,
+            task_prompt_ru=grammar_task_data['task_prompt_ru'],
+            task_prompt_kz=grammar_task_data['task_prompt_kz'],
+            components=grammar_task_data['components'],
+            correct_hanzi=grammar_task_data['correct_hanzi'],
+            correct_pinyin=grammar_task_data['correct_pinyin'],
+            correct_translation_ru=grammar_task_data['correct_translation_ru'],
+            correct_translation_kz=grammar_task_data['correct_translation_kz']
+        )
+
         logger.info(f"[InitDemo] Created Lesson {lesson['day']}: {lesson['title']}")
 
     return Response({
@@ -295,6 +333,193 @@ def _get_hint_ru(day):
         5: '"Сегодня" + глагол "быть" + день недели'
     }
     return hints.get(day, 'Собери предложение')
+
+
+def _get_grammar_rule_data(day):
+    """Get grammar rule data for each lesson"""
+    grammar_rules = {
+        1: {
+            'title': 'Порядок слов в предложении',
+            'pattern': 'Подлежащее + Сказуемое',
+            'explanation_ru': 'В китайском языке порядок слов строгий: сначала подлежащее (кто?), потом сказуемое (что делает?).',
+            'explanation_kz': 'Қытай тілінде сөз тәртібі қатаң: бастауыш (кім?) одан соң етістік (не істейді?).',
+            'examples': [
+                {
+                    'hanzi': '我是学生。',
+                    'pinyin': 'Wǒ shì xuésheng.',
+                    'translation_ru': 'Я студент.',
+                    'translation_kz': 'Мен студент.'
+                },
+                {
+                    'hanzi': '你好吗？',
+                    'pinyin': 'Nǐ hǎo ma?',
+                    'translation_ru': 'Как дела?',
+                    'translation_kz': 'Жақсысың ба?'
+                }
+            ]
+        },
+        2: {
+            'title': 'Числительные',
+            'pattern': 'Число + Счетное слово + Существительное',
+            'explanation_ru': 'В китайском языке после числительных всегда идет счетное слово.',
+            'explanation_kz': 'Қытай тілінде сандардың соңы әрқашан санау сөзы келеді.',
+            'examples': [
+                {
+                    'hanzi': '我有三个苹果。',
+                    'pinyin': 'Wǒ yǒu sān gè píngguǒ.',
+                    'translation_ru': 'У меня три яблока.',
+                    'translation_kz': 'Менің үш алмам бар.'
+                },
+                {
+                    'hanzi': '这是一个人。',
+                    'pinyin': 'Zhè shì yī gè rén.',
+                    'translation_ru': 'Это один человек.',
+                    'translation_kz': 'Бір адам.'
+                }
+            ]
+        },
+        3: {
+            'title': 'Указательное местоимение',
+            'pattern': '这/那 + 是 + Существительное',
+            'explanation_ru': 'Для указания на предметы используем "这" (это) и "那" (то) перед глаголом "быть" (是).',
+            'explanation_kz': 'Заттарды көрсету үшін "是" (болу) етістігінің алдында "这" (бұл) және "那" (сол) қолданамыз.',
+            'examples': [
+                {
+                    'hanzi': '这是我的家。',
+                    'pinyin': 'Zhè shì wǒ de jiā.',
+                    'translation_ru': 'Это мой дом.',
+                    'translation_kz': 'Бұл менің үйім.'
+                },
+                {
+                    'hanzi': '那是书。',
+                    'pinyin': 'Nà shì shū.',
+                    'translation_ru': 'То книга.',
+                    'translation_kz': 'Сол - кітап.'
+                }
+            ]
+        },
+        4: {
+            'title': 'Глаголы действия',
+            'pattern': 'Подлежащее + Глагол + Объект',
+            'explanation_ru': 'Глаголы "есть" (吃) и "пить" (喝) ставятся перед объектом.',
+            'explanation_kz': '"Жеу" (吃) және 'ішу' (喝) етістіктері объектінің алдында қойылады.',
+            'examples': [
+                {
+                    'hanzi': '我们吃米饭。',
+                    'pinyin': 'Wǒmen chī mǐfàn.',
+                    'translation_ru': 'Мы едим рис.',
+                    'translation_kz': 'Біз күріш жейміз.'
+                },
+                {
+                    'hanzi': '我喝茶。',
+                    'pinyin': 'Wǒ hē chá.',
+                    'translation_ru': 'Я пью чай.',
+                    'translation_kz': 'Мен шай ішемін.'
+                }
+            ]
+        },
+        5: {
+            'title': 'Временные слова',
+            'pattern': 'Сегодня/Завтра + Глагол',
+            'explanation_ru': 'Слова времени ставятся в начале предложения перед подлежащим.',
+            'explanation_kz': 'Уақыт сөздері сөйлемнің басында бастауыштың алдында қойылады.',
+            'examples': [
+                {
+                    'hanzi': '今天是星期一。',
+                    'pinyin': 'Jīntiān shì xīngqī yī.',
+                    'translation_ru': 'Сегодня понедельник.',
+                    'translation_kz': 'Бүгін дүйсенбі.'
+                },
+                {
+                    'hanzi': '我早上学习。',
+                    'pinyin': 'Wǒ zǎoshang xuéxí.',
+                    'translation_ru': 'Утром я учусь.',
+                    'translation_kz': 'Таңертең мен оқимын.'
+                }
+            ]
+        }
+    }
+    return grammar_rules.get(day, grammar_rules[1])
+
+
+def _get_grammar_task_data(day):
+    """Get grammar task data with components for sentence building"""
+    grammar_tasks = {
+        1: {
+            'task_prompt_ru': 'Составьте предложение "Я студент"',
+            'task_prompt_kz': '"Мен студент" деген сөйлем құрастырыңыз',
+            'components': [
+                {'id': 1, 'hanzi': '我', 'pinyin': 'wǒ', 'translation_ru': 'Я', 'translation_kz': 'Мен', 'type': 'subject'},
+                {'id': 2, 'hanzi': '是', 'pinyin': 'shì', 'translation_ru': 'быть', 'translation_kz': 'болу', 'type': 'verb'},
+                {'id': 3, 'hanzi': '学生', 'pinyin': 'xuésheng', 'translation_ru': 'студент', 'translation_kz': 'студент', 'type': 'noun'}
+            ],
+            'correct_hanzi': '我是学生',
+            'correct_pinyin': 'Wǒ shì xuésheng',
+            'correct_translation_ru': 'Я студент',
+            'correct_translation_kz': 'Мен студент'
+        },
+        2: {
+            'task_prompt_ru': 'Составьте предложение "У меня три яблока"',
+            'task_prompt_kz': '"Менің үш алмам бар" деген сөйлем құрастырыңыз',
+            'components': [
+                {'id': 1, 'hanzi': '我', 'pinyin': 'wǒ', 'translation_ru': 'Я', 'translation_kz': 'Мен', 'type': 'subject'},
+                {'id': 2, 'hanzi': '有', 'pinyin': 'yǒu', 'translation_ru': 'иметь', 'translation_kz': 'bar', 'type': 'verb'},
+                {'id': 3, 'hanzi': '三', 'pinyin': 'sān', 'translation_ru': 'три', 'translation_kz': 'үш', 'type': 'number'},
+                {'id': 4, 'hanzi': '个', 'pinyin': 'gè', 'translation_ru': 'сч.слово', 'translation_kz': 'санау сөз', 'type': 'counter'},
+                {'id': 5, 'hanzi': '苹果', 'pinyin': 'píngguǒ', 'translation_ru': 'яблоко', 'translation_kz': 'алма', 'type': 'noun'}
+            ],
+            'correct_hanzi': '我有三个苹果',
+            'correct_pinyin': 'Wǒ yǒu sān gè píngguǒ',
+            'correct_translation_ru': 'У меня три яблока',
+            'correct_translation_kz': 'Менің үш алмам бар'
+        },
+        3: {
+            'task_prompt_ru': 'Составьте предложение "Это мой дом"',
+            'task_prompt_kz': '"Бұл менің үйім" деген сөйлем құрастырыңыз',
+            'components': [
+                {'id': 1, 'hanzi': '这', 'pinyin': 'zhè', 'translation_ru': 'это', 'translation_kz': 'бұл', 'type': 'pronoun'},
+                {'id': 2, 'hanzi': '是', 'pinyin': 'shì', 'translation_ru': 'быть', 'translation_kz': 'болу', 'type': 'verb'},
+                {'id': 3, 'hanzi': '我', 'pinyin': 'wǒ', 'translation_ru': 'мой', 'translation_kz': 'менің', 'type': 'pronoun'},
+                {'id': 4, 'hanzi': '的', 'pinyin': 'de', 'translation_ru': 'частица', 'translation_kz': 'септік', 'type': 'particle'},
+                {'id': 5, 'hanzi': '家', 'pinyin': 'jiā', 'translation_ru': 'дом', 'translation_kz': 'үй', 'type': 'noun'}
+            ],
+            'correct_hanzi': '这是我的家',
+            'correct_pinyin': 'Zhè shì wǒ de jiā',
+            'correct_translation_ru': 'Это мой дом',
+            'correct_translation_kz': 'Бұл менің үйім'
+        },
+        4: {
+            'task_prompt_ru': 'Составьте предложение "Мы едим рис"',
+            'task_prompt_kz': '"Біз күріш жейміз" деген сөйлем құрастырыңыз',
+            'components': [
+                {'id': 1, 'hanzi': '我', 'pinyin': 'wǒ', 'translation_ru': 'Я', 'translation_kz': 'Мен', 'type': 'pronoun'},
+                {'id': 2, 'hanzi': '们', 'pinyin': 'men', 'translation_ru': 'мы (мн.ч)', 'translation_kz': 'біз (көпше)', 'type': 'suffix'},
+                {'id': 3, 'hanzi': '吃', 'pinyin': 'chī', 'translation_ru': 'есть', 'translation_kz': 'жеу', 'type': 'verb'},
+                {'id': 4, 'hanzi': '米饭', 'pinyin': 'mǐfàn', 'translation_ru': 'рис', 'translation_kz': 'күріш', 'type': 'noun'}
+            ],
+            'correct_hanzi': '我们吃米饭',
+            'correct_pinyin': 'Wǒmen chī mǐfàn',
+            'correct_translation_ru': 'Мы едим рис',
+            'correct_translation_kz': 'Біз күріш жейміз'
+        },
+        5: {
+            'task_prompt_ru': 'Составьте предложение "Сегодня понедельник"',
+            'task_prompt_kz': '"Бүгін дүйсенбі" деген сөйлем құрастырыңыз',
+            'components': [
+                {'id': 1, 'hanzi': '今', 'pinyin': 'jīn', 'translation_ru': 'сегодня', 'translation_kz': 'бүгін', 'type': 'time'},
+                {'id': 2, 'hanzi': '天', 'pinyin': 'tiān', 'translation_ru': 'день', 'translation_kz': 'күн', 'type': 'noun'},
+                {'id': 3, 'hanzi': '是', 'pinyin': 'shì', 'translation_ru': 'быть', 'translation_kz': 'болу', 'type': 'verb'},
+                {'id': 4, 'hanzi': '星', 'pinyin': 'xīng', 'translation_ru': 'неделя', 'translation_kz': 'апта', 'type': 'noun'},
+                {'id': 5, 'hanzi': '期', 'pinyin': 'qī', 'translation_ru': 'период', 'translation_kz': 'кезең', 'type': 'suffix'},
+                {'id': 6, 'hanzi': '一', 'pinyin': 'yī', 'translation_ru': 'один', 'translation_kz': 'бір', 'type': 'number'}
+            ],
+            'correct_hanzi': '今天是星期一',
+            'correct_pinyin': 'Jīntiān shì xīngqī yī',
+            'correct_translation_ru': 'Сегодня понедельник',
+            'correct_translation_kz': 'Бүгін дүйсенбі'
+        }
+    }
+    return grammar_tasks.get(day, grammar_tasks[1])
 
 
 # ============================================================================
