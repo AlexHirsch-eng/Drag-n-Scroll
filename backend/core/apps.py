@@ -9,5 +9,6 @@ class CoreConfig(AppConfig):
     def ready(self):
         """
         App ready initialization
+        Import signals to ensure they are registered
         """
-        pass
+        import core.signals

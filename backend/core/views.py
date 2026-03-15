@@ -21,7 +21,17 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
-        return self.request.user.profile
+        """
+        Get user profile, create if missing
+        """
+        profile = getattr(self.request.user, 'profile', None)
+        if not profile:
+            # Profile missing - create it
+            profile = UserProfile.objects.create(
+                user=self.request.user,
+                learning_language='RU'
+            )
+        return profile
 
 
 class UserDetailView(generics.RetrieveUpdateAPIView):

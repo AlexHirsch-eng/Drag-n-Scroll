@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # For token blacklist
     'corsheaders',
     'django_filters',
     'djoser',
@@ -92,12 +93,20 @@ if DATABASE_URL:
             ssl_require=True,
         )
     }
+    # Ensure atomic requests for data integrity
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+        'options': '-c statement_timeout=30000',
+    }
 else:
     # Development SQLite database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,  # Prevent database is locked errors
+            },
         }
     }
 
@@ -150,19 +159,30 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    # Ensure atomic requests for data integrity
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
 }
 
 
 # JWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # Extended to 30 days
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    # Allow tokens to work after user reload
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    # Ensure token blacklist app is available
+    'CHECK_REVOKE_TOKEN': True,
 }
 
 

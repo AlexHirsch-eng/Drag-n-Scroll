@@ -21,9 +21,21 @@ class User(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         ordering = ['-created_at']
+        # Ensure users are not accidentally deleted
+        # Use soft deletes or be explicit about user deletion
 
     def __str__(self):
         return self.username
+
+    def delete(self, *args, **kwargs):
+        """
+        Prevent accidental user deletion - use soft delete instead
+        Override this to deactivate rather than delete
+        """
+        raise NotImplementedError(
+            "Users cannot be deleted directly. "
+            "Use user.is_active = False to deactivate instead."
+        )
 
 
 class UserProfile(models.Model):
