@@ -100,6 +100,35 @@ def debug_auth(request):
     })
 
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def debug_courses(request):
+    """
+    Debug endpoint to check course data availability
+    """
+    from course.models import Course, CourseDay
+
+    # Get all courses
+    courses = Course.objects.filter(is_active=True)
+    courses_data = []
+
+    for course in courses:
+        days = course.days.all().order_by('day_number')
+        courses_data.append({
+            'id': course.id,
+            'hsk_level': course.hsk_level,
+            'title': course.title,
+            'total_days': course.total_days,
+            'available_days': days.count(),
+            'days': [{'id': day.id, 'day_number': day.day_number, 'title': day.title} for day in days]
+        })
+
+    return Response({
+        'total_courses': courses.count(),
+        'courses': courses_data,
+    })
+
+
 def mask_database_url(url):
     """Mask password in database URL for safe display"""
     if not url:

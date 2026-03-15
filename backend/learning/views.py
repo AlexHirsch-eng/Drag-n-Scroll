@@ -39,26 +39,30 @@ def main_screen(request):
     - day (optional): override current day (1-5)
     - hsk (optional): override user's HSK level (1-6)
     """
+    import logging
+    logger = logging.getLogger(__name__)
+
     user = request.user
+    logger.info(f"[MainScreen] Loading for user: {user.username}")
 
     # Safely get user profile with defaults
     try:
         user_profile = user.profile
         if not user_profile:
-            # Create profile if it doesn't exist
+            logger.warning(f"[MainScreen] No profile for {user.username}, creating...")
             user_profile = UserProfile.objects.create(user=user)
-    except Exception:
-        # If profile doesn't exist or error accessing it, create one
+    except Exception as e:
+        logger.error(f"[MainScreen] Error accessing profile: {e}")
         user_profile = UserProfile.objects.create(user=user)
 
     # Get or create user progress safely
     try:
         user_progress = user.progress
         if not user_progress:
-            # Create progress record if it doesn't exist
+            logger.warning(f"[MainScreen] No progress for {user.username}, creating...")
             user_progress = UserCourseProgress.objects.create(user=user)
-    except Exception:
-        # Create progress record if it doesn't exist or error accessing it
+    except Exception as e:
+        logger.error(f"[MainScreen] Error accessing progress: {e}")
         user_progress = UserCourseProgress.objects.create(user=user)
 
     # Check if specific HSK level requested
@@ -90,19 +94,45 @@ def main_screen(request):
             user_progress.current_day = 5
             user_progress.save()
 
-    # Get course
+    logger.info(f"[MainScreen] HSK={hsk_level}, Day={day_number}")
+
+    # Get course - create minimal demo course if none exists
     course = Course.objects.filter(
         hsk_level=hsk_level,
         is_active=True
     ).first()
 
     if not course:
-        return Response({'error': 'No active course found'}, status=status.HTTP_404_NOT_FOUND)
+        logger.warning(f"[MainScreen] No active course found for HSK {hsk_level}, creating minimal course...")
+        course = Course.objects.create(
+            hsk_level=hsk_level,
+            title=f'HSK {hsk_level} - Chinese Course',
+            description=f'Complete Chinese course for HSK level {hsk_level}',
+            total_days=5,
+            is_active=True
+        )
+
+        # Create 5 course days
+        for day_num in range(1, 6):
+            CourseDay.objects.create(
+                course=course,
+                day_number=day_num,
+                title=f'Day {day_num}: Chinese Learning',
+                description=f'Learn Chinese on day {day_num}',
+                estimated_minutes=15
+            )
+
+        logger.info(f"[MainScreen] Created minimal course with 5 days")
+
+    logger.info(f"[MainScreen] Found course: {course.title}")
 
     # Get course day
     course_day = course.days.filter(day_number=day_number).first()
     if not course_day:
+        logger.error(f"[MainScreen] Course day {day_number} not found")
         return Response({'error': 'Course day not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    logger.info(f"[MainScreen] Found course day: {course_day.title}")
 
     # Get or create sessions
     session_a = LearningSession.objects.filter(
@@ -116,6 +146,8 @@ def main_screen(request):
         course_day=course_day,
         session_type='B'
     ).first()
+
+    logger.info(f"[MainScreen] Session A: {'Yes' if session_a else 'No'}, Session B: {'Yes' if session_b else 'No'}")
 
     # Get due for review count
     due_counts = get_due_count(user)
@@ -147,6 +179,8 @@ def main_screen(request):
 
     if session_b:
         response_data['session_b'] = LearningSessionSerializer(session_b).data
+
+    logger.info(f"[MainScreen] Returning data with {len(response_data)} fields")
 
     return Response(response_data)
 
