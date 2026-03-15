@@ -80,11 +80,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database - Support for PostgreSQL via DATABASE_URL
 import dj_database_url
+import os
 
+# CRITICAL: MUST use PostgreSQL in production for persistence
+# SQLite is NOT persistent on Render/Vercel - data is lost on container restart!
 DATABASE_URL = config('DATABASE_URL', default=None)
 
+# Force PostgreSQL in production to prevent data loss
+if not DATABASE_URL and os.environ.get('RENDER') or os.environ.get('VERCEL'):
+    # Running on Render/Vercel but no DATABASE_URL - this is a CRITICAL ERROR
+    # Log a warning but don't crash - we'll create a default connection
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.critical('WARNING: Running on cloud platform but DATABASE_URL not set! Users will not persist!')
+
 if DATABASE_URL:
-    # Production PostgreSQL database (Supabase)
+    # Production PostgreSQL database (Supabase/Render)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -99,7 +110,9 @@ if DATABASE_URL:
         'options': '-c statement_timeout=30000',
     }
 else:
-    # Development SQLite database
+    # Development SQLite database ONLY for local development
+    import warnings
+    warnings.warn('WARNING: Using SQLite database! Data will NOT persist on Render/Vercel!')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

@@ -129,6 +129,56 @@ def debug_courses(request):
     })
 
 
+@api_view(['GET'])
+@permission_classes([])
+def debug_database(request):
+    """
+    Debug endpoint to check database configuration and persistence
+    """
+    from django.conf import settings
+    import os
+    from django.db import connections
+
+    db_info = {
+        'default_engine': settings.DATABASES['default']['ENGINE'],
+        'database_name': str(settings.DATABASES['default'].get('NAME')),
+        'is_persistent': False,
+        'platform': os.environ.get('RENDER', os.environ.get('VERCEL', 'local')),
+    }
+
+    # Check if using PostgreSQL (persistent)
+    if 'postgresql' in db_info['default_engine'].lower():
+        db_info['is_persistent'] = True
+        db_info['database_type'] = 'PostgreSQL'
+        db_info['persistence'] = 'GOOD - Data persists across restarts'
+    elif 'sqlite' in db_info['default_engine'].lower():
+        db_info['is_persistent'] = False
+        db_info['database_type'] = 'SQLite'
+        db_info['persistence'] = 'CRITICAL - Data LOST on container restart!'
+
+    # Test database connection
+    try:
+        db_conn = connections['default']
+        with db_conn.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        db_info['connection_status'] = 'connected'
+    except Exception as e:
+        db_info['connection_status'] = f'error: {str(e)}'
+
+    # Check for DATABASE_URL
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url:
+        db_info['has_database_url'] = True
+        # Mask password
+        import re
+        db_info['database_url'] = re.sub(r'(://[^:]+:)[^@]+(@)', r'\1****\2', db_url)
+    else:
+        db_info['has_database_url'] = False
+        db_info['database_url'] = None
+
+    return Response(db_info)
+
+
 def mask_database_url(url):
     """Mask password in database URL for safe display"""
     if not url:
