@@ -294,6 +294,11 @@ async function handleSubmitStep1(data: any) {
     if (response && !response.is_correct && response.explanation) {
       // Show feedback
     }
+
+    // Auto-load step 2 data after step 1 completes
+    if (response && response.next_step) {
+      await loadStepData(response.next_step)
+    }
   } catch (err: any) {
     error.value = err.response?.data?.detail || 'Failed to submit answer'
   }
@@ -302,7 +307,12 @@ async function handleSubmitStep1(data: any) {
 async function handleSubmitStep2(data: any) {
   userStepOverride.value = null
   try {
-    await sessionStore.submitStep2(data.words)
+    const response = await sessionStore.submitStep2(data.words)
+
+    // Auto-load step 3 data after step 2 completes
+    if (response && response.next_step) {
+      await loadStepData(response.next_step)
+    }
   } catch (err: any) {
     error.value = err.response?.data?.detail || 'Failed to submit words'
   }
@@ -311,7 +321,12 @@ async function handleSubmitStep2(data: any) {
 async function handleSubmitStep3(data: any) {
   userStepOverride.value = null
   try {
-    await sessionStore.submitStep3(data.builtSentence)
+    const response = await sessionStore.submitStep3(data.builtSentence)
+
+    // Auto-load step 4 data after step 3 completes
+    if (response && response.next_step) {
+      await loadStepData(response.next_step)
+    }
   } catch (err: any) {
     error.value = err.response?.data?.detail || 'Failed to submit grammar'
   }
@@ -320,7 +335,12 @@ async function handleSubmitStep3(data: any) {
 async function handleSubmitStep4(data: any) {
   userStepOverride.value = null
   try {
-    await sessionStore.submitStep4(data.selectedOptionIndex)
+    const response = await sessionStore.submitStep4(data.selectedOptionIndex)
+
+    // Auto-load step 5 data after step 4 completes
+    if (response && response.next_step) {
+      await loadStepData(response.next_step)
+    }
   } catch (err: any) {
     error.value = err.response?.data?.detail || 'Failed to submit dialogue'
   }
