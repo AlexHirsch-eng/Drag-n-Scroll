@@ -11,19 +11,18 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="loading">
+    <div v-if="isLoading && authStore.isAuthenticated" class="loading">
       <div class="warm-loader"></div>
       <div class="loading-text">ЗАГРУЗКА...</div>
     </div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="error">
-      <p class="error-text">{{ error }}</p>
-      <button @click="loadMainScreen" class="retry-btn">ПОВТОРИТЬ</button>
-    </div>
-
     <!-- Main Content -->
     <div v-else class="content">
+      <!-- Auth Warning for non-authenticated users -->
+      <div v-if="!authStore.isAuthenticated" class="auth-warning">
+        <p class="warning-text">⚠️ Войдите в аккаунт для сохранения прогресса</p>
+      </div>
+
       <!-- Header -->
       <div class="header">
         <div class="day-info">
@@ -37,20 +36,20 @@
             <div class="day-number">ДЕНЬ {{ currentDay }}</div>
             <button @click="changeDay(1)" class="day-nav-btn" :disabled="currentDay >= 5">→</button>
           </div>
-          <span class="day-title">{{ mainScreenData?.current_course_day.title }}</span>
+          <span class="day-title">{{ displayData?.current_course_day.title }}</span>
         </div>
         <div class="stats-row">
           <div class="stat-badge stat-primary">
             <img src="/src/images/coin.png" alt="coin" class="coin-icon-learn">
-            <span>{{ mainScreenData?.xp_total }}</span> СКРОЛЛЫ
+            <span>{{ displayData?.xp_total }}</span> СКРОЛЛЫ
           </div>
           <div class="stat-badge stat-pink">
             <span class="icon">🔥</span>
-            <span>{{ mainScreenData?.streak_days }}</span>
+            <span>{{ displayData?.streak_days }}</span>
           </div>
           <div class="stat-badge stat-tertiary">
             <span class="icon">📚</span>
-            <span>{{ mainScreenData?.total_learning_words }}</span>
+            <span>{{ displayData?.total_learning_words }}</span>
           </div>
         </div>
       </div>
@@ -61,18 +60,18 @@
         <div
           class="session-card"
           :class="{
-            'completed': mainScreenData?.session_a?.is_completed,
-            'in-progress': mainScreenData?.session_a && !mainScreenData.session_a.is_completed
+            'completed': displayData?.session_a?.is_completed,
+            'in-progress': displayData?.session_a && !displayData.session_a.is_completed
           }"
-          @click="startSession('A')"
+          @click="authStore.isAuthenticated ? startSession('A') : router.push('/login')"
         >
           <div class="card-glow"></div>
           <div class="session-header">
             <div class="session-label">СЕССИЯ A</div>
-            <div v-if="mainScreenData?.session_a?.is_completed" class="status-badge completed">
+            <div v-if="displayData?.session_a?.is_completed" class="status-badge completed">
               ✓ ГОТОВО
             </div>
-            <div v-else-if="mainScreenData?.session_a" class="status-badge progress">
+            <div v-else-if="displayData?.session_a" class="status-badge progress">
               В ПРОЦЕССЕ
             </div>
             <div v-else class="status-badge new">
@@ -93,7 +92,7 @@
             </div>
           </div>
 
-          <div v-if="mainScreenData?.session_a" class="session-progress">
+          <div v-if="displayData?.session_a" class="session-progress">
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: getProgress('A') + '%' }"></div>
             </div>
@@ -101,8 +100,9 @@
           </div>
 
           <div class="start-btn">
-            <span v-if="!mainScreenData?.session_a">НАЧАТЬ СЕССИЮ →</span>
-            <span v-else-if="mainScreenData.session_a.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
+            <span v-if="!authStore.isAuthenticated">ВОЙТИ →</span>
+            <span v-else-if="!displayData?.session_a">НАЧАТЬ СЕССИЮ →</span>
+            <span v-else-if="displayData.session_a.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
             <span v-else>ПРОДОЛЖИТЬ →</span>
           </div>
         </div>
@@ -111,18 +111,18 @@
         <div
           class="session-card"
           :class="{
-            'completed': mainScreenData?.session_b?.is_completed,
-            'in-progress': mainScreenData?.session_b && !mainScreenData.session_b.is_completed
+            'completed': displayData?.session_b?.is_completed,
+            'in-progress': displayData?.session_b && !displayData.session_b.is_completed
           }"
-          @click="startSession('B')"
+          @click="authStore.isAuthenticated ? startSession('B') : router.push('/login')"
         >
           <div class="card-glow"></div>
           <div class="session-header">
             <div class="session-label">СЕССИЯ B</div>
-            <div v-if="mainScreenData?.session_b?.is_completed" class="status-badge completed">
+            <div v-if="displayData?.session_b?.is_completed" class="status-badge completed">
               ✓ ГОТОВО
             </div>
-            <div v-else-if="mainScreenData?.session_b" class="status-badge progress">
+            <div v-else-if="displayData?.session_b" class="status-badge progress">
               В ПРОЦЕССЕ
             </div>
             <div v-else class="status-badge new">
@@ -143,7 +143,7 @@
             </div>
           </div>
 
-          <div v-if="mainScreenData?.session_b" class="session-progress">
+          <div v-if="displayData?.session_b" class="session-progress">
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: getProgress('B') + '%' }"></div>
             </div>
@@ -151,8 +151,9 @@
           </div>
 
           <div class="start-btn">
-            <span v-if="!mainScreenData?.session_b">НАЧАТЬ СЕССИЮ →</span>
-            <span v-else-if="mainScreenData.session_b.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
+            <span v-if="!authStore.isAuthenticated">ВОЙТИ →</span>
+            <span v-else-if="!displayData?.session_b">НАЧАТЬ СЕССИЮ →</span>
+            <span v-else-if="displayData.session_b.is_completed">ПОВТОРИТЬ СЕССИЮ →</span>
             <span v-else>ПРОДОЛЖИТЬ →</span>
           </div>
         </div>
@@ -196,12 +197,35 @@ const steps = [
 
 const mainScreenData = computed(() => sessionStore.mainScreenData)
 
+// Fallback data to always show something
+const fallbackData = computed(() => ({
+  current_course_day: {
+    id: 1,
+    day_number: currentDay.value,
+    title: `День ${currentDay.value}: Изучение китайского`
+  },
+  xp_total: authStore.user?.progress?.total_xp || 0,
+  streak_days: authStore.user?.progress?.streak_days || 0,
+  total_learning_words: 0,
+  session_a: null,
+  session_b: null
+}))
+
+const displayData = computed(() => mainScreenData.value || fallbackData.value)
+
 onMounted(async () => {
   // Initialize HSK level from user profile after auth is loaded
   if (authStore.user?.profile?.current_hsk_level) {
     currentHSKLevel.value = authStore.user.profile.current_hsk_level
   }
-  await loadMainScreen()
+
+  // Only load if authenticated
+  if (authStore.isAuthenticated) {
+    await loadMainScreen()
+  } else {
+    // Show fallback data for non-authenticated users
+    isLoading.value = false
+  }
 })
 
 async function loadMainScreen() {
@@ -215,7 +239,9 @@ async function loadMainScreen() {
       currentDay.value = sessionStore.mainScreenData.current_course_day.day_number
     }
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to load main screen'
+    // Don't show error - use fallback data instead
+    console.warn('Failed to load main screen, using fallback data:', err)
+    error.value = '' // Clear error so content shows
   } finally {
     isLoading.value = false
   }
@@ -228,17 +254,21 @@ async function changeHSKLevel(delta: number) {
   currentHSKLevel.value = newLevel
   currentDay.value = 1 // Reset to day 1 when changing HSK level
 
-  // Load data for new HSK level and day
-  isLoading.value = true
-  error.value = ''
+  // Only load if authenticated
+  if (authStore.isAuthenticated) {
+    isLoading.value = true
+    error.value = ''
 
-  try {
-    await sessionStore.loadMainScreenForDay(1, newLevel)
-  } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to load HSK level'
-  } finally {
-    isLoading.value = false
+    try {
+      await sessionStore.loadMainScreenForDay(1, newLevel)
+    } catch (err: any) {
+      // Don't show error - fallback data will be used
+      console.warn('Failed to load HSK level:', err)
+    } finally {
+      isLoading.value = false
+    }
   }
+  // If not authenticated, fallback data will update automatically
 }
 
 async function changeDay(delta: number) {
@@ -247,27 +277,34 @@ async function changeDay(delta: number) {
 
   currentDay.value = newDay
 
-  // Reload screen for the new day
-  isLoading.value = true
-  error.value = ''
+  // Only load if authenticated
+  if (authStore.isAuthenticated) {
+    isLoading.value = true
+    error.value = ''
 
-  try {
-    await sessionStore.loadMainScreenForDay(currentDay.value)
-  } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to load day'
-  } finally {
-    isLoading.value = false
+    try {
+      await sessionStore.loadMainScreenForDay(currentDay.value)
+    } catch (err: any) {
+      // Don't show error - fallback data will be used
+      console.warn('Failed to load day:', err)
+    } finally {
+      isLoading.value = false
+    }
   }
+  // If not authenticated, fallback data will update automatically
 }
 
 async function startSession(type: 'A' | 'B') {
-  if (!mainScreenData.value) return
+  if (!displayData.value || !authStore.isAuthenticated) {
+    router.push('/login')
+    return
+  }
 
   try {
     // Resume existing session or start new one
     const existingSession = type === 'A'
-      ? mainScreenData.value.session_a
-      : mainScreenData.value.session_b
+      ? displayData.value.session_a
+      : displayData.value.session_b
 
     // Check if session exists and is not completed (current_step < 6)
     if (existingSession && !existingSession.is_completed && existingSession.current_step < 6) {
@@ -275,35 +312,36 @@ async function startSession(type: 'A' | 'B') {
       await sessionStore.resumeSession(existingSession.id)
     } else {
       // Start new session
-      await sessionStore.startSession(mainScreenData.value.current_course_day.id, type)
+      await sessionStore.startSession(displayData.value.current_course_day.id, type)
     }
 
     // Navigate to session view
     router.push('/session')
   } catch (err: any) {
-    error.value = err.response?.data?.detail || 'Failed to start session'
+    // Don't show error - just stay on page
+    console.warn('Failed to start session:', err)
   }
 }
 
 function isStepActive(sessionType: 'A' | 'B', stepNumber: number): boolean {
   const session = sessionType === 'A'
-    ? mainScreenData.value?.session_a
-    : mainScreenData.value?.session_b
+    ? displayData.value?.session_a
+    : displayData.value?.session_b
   return session?.current_step === stepNumber || false
 }
 
 function isStepCompleted(sessionType: 'A' | 'B', stepNumber: number): boolean {
   const session = sessionType === 'A'
-    ? mainScreenData.value?.session_a
-    : mainScreenData.value?.session_b
+    ? displayData.value?.session_a
+    : displayData.value?.session_b
   if (!session) return false
   return session.is_completed || session.current_step > stepNumber || session.current_step >= 6
 }
 
 function getProgress(sessionType: 'A' | 'B'): number {
   const session = sessionType === 'A'
-    ? mainScreenData.value?.session_a
-    : mainScreenData.value?.session_b
+    ? displayData.value?.session_a
+    : displayData.value?.session_b
   if (!session) return 0
   return Math.round((session.current_step / 6) * 100)
 }
@@ -483,6 +521,23 @@ function goBack() {
   z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.auth-warning {
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  border-radius: var(--radius-lg);
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.warning-text {
+  color: var(--color-accent-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 .header {

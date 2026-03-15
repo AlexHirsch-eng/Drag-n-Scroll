@@ -32,7 +32,7 @@ const router = createRouter({
       path: '/learn',
       name: 'learn',
       component: () => import('@/views/LearnView.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: false }, // Allow all users to see learn page
     },
     {
       path: '/session',
