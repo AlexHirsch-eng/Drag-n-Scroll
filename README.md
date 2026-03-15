@@ -34,7 +34,7 @@ Drag'n'Scroll/
 │   ├── vocab/              # Vocabulary & Grammar
 │   ├── learning            # Sessions & SRS
 │   ├── manage.py
-│   └── requirements.txt
+│   └── requirement.txt
 ├── frontend/               # Vue 3 Application
 │   ├── src/
 │   │   ├── api/           # API client
@@ -153,9 +153,9 @@ Creates:
 - `GET /api/vocab/grammar/` - List grammar rules
 
 ### SRS (Spaced Repetition)
-- `GET /api/learning/srs/review-batch/` - Get words for review
-- `POST /api/learning/srs/submit-review/` - Submit review results
-- `GET /api/learning/srs/stats/` - Get SRS statistics
+- GET /api/learning/srs/review-batch/` - Get words for review
+- POST /api/learning/srs/submit-review/` - Submit review results
+- GET /api/learning/srs/stats/` - Get SRS statistics
 
 See [backend/README.md](./backend/README.md) for complete API documentation.
 
@@ -273,7 +273,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT License - see LICENSE file for details
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - SuperMemo SM-2 algorithm
 - HSK standardized curriculum
