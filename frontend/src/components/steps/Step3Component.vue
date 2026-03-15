@@ -9,7 +9,7 @@
     </div>
 
     <!-- No Data State -->
-    <div v-if="!stepData || !stepData.grammar_rule" class="no-data">
+    <div v-if="!stepData || !stepData.data || !stepData.data.grammar_rule" class="no-data">
       <p>Нет грамматического упражнения для этого шага.</p>
       <p class="hint">Пожалуйста, вернитесь позже или свяжитесь с поддержкой.</p>
     </div>
@@ -17,15 +17,15 @@
     <div v-else class="grammar-container">
       <!-- Grammar Rule -->
       <div class="grammar-rule-card">
-        <h3>{{ stepData.grammar_rule.title }}</h3>
-        <div class="pattern">{{ stepData.grammar_rule.pattern }}</div>
+        <h3>{{ stepData.data.grammar_rule.title }}</h3>
+        <div class="pattern">{{ stepData.data.grammar_rule.pattern }}</div>
 
         <div class="explanation">
-          {{ userLanguage === 'KZ' ? stepData.grammar_rule.explanation_kz : stepData.grammar_rule.explanation_ru }}
+          {{ userLanguage === 'KZ' ? stepData.data.grammar_rule.explanation_kz : stepData.data.grammar_rule.explanation_ru }}
         </div>
 
         <div class="examples">
-          <div v-for="(example, index) in stepData.grammar_rule.examples" :key="index" class="example">
+          <div v-for="(example, index) in stepData.data.grammar_rule.examples" :key="index" class="example">
             <div class="example-hanzi clickable-word" @click="speakHanzi(example.hanzi)" title="Нажмите для озвучки">{{ example.hanzi }}</div>
             <div class="example-pinyin clickable-word" @click="speakHanzi(example.hanzi)" title="Нажмите для озвучки">{{ example.pinyin }}</div>
             <div class="example-translation">{{ userLanguage === 'KZ' ? example.translation_kz : example.translation_ru }}</div>
@@ -35,12 +35,12 @@
 
       <!-- Sentence Building Task -->
       <div class="task-section">
-        <h4>Task: {{ stepData.task_prompt }}</h4>
+        <h4>Task: {{ taskPrompt }}</h4>
 
         <!-- Component Bank -->
         <div class="component-bank">
           <div
-            v-for="component in stepData.components"
+            v-for="component in stepData.data.components"
             :key="component.id"
             @click="addComponent(component)"
             class="component-item"
@@ -108,6 +108,13 @@ const userLanguage = computed(() => {
   return authStore.user?.profile?.learning_language || 'RU'
 })
 
+const taskPrompt = computed(() => {
+  if (!props.stepData?.data) return ''
+  return userLanguage.value === 'KZ'
+    ? props.stepData.data.task_prompt_kz
+    : props.stepData.data.task_prompt_ru
+})
+
 function addComponent(component: any) {
   builtSentence.value.push(component)
 }
@@ -121,7 +128,7 @@ function submitSentence() {
 
   // Build sentence from components
   const sentence = builtSentence.value.map(c => c.hanzi).join('')
-  correctAnswer.value = props.stepData?.correct_hanzi || ''
+  correctAnswer.value = props.stepData?.data?.correct_hanzi || ''
 
   // Check correctness
   isCorrect.value = sentence === correctAnswer.value

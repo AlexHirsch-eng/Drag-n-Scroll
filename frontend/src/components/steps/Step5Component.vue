@@ -9,7 +9,7 @@
     </div>
 
     <!-- No Data State -->
-    <div v-if="!stepData || !stepData.scrambled_words || stepData.scrambled_words.length === 0" class="no-data">
+    <div v-if="!stepData || !stepData.data || !stepData.data.scrambled_words || stepData.data.scrambled_words.length === 0" class="no-data">
       <div class="no-data-icon">📝</div>
       <p>Нет упражнения на порядок слов для этого шага.</p>
       <p class="hint">Вернитесь позже или попробуйте другую сессию!</p>
@@ -21,8 +21,8 @@
       <div class="target-card">
         <div class="target-info">
           <span class="label">СЛУШАЙТЕ И СОСТАВЛЯЙТЕ:</span>
-          <span class="target-hanzi clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_hanzi }}</span>
-          <span class="target-pinyin clickable-word" @click="speakHanzi(stepData.target_hanzi)" title="Нажмите для озвучки">{{ stepData.target_pinyin }}</span>
+          <span class="target-hanzi clickable-word" @click="speakHanzi(stepData.data.target_hanzi)" title="Нажмите для озвучки">{{ stepData.data.target_hanzi }}</span>
+          <span class="target-pinyin clickable-word" @click="speakHanzi(stepData.data.target_hanzi)" title="Нажмите для озвучки">{{ stepData.data.target_pinyin }}</span>
           <span class="target-translation">{{ getTranslation(stepData) }}</span>
         </div>
 
@@ -30,7 +30,7 @@
           <span class="icon">🔊</span> ВОСПРОИЗВЕСТИ АУДИО
         </button>
 
-        <div v-if="stepData.hint" class="hint">
+        <div v-if="stepData.data.hint" class="hint">
           💡 {{ getHint(stepData) }}
         </div>
       </div>
@@ -133,13 +133,13 @@ const userLanguage = computed(() => {
 })
 
 const availableWords = computed(() => {
-  if (!props.stepData?.scrambled_words) return []
+  if (!props.stepData?.data?.scrambled_words) return []
 
   const arrangedIds = arrangementSlots.value
     .filter(s => s.word)
     .map(s => s.word.id)
 
-  return props.stepData.scrambled_words.filter(
+  return props.stepData.data.scrambled_words.filter(
     (w: any) => !arrangedIds.includes(w.id)
   )
 })
@@ -157,6 +157,10 @@ const currentSentence = computed(() => {
 
 function getTranslation(item: any) {
   return userLanguage.value === 'KZ' ? item.target_translation_kz : item.target_translation_ru
+}
+
+function getHint(item: any) {
+  return userLanguage.value === 'KZ' ? item.hint_kz : item.hint_ru
 }
 
 function getHint(item: any) {
